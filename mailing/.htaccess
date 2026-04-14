@@ -1,0 +1,18 @@
+# Isolate this folder from root/global rewrites (e.g., WordPress front controller)
+RewriteEngine Off
+
+# Optional hardening
+Options -Indexes
+
+# Block direct web access to sensitive files
+<FilesMatch "^(config\.php|notify\.php|mailer\.php|templates\.php|mail_push\.sql)$">
+  Require all denied
+</FilesMatch>
+
+# Apache 2.2 fallback
+<IfModule !mod_authz_core.c>
+  <FilesMatch "^(config\.php|notify\.php|mailer\.php|templates\.php|mail_push\.sql)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>

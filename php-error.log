@@ -1,0 +1,52 @@
+[19-Aug-2025 11:23:00 Europe/Istanbul] PHP Fatal error:  Uncaught Error: Call to undefined function require_login() in /home/anilkapl/public_html/order_add.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/anilkapl/public_html/order_add.php on line 3
+[19-Aug-2025 11:23:01 Europe/Istanbul] PHP Fatal error:  Uncaught Error: Call to undefined function require_login() in /home/anilkapl/public_html/order_edit.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/anilkapl/public_html/order_edit.php on line 3
+[19-Aug-2025 11:23:03 Europe/Istanbul] PHP Fatal error:  Uncaught Error: Call to undefined function require_login() in /home/anilkapl/public_html/order_view.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/anilkapl/public_html/order_view.php on line 3
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_HOST - assumed 'DB_HOST' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_NAME - assumed 'DB_NAME' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_CHARSET - assumed 'DB_CHARSET' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_USER - assumed 'DB_USER' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_PASS - assumed 'DB_PASS' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:52 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_HOST - assumed 'DB_HOST' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_NAME - assumed 'DB_NAME' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_CHARSET - assumed 'DB_CHARSET' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_USER - assumed 'DB_USER' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_PASS - assumed 'DB_PASS' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:53 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_HOST - assumed 'DB_HOST' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_NAME - assumed 'DB_NAME' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_CHARSET - assumed 'DB_CHARSET' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 7
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_USER - assumed 'DB_USER' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Warning:  Use of undefined constant DB_PASS - assumed 'DB_PASS' (this will throw an Error in a future version of PHP) in /home/anilkapl/public_html/db.php on line 8
+[19-Aug-2025 11:24:54 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  Constant DB_HOST already defined in /home/anilkapl/public_html/config.php on line 11
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  Constant DB_NAME already defined in /home/anilkapl/public_html/config.php on line 12
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  Constant DB_USER already defined in /home/anilkapl/public_html/config.php on line 13
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  Constant DB_PASS already defined in /home/anilkapl/public_html/config.php on line 14
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  Constant DB_CHARSET already defined in /home/anilkapl/public_html/config.php on line 15
+[19-Aug-2025 11:30:16 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  Constant DB_HOST already defined in /home/anilkapl/public_html/config.php on line 11
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  Constant DB_NAME already defined in /home/anilkapl/public_html/config.php on line 12
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  Constant DB_USER already defined in /home/anilkapl/public_html/config.php on line 13
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  Constant DB_PASS already defined in /home/anilkapl/public_html/config.php on line 14
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  Constant DB_CHARSET already defined in /home/anilkapl/public_html/config.php on line 15
+[19-Aug-2025 11:30:18 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  Constant DB_HOST already defined in /home/anilkapl/public_html/config.php on line 11
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  Constant DB_NAME already defined in /home/anilkapl/public_html/config.php on line 12
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  Constant DB_USER already defined in /home/anilkapl/public_html/config.php on line 13
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  Constant DB_PASS already defined in /home/anilkapl/public_html/config.php on line 14
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  Constant DB_CHARSET already defined in /home/anilkapl/public_html/config.php on line 15
+[19-Aug-2025 11:30:19 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:31:45 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:31:46 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:31:47 Europe/Istanbul] PHP Notice:  session_start(): A session had already been started - ignoring in /home/anilkapl/public_html/config.php on line 24
+[19-Aug-2025 11:31:47 Europe/Istanbul] PHP Notice:  Undefined variable: order in /home/anilkapl/public_html/order_view.php on line 188
