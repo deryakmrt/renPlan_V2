@@ -16,9 +16,9 @@ require_once __DIR__ . '/includes/helpers.php';
 require_login();
 
 // ---- GOOGLE OAUTH2 KİMLİK BİLGİLERİ ----
-$clientId     = '880787026132-mjcf811lrnk2jlj9itejvuvd8pnkd138.apps.googleusercontent.com';
-$clientSecret = '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';
-$refreshToken = '1//03AzcTRlRUdVJCgYIARAAGAMSNwF-L9IrhGyzIq8J4Kn7U9nUFPSBnz8EiI_gGSd9acPrnn81QUVqusco8mFVeDD-TtiUAh9woQQ';
+$clientId     = '';
+$clientSecret = '';
+$refreshToken = '';
 $rootFolderId = '1fQeSige0mjICeLkjKVxspD7TlMY16C6U'; // Ana "Siparişler" klasörü
 // -----------------------------------------
 
