@@ -13,9 +13,9 @@ header('Content-Type: application/json');
 require_login();
 
 // ---- GOOGLE OAUTH2 ----
-$clientId     = '880787026132-mjcf811lrnk2jlj9itejvuvd8pnkd138.apps.googleusercontent.com';
-$clientSecret = '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';
-$refreshToken = '1//03RzQlHpnNMdPCgYIARAAGAMSNwF-L9IrnnA8QFRi5ShJaCPXiIooRbUEfGertAeL6SUSVrM6VcmCvwe88PChC_5Bk7yby_vu-IE';
+$clientId     = '';
+$clientSecret = '';
+$refreshToken = '';
 
 // ---- GİRİŞ DOĞRULAMA ----
 $order_id = (int)($_GET['order_id'] ?? 0);
