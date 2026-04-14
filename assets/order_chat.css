@@ -1,0 +1,7 @@
+/* assets/order_chat.css */
+#order-chat .chat-list{ max-height: 360px; overflow-y:auto; padding:8px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; }
+.chat-item{ display:flex; gap:8px; margin-bottom:10px; }
+.chat-avatar{ width:32px; height:32px; border-radius:50%; background:#e5e7eb; flex:0 0 32px; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.chat-bubble{ padding:10px 12px; border-radius:12px; background:#f5f7fb; flex:1; }
+.chat-meta{ font-size:12px; opacity:.7; margin-bottom:4px; display:flex; justify-content:space-between; gap:8px; }
+.chat-text{ font-size:14px; white-space:pre-wrap; }

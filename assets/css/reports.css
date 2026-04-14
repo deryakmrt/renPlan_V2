@@ -1,0 +1,137 @@
+/* =========================================================
+   RENPLAN - GELİŞMİŞ RAPORLAR ORTAK STİL DOSYASI
+   ========================================================= */
+
+/* --- ANA YAPI VE KARTLAR --- */
+.container-card { background:#fff; border:1px solid #e8eef6; border-radius:14px; margin:16px; padding:16px; box-shadow:0 8px 20px rgba(0,0,0,.06); }
+.topgrid { display:grid; grid-template-columns: minmax(520px, 1fr) 420px; gap:16px; align-items:start; }
+@media (max-width:1200px) { .topgrid { grid-template-columns:1fr; } }
+
+/* --- FİLTRELER --- */
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.filters label.label { font-size: 12px; color: #475569; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.filters .input { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; transition: all 0.2s; font-size: 13px; }
+.filters .input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+@media (max-width:1100px) { .filters { grid-template-columns:repeat(3,minmax(0,1fr)); } .topgrid .wide-row { grid-column:1 / -1; } }
+@media (max-width:720px)  { .filters { grid-template-columns:repeat(1,minmax(0,1fr)); } .topgrid .wide-row { grid-column:1 / -1; } }
+.label { color:#102a43; font-size:12px; margin-bottom:6px; display:block; }
+.input { width:100%; padding:12px 14px; border:1px solid #e8eef6; border-radius:10px; background:#fff; }
+.actions { display:flex; gap:10px; align-items:center; margin-top:8px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; border:1px solid #e8eef6; background:#fff; cursor:pointer; text-decoration:none; font-weight:600; }
+.btn:hover { background:#f5f7fb; }
+.btn-primary { background:#1e293b; color:#fff; border-color:#1e293b; }
+.btn-primary:hover { background:#0f172a; }
+.small { font-size:12px; color:#334155; }
+
+/* --- İSTATİSTİK VE BİLGİ KARTLARI --- */
+.stat-col { display:grid; grid-template-columns:1fr; gap:12px; }
+.stat-card { background:#fff; border:1px solid #e8eef6; border-radius:12px; padding:16px; box-shadow:0 6px 16px rgba(0,0,0,.06); }
+.stat-card h4 { margin:0 0 6px 0; font-size:12px; color:#6b7a90; font-weight:600; }
+.stat-card .val { font-size:22px; font-weight:800; }
+
+/* --- GRAFİKLER --- */
+.chart-panel { margin-top:14px; padding:12px; border:1px solid #e8eef6; border-radius:12px; background:#fff; }
+.quad-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+@media (max-width:1400px) { .quad-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:820px)  { .quad-grid { grid-template-columns:1fr; } }
+.pie-card { border:1px solid #e8eef6; border-radius:12px; padding:12px; }
+.pie-card h4 { margin:0 0 8px 0; font-size:13px; color:#0f172a; }
+.pie-canvas-wrap { width:100%; height:220px; display:flex; align-items:center; justify-content:center; }
+.pie-canvas-wrap canvas { width:240px; max-width:100%; height:100%; }
+
+/* --- TOP 5 LİSTELERİ --- */
+.top5 { margin-top:8px; }
+.top5 ul { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(1,minmax(0,1fr)); gap:6px; }
+.top5 li { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:#475569; align-items:center; }
+.top5 li .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
+.top5 li .val { font-variant-numeric:tabular-nums; white-space:nowrap; flex-shrink:0; font-weight:600; color:#0f172a; }
+
+/* --- TABLOLAR --- */
+.table-wrap { margin-top:14px; border:1px solid #e8eef6; border-radius:12px; overflow:hidden; background:#fff; }
+.table { width:100%; border-collapse:separate; border-spacing:0; }
+.table thead th { background:#eaf2ff; color:#0f172a; text-align:left; padding:12px 14px; font-weight:700; border-bottom:1px solid #e3ecfd; }
+.table tbody td { padding:12px 14px; border-bottom:1px solid #eef2f7; vertical-align:top; }
+.ta-right { text-align:right; } 
+.ta-center { text-align:center; }
+.badge { display:inline-block; padding:4px 8px; border-radius:999px; background:#eef2ff; font-weight:700; }
+
+/* --- ÜRETİM DURUMU FİLTRE BUTONLARI --- */
+.prod-status-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.prod-status-grid .status-chip { padding: 6px 12px; min-height: auto; font-size: 12px; border-radius: 20px; }
+@media (max-width:1200px){.prod-status-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px) {.prod-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px) {.prod-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.status-chip { display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; gap:8px; padding:10px 12px; border:1px solid #e8eef6; border-radius:10px; background:#fff; cursor:pointer; user-select:none; line-height:1.2; }
+.status-chip input { margin:0; flex:0 0 auto; }
+.status-chip span { display:block; overflow:hidden; text-overflow:ellipsis; color:#0f172a!important; font-size:12px; font-weight:600; white-space:normal; margin-top:6px; line-height:1.1; }
+.status-chip:hover { background:#f8fafc; }
+.status-chip input:checked + span { font-weight:800; text-decoration:underline; }
+.filters .wide6 { grid-column:1 / -1; }
+
+/* --- SATIŞ TEMSİLCİSİ SIRALAMA KONTROLLERİ --- */
+.chart-sort-controls { user-select: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.sort-option { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; padding: 3px 6px; border-radius: 4px; transition: all 0.2s; border: 1px solid transparent; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+.sort-option:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(59, 130, 246, 0.15); border-color: #93c5fd; }
+.sort-option input[type="radio"] { width: 11px; height: 11px; cursor: pointer; accent-color: #3b82f6; margin: 0; }
+.sort-option span { font-size: 10px; color: #475569; font-weight: 600; white-space: nowrap; }
+.sort-option:has(input:checked) { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: #1e40af; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+.sort-option:has(input:checked) span { color: #ffffff; }
+
+/* --- ANİMASYONLAR --- */
+.will-animate { opacity:0; transform:translateY(6px); transition:opacity .4s ease, transform .4s ease; }
+.will-animate.appear { opacity:1; transform:none; }
+/* --- YENİ: YATAY İSTATİSTİK KARTLARI (En Üst Sıra) --- */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 1024px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
+
+/* --- YENİ: YATAY FİLTRE ÇUBUĞU --- */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); align-items: flex-end; margin-bottom: 20px; }
+.filter-bar .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+.filter-bar .label { font-size: 11px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+.filter-bar .input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; transition: all 0.2s; font-size: 13px; width: 100%; background: #fff; box-sizing: border-box;}
+.filter-bar .input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); outline: none; }
+.filter-bar .actions { display: flex; gap: 8px; align-items: center; width: 100%; margin-top: 5px; padding-top: 15px; border-top: 1px dashed #cbd5e1; justify-content: space-between; }
+.filter-bar .actions-left { display: flex; gap: 8px; }
+
+/* --- SELECT2 (AKILLI ARAMA) ÖZEL TASARIM UYUMU --- */
+.select2-container .select2-selection--single {
+  height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  background-color: #fff !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  padding-left: 12px !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 38px !important;
+  right: 8px !important;
+}
+.select2-dropdown {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden !important;
+}
+.select2-search__field {
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+}
+/* --- TABLO HİZALAMALARI --- */
+#reportTable th:nth-child(4),
+#reportTable td:nth-child(4),
+#reportTable th:nth-child(5),
+#reportTable td:nth-child(5),
+#reportTable th:nth-child(6),
+#reportTable td:nth-child(6),
+#reportTable th:nth-child(7),
+#reportTable td:nth-child(7) {
+  text-align: center !important;
+}

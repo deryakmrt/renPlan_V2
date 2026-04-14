@@ -1,0 +1,841 @@
+/* ===== BEGIN style.css ===== */
+
+:root {
+  --bg:#0f172a; --card:#111827; --muted:#94a3b8; --fg:#e5e7eb; --acc:#22c55e;
+  --border:#1f2937; --link:#60a5fa; --danger:#ef4444; --success:#22c55e; --warning:#fbbf24;
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--fg); line-height:1.5;}
+a{color:var(--link); text-decoration:none; transition:color 0.2s ease;}
+a:hover{color:#93c5fd;}
+.wrap{max-width:1100px; margin:0 auto; padding:24px;}
+.nav{display:flex; gap:12px; align-items:center; padding:12px 24px; background:#0b1220; border-bottom:1px solid var(--border);}
+.nav a{padding:8px 12px; border-radius:10px; background:#111827; transition:background 0.2s ease, color 0.2s ease;}
+.nav a:hover{background:#1f2937;}
+.nav .brand{font-weight:700; color:#a3e635; background:transparent;}
+.nav .ml-auto{margin-left:auto;}
+.card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); transition:transform 0.2s ease, box-shadow 0.2s ease;}
+.card:hover{transform:translateY(-2px); box-shadow:0 14px 35px rgba(0,0,0,0.35);}
+.grid{display:grid; gap:12px;}
+.g3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:900px){.g3{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:600px){.g3{grid-template-columns:1fr;}}
+.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.btn{padding:8px 12px; background:#1f2937; border:1px solid #374151; color:var(--fg); border-radius:10px; cursor:pointer; transition:background 0.2s ease, transform 0.1s ease;}
+.btn:hover{background:#374151;}
+.btn:active{transform:translateY(1px);}
+.btn.primary{background:#14532d; border-color:#166534;}
+.btn.primary:hover{background:#166534;}
+input,select,textarea{width:100%; padding:10px 12px; background:#0b1220; color:var(--fg); border:1px solid var(--border); border-radius:10px; transition:border-color 0.2s ease, box-shadow 0.2s ease;}
+input:focus,select:focus,textarea:focus{border-color:var(--acc); box-shadow:0 0 0 3px rgba(34,197,94,0.25); outline:none;}
+label{display:block; margin:8px 0 4px; font-weight:500;}
+.muted{color:var(--muted);}
+.center{text-align:center;}
+.mt{margin-top:12px;}
+.mb{margin-bottom:12px;}
+.big{font-size:27px; font-weight:700;}
+.alert{padding:10px 12px; border-radius:10px; border:1px solid; margin-bottom:1rem;}
+.alert.danger{background:#331515; border-color:#7f1d1d; color:#fecaca;}
+.alert.success{background:#102a17; border-color:#14532d; color:#bbf7d0;}
+.alert.warning{background:#3b2f0a; border-color:#92400e; color:#fde68a;}
+
+/* ===== END style.css ===== */
+
+
+/* ===== BEGIN menu_taxonomies.css ===== */
+/* menu_taxonomies.css - Ürünler altına Kategori/Marka dropdown */
+.has-dropdown { position: relative; }
+.has-dropdown > a::after {
+  content: "▾"; margin-left: .35rem; font-size: .8em; opacity: .75;
+}
+.has-dropdown > .dropdown-menu {
+  position: absolute; top: 100%; left: 0;
+  background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  min-width: 200px; padding: .25rem 0; margin-top: .25rem;
+  display: none; z-index: 9999;
+}
+.has-dropdown:hover > .dropdown-menu,
+.has-dropdown.open > .dropdown-menu { display: block; }
+.dropdown-menu li { list-style: none; }
+.dropdown-menu li a {
+  display: block; padding: .6rem .9rem; text-decoration: none;
+  color: inherit; white-space: nowrap;
+}
+.dropdown-menu li a:hover { background: #f5f5f5; }
+@media (hover: none) {
+  /* Mobile: sadece .open sınıfı ile aç */
+  .has-dropdown:hover > .dropdown-menu { display: none; }
+}
+
+/* ===== END menu_taxonomies.css ===== */
+
+
+/* ===== BEGIN burak_ui.css ===== */
+/* Bitrix24-like UI Theme
+   Drop-in stylesheet. Include after your main assets/style.css:
+   <link rel="stylesheet" href="assets/bitrix24.css">
+*/
+
+:root{
+  --bz-bg: linear-gradient(135deg, #4facfe 0%, #8e44ad 100%);
+  --bz-card: #ffffff;
+  --bz-border: #e5e9f2;
+  --bz-text: #1f2937;
+  --bz-muted: #6b7280;
+  --bz-primary: #2ea7f0;  /* azure/cyan */
+  --bz-primary-600: #1c93da;
+  --bz-primary-700: #157fbe;
+  --bz-success: #16a34a;
+  --bz-warning: #f59e0b;
+  --bz-danger: #ef4444;
+  --bz-shadow: 0 8px 24px rgba(28,147,218,0.08), 0 2px 6px rgba(0,0,0,0.06);
+  --bz-radius: 14px;
+}
+
+html, body{
+  min-height: 100vh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background: var(--bz-bg);
+  color: var(--bz-text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.header, header, .topbar{
+  background: linear-gradient(90deg, var(--bz-primary), var(--bz-primary-600));
+  color:#fff;
+  box-shadow: var(--bz-shadow);
+}
+.header a, header a, .topbar a{ color: #fff; }
+
+.card{
+  background: var(--bz-card) !important;
+  border: 1px solid var(--bz-border);
+  border-radius: var(--bz-radius);
+  box-shadow: var(--bz-shadow);
+  padding: 18px;
+}
+.card h1, .card h2, .card h3{ color: var(--bz-text); margin-top:0; }
+
+.row{ display:flex; align-items:center; gap:12px; }
+.grid{ display:grid; gap:12px; }
+.grid.g2{ grid-template-columns: repeat(2,minmax(0,1fr)); }
+.grid.g3{ grid-template-columns: repeat(3,minmax(0,1fr)); }
+.grid.g4{ grid-template-columns: repeat(4,minmax(0,1fr)); }
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 14px;
+  border-radius: 12px;
+  border:1px solid var(--bz-border);
+  background:#fff;
+  color: var(--bz-text);
+  font-weight:600;
+  transition: all .2s ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02);
+}
+.btn:hover{ transform: translateY(-1px); box-shadow: var(--bz-shadow); }
+.btn.primary{
+  background: var(--bz-primary);
+  border-color: transparent;
+  color:#fff;
+}
+.btn.primary:hover{ background: var(--bz-primary-600); }
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+input[type="text"], input[type="number"], input[type="date"], input[type="password"], select, textarea, input, select{
+  background:#fff;
+  border:1px solid var(--bz-border);
+  border-radius: 10px;
+  padding:10px 12px;
+  outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+input:focus, select:focus, textarea:focus{
+  border-color: var(--bz-primary);
+  box-shadow: 0 0 0 3px rgba(46,167,240,.15);
+}
+
+table{ width:100%; border-collapse:separate; border-spacing:0; background:#fff; border-radius: 14px; overflow:hidden; }
+table tr th{
+  background: #f0f6ff;
+  color:#0f172a;
+  text-align:left;
+  font-weight:700;
+  padding:12px 14px;
+  border-bottom:1px solid var(--bz-border);
+}
+table tr td{
+  padding:12px 14px;
+  border-bottom:1px solid var(--bz-border);
+  vertical-align:middle;
+}
+table tr:nth-child(even) td{ background:#fafbff; }
+table tr:hover td{ background:#f6faff; }
+th.right, td.right{ text-align:right; }
+
+.tag{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 10px; border-radius:999px; font-weight:600; font-size:11px;
+  background:#eef2ff; color:#1f2937; border:1px solid #e5e7eb;
+}
+.tag.tedarik{ background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+.tag.kaynak{ background:#ecfeff; color:#0c4a6e; border-color:#a5f3fc; }
+.tag.boya{ background:#f0fdf4; color:#065f46; border-color:#bbf7d0; }
+.tag.test{ background:#fff1f2; color:#9f1239; border-color:#fecdd3; }
+.tag.paketleme{ background:#fefce8; color:#854d0e; border-color:#fde68a; }
+.tag.sevkiyat{ background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.tag.teslim\ edildi{ background:#ecfdf5; color:#047857; border-color:#a7f3d0; }
+
+.card .row input[type="search"], .card .row input[type="text"][name="q"]{ min-width:260px; }
+
+.card.login, .card:has(form[method="post"]) { backdrop-filter: blur(6px); }
+
+.progress{position:relative;height:16px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:4px}
+.progress .bar{position:absolute;left:0;top:0;height:100%;width:0;transition:width .5s ease;
+  background-image:linear-gradient(45deg, rgba(255,255,255,.25) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.25) 50%, rgba(255,255,255,.25) 75%, transparent 75%, transparent);
+  background-size:20px 20px; animation:progress-stripes 1.2s linear infinite;
+}
+@keyframes progress-stripes{from{background-position:0 0} to{background-position:40px 0}}
+.progress .text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f172a}
+.progress.complete .bar{animation:none;background-image:none}
+
+.mt{ margin-top:12px; } .mb{ margin-bottom:12px; }
+
+/* Fix: Input background and text color for better readability */
+input[type="text"], input[type="search"], input[type="number"], 
+input[type="date"], input[type="password"], select, textarea {
+    background: #ffffff !important; /* Açık gri */
+    color: #757575 !important;         /* Siyah yazı */
+}
+
+/* Extra fix: inputs without explicit type (e.g., <input name="q">) */
+input[name="q"],
+input:not([type]) {
+    background: #ffffff !important;
+    color: #757575 !important;
+}
+
+/* Placeholder contrast */
+input::placeholder { color: #6b7280 !important; }
+
+/* Ürünler, siparişler ve müşteriler üst bar yan yana hizalama */
+.row.mb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.row.mb > form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* === Top action bar (Yeni ... + Arama) stronger layout === */
+.row.mb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+/* Children should not stretch full width */
+.row.mb > * {
+    flex: 0 0 auto;
+}
+.row.mb > form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+}
+/* Inputs inside the top bar shouldn't be 100% width */
+.row.mb > form input[type="text"],
+.row.mb > form input[type="search"],
+.row.mb > form input[name="q"],
+.row.mb > form select {
+    width: 280px !important;
+    max-width: 40vw;
+}
+/* Ensure the search button doesn't grow */
+.row.mb .btn {
+    flex: 0 0 auto;
+}
+
+/* === Explicit one-line layout for 'Yeni Ürün' + search form === */
+.row.mb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.row.mb > a,
+.row.mb > form {
+    flex: 0 0 auto;
+}
+
+.row.mb > form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.row.mb > form input[name="q"] {
+    width: 280px !important;
+    max-width: 40vw;
+}
+
+.row.mb > form .btn {
+    flex: 0 0 auto;
+}
+
+
+/* === WorkPilot Dashboard — Mac/iOS style tiles === */
+.tile-grid{ 
+  display:grid; 
+  grid-template-columns: repeat(3,minmax(0,1fr)); 
+  gap:16px; 
+}
+@media (max-width: 1100px){ .tile-grid{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 720px){ .tile-grid{ grid-template-columns: 1fr; } }
+
+.tile{
+  position:relative;
+  border-radius: 22px;
+  padding: 18px;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f5f3ff 100%);
+  box-shadow: 0 10px 24px rgba(17,24,39,.12), inset 0 1px 0 rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.5);
+  overflow:hidden;
+  transition: transform .18s ease, box-shadow .18s ease;
+  cursor:pointer;
+}
+.tile:hover{ transform: translateY(-2px); box-shadow: 0 16px 36px rgba(17,24,39,.18); }
+.tile:active{ transform: translateY(0); }
+
+.tile .icon{
+  width:42px; height:42px; border-radius:12px;
+  display:grid; place-items:center;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.8);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.tile .title{ margin:10px 0 0; font-weight:700; font-size:16px; color:#0f172a; }
+.tile .value{ font-size:48px; font-weight:800; line-height:1; margin-top:6px; letter-spacing:-.02em; color:#0b1220; }
+
+/* subtle gloss pattern like iOS */
+.tile::after{
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(1200px 400px at -10% -10%, rgba(255,255,255,.45), transparent 60%),
+              radial-gradient(800px 300px at 120% 120%, rgba(255,255,255,.2), transparent 55%);
+  pointer-events:none;
+}
+
+/* Color variants */
+.tile.t-blue{ background: linear-gradient(135deg,#dbeafe 0%,#e9d5ff 100%); }
+.tile.t-yellow{ background: linear-gradient(135deg,#fef3c7 0%,#fde68a 100%); }
+.tile.t-pink{ background: linear-gradient(135deg,#ffe4e6 0%,#fbcfe8 100%); }
+.tile.t-teal{ background: linear-gradient(135deg,#ccfbf1 0%,#bfdbfe 100%); }
+
+.tile a.stretch{ position:absolute; inset:0; z-index:1; }
+
+/* Quick actions bar styled like macOS widgets */
+.quick-actions{
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(17,24,39,.12);
+}
+.quick-actions h3{ margin: 0 0 10px; }
+.quick-actions .btn{ border-radius: 12px; }
+
+/* === WorkPilot Dashboard — Extended widgets & animations === */
+.tile{ will-change: transform, box-shadow; }
+.tile:hover{ transform: translateY(-4px) scale(1.01); }
+
+/* More color variants */
+.tile.t-green{ background: linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%); }
+.tile.t-orange{ background: linear-gradient(135deg,#ffedd5 0%,#fed7aa 100%); }
+.tile.t-purple{ background: linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%); }
+.tile.t-slate{ background: linear-gradient(135deg,#e5e7eb 0%,#f3f4f6 100%); }
+
+/* Widget cards */
+.widgets{ display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:16px; margin-top:18px; }
+@media (max-width: 1100px){ .widgets{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 720px){ .widgets{ grid-template-columns: 1fr; } }
+
+.widget{
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(17,24,39,.12);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.widget h4{ margin: 0 0 12px; font-size: 15px; font-weight: 700; color:#0f172a; }
+
+.list{ margin:0; padding:0; list-style:none; }
+.list li{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px dashed rgba(15,23,42,.12); }
+.list li:last-child{ border-bottom:none; }
+.badge{ font-size:12px; padding:4px 8px; border-radius:999px; background:#eef2ff; color:#312e81; }
+.kicker{ font-size:12px; color:#475569; }
+
+.calendar-box{ display:flex; align-items:center; gap:12px; }
+.calendar-box .day{
+  width:64px; height:64px; border-radius:16px; display:grid; place-items:center;
+  background: linear-gradient(180deg,#fff 0%,#f3f4f6 100%);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  font-weight:800; font-size:22px; color:#0b1220;
+}
+.calendar-box .meta{ line-height:1.2; }
+.calendar-box .meta .dow{ font-weight:700; }
+.calendar-box .meta .date{ font-size:13px; color:#64748b; }
+
+
+/* Badge color helpers */
+.badge.danger{ background:#fecaca; color:#991b1b; }
+.badge.warn{ background:#fed7aa; color:#9a3412; }
+.badge.ok{ background:#bbf7d0; color:#166534; }
+
+
+/* Badge color variants */
+.badge.danger{ background:#fee2e2; color:#991b1b; }
+.badge.warn{ background:#ffedd5; color:#9a3412; }
+.badge.ok{ background:#dcfce7; color:#065f46; }
+.widget .see-all{ display:inline-block; margin-top:8px; font-size:12px; text-decoration:underline; }
+
+
+/* === Calendar styles === */
+.calendar{ margin-top:16px; }
+.cal-head{ display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; margin-bottom:8px; }
+.cal-head > div{ text-align:center; font-weight:700; color:#0f172a; }
+.cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+.cal-cell{
+  background: rgba(255,255,255,.65);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius: 12px;
+  min-height: 110px;
+  padding:8px;
+  position:relative;
+  box-shadow: 0 6px 14px rgba(17,24,39,.08);
+}
+.cal-empty{ background: transparent; border: none; box-shadow:none; }
+.cal-date{ position:absolute; top:6px; right:8px; font-weight:800; font-size:12px; color:#64748b; }
+.cal-today{ outline: 2px solid #22c55e; }
+.cal-events{ margin:20px 0 0; padding:0 0 0 12px; }
+.cal-events li{ margin:4px 0; }
+.cal-events a{ font-size:13px; text-decoration:underline; }
+@media (max-width: 900px){ .cal-cell{ min-height: 96px; } .cal-events a{ font-size:12px; } }
+
+/* ===== END burak_ui.css ===== */
+
+
+
+/* === Modern select style (ren-select) === */
+select.ren-select{
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background:#fff;
+  border:1px solid var(--bz-border);
+  border-radius:10px;
+  padding:10px 40px 10px 12px; /* extra right space for arrow */
+  line-height:1.25;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5' fill='none' stroke='%231f2937' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:14px;
+}
+select.ren-select:focus{
+  border-color: var(--bz-primary);
+  box-shadow: 0 0 0 3px rgba(46,167,240,.15);
+  outline:none;
+}
+/* Hide legacy arrow in old IE (harmless elsewhere) */
+select.ren-select::-ms-expand{ display:none; }
+
+
+/* ===== FINAL OVERRIDE LAYER (Do not remove) ===== */
+/* Force primary button color to bordo and prevent upstream overrides */
+:root{
+  --bz-primary: #006fe7;
+  --bz-primary-600: #005bbc;
+  --bz-primary-700: #004187;
+}
+.btn.primary{ background: var(--bz-primary) !important; border-color: transparent !important; color:#fff !important; }
+.btn.primary:hover{ background: var(--bz-primary-600) !important; }
+
+/* Ensure topbar/header keeps intended gradient from burak_ui */
+.header, header, .topbar{ background: linear-gradient(90deg, var(--bz-primary), var(--bz-primary-600)) !important; color:#fff !important; }
+.header a, header a, .topbar a{ color:#fff !important; }
+
+/* Keep card/table visual from burak_ui when generic selectors clash */
+.card{ background: var(--bz-card) !important; border: 1px solid var(--bz-border) !important; border-radius: var(--bz-radius) !important; box-shadow: var(--bz-shadow) !important; }
+table tr th{ background:#f0f6ff !important; color:#0f172a !important; }
+
+/* Keep search input min width in top action bar */
+.card .row input[type="search"], .card .row input[type="text"][name="q"]{ min-width:260px !important; }
+
+
+/* === Sil Butonları için CSS Override === */
+button.btn[style*="#450a0a"],
+button.btn[style*="#7f1d1d"] {
+  background: #800000 !important;  /* Bordo */
+  border-color: #660000 !important;
+  color: #fff !important;
+}
+button.btn[style*="#450a0a"]:hover,
+button.btn[style*="#7f1d1d"]:hover {
+  background: #a00000 !important; /* Hover için daha açık bordo */
+}
+
+
+/* Flex row for 3-column and 2-column layouts */
+.row-flex {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.row-flex > div {
+  flex: 1;
+}
+
+
+/* === WorkPilot Form Row Helpers === */
+.row-flex{
+  display:flex !important;
+  gap:12px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.row-flex > div{
+  flex:1 1 0;
+  min-width:220px;
+}
+/* 2'li ve 3'lü hızlı düzenler */
+.row-flex.g2 > div{ flex-basis: calc(50% - 6px); }
+.row-flex.g3 > div{ flex-basis: calc(33.333% - 8px); }
+
+/* İçerideki input/textarea/select'ler tam genişlik kalsın */
+.row-flex input,
+.row-flex select,
+.row-flex textarea{ width:100%; }
+
+
+/* === UNIFIED CONTENT FONT SYSTEM (Header ve index.php HARİÇ) === */
+/* Tek noktadan kontrol: sadece şu değişkeni değiştir */
+:root {
+  --content-fz: 12px; /* Burayı 12px, 15px, 16px... şeklinde değiştir */
+}
+
+/* Header/topbar ve index.php hariç; içerikte tek boyuta sabitle */
+body:not(.index) .wrap,
+body:not(.index) .card,
+body:not(.index) .grid,
+body:not(.index) .row,
+body:not(.index) .widgets,
+body:not(.index) .widget,
+body:not(.index) .tile,
+body:not(.index) table,
+body:not(.index) .list,
+body:not(.index) .quick-actions,
+body:not(.index) .calendar,
+body:not(.index) .cal-grid,
+body:not(.index) .cal-cell {
+  font-size: var(--content-fz) !important;
+}
+
+/* Başlıklar ve küçük metin rozetleri dahil hepsini tek boyuta getir */
+body:not(.index) .wrap :is(h1,h2,h3,h4,h5,h6,p,span,li,td,th,button,
+input,select,textarea,small,.tag,.badge,.kicker,.progress .text) {
+  font-size: var(--content-fz) !important;
+}
+
+/* Header/topbar'ı özellikle dışarıda bırak (güvence) */
+header, .topbar, .header {
+  font-size: unset !important;
+}
+
+
+
+
+/* === DROPDOWN HOVER STABILITY FIX (override) === */
+/* Ana barlarda taşma kapatılmasın */
+.header, header, .topbar, .nav { overflow: visible !important; }
+
+.has-dropdown { position: relative; overflow: visible !important; }
+
+/* Hover köprüsü: imleç aşağı inerken boşlukta kapanmasın */
+.has-dropdown::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: 100%;
+  height: 14px; /* gerekirse arttır */
+}
+
+/* Eski kurallardaki margin-top boşluğunu kaldır */
+.has-dropdown > .dropdown-menu {
+  display: block !important; /* önceki display:none'u geçersiz kıl */
+  margin-top: 0 !important;  /* boşluğu kaldır */
+  top: 100% !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity .15s linear, transform .15s ease;
+  z-index: 9999;
+}
+
+/* Açık durumlar: hover, klavye odak veya JS ile .open */
+.has-dropdown:hover > .dropdown-menu,
+.has-dropdown:focus-within > .dropdown-menu,
+.has-dropdown.open > .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Touch cihazlarda: sadece .open ile aç */
+@media (hover: none) {
+  .has-dropdown:hover > .dropdown-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+  .has-dropdown.open > .dropdown-menu { opacity: 1; visibility: visible; pointer-events: auto; }
+}
+
+/* === Termin badge minimal === */
+.badge {display:inline-block;padding:4px 10px;border-radius:999px;font-size:.8rem;font-weight:700;line-height:1}
+.badge.red{background:#ef4444;color:#fff}
+.badge.orange{background:#f59e0b;color:#111}
+.badge.green{background:#22c55e;color:#fff}
+.badge.gray{background:#e5e7eb;color:#111}
+.termin-badge{ display:flex; align-items:flex-start; }
+
+/* date line above badge */
+.badge-date{font-size:11px;color:#64748b;margin-bottom:4px}
+.termin-badge{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+
+
+
+/* === MOBILE RESPONSIVE EXTENSIONS === */
+@media (max-width: 768px) {
+  .row-flex.g2 > div,
+  .row-flex.g3 > div {
+    flex-basis: 100% !important;
+    min-width: 100% !important;
+  }
+  .grid.g2, .grid.g3, .grid.g4 { grid-template-columns: 1fr !important; }
+  .widgets, .tile-grid { grid-template-columns: 1fr !important; }
+
+  .card, .widget, .tile {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  table tr th, table tr td {
+    padding: 8px !important;
+    font-size: 13px !important;
+  }
+  input, select, textarea, .btn {
+    font-size: 14px !important;
+    min-height: 44px !important; /* Dokunmatik alan */
+  }
+  .row.mb > form input[name="q"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .row.mb { flex-direction: column !important; align-items: stretch !important; }
+  .row.mb > * { width: 100% !important; }
+}
+
+@media (max-width: 480px) {
+  body { font-size: 14px !important; }
+  h1,h2,h3,h4 { font-size: 1.2em !important; }
+  .btn { padding: 10px 12px !important; }
+}
+
+
+
+/* === FULL MOBILE RESPONSIVE FIXES (2025-08) === */
+html, body { overflow-x: hidden; max-width: 100%; }
+
+/* NAV: mobilde menü satırlara insin */
+@media (max-width: 768px) {
+  .nav { flex-wrap: wrap !important; justify-content: center !important; }
+  .nav a { flex: 1 1 100% !important; text-align: center; margin: 4px 0; }
+}
+
+/* Tablo kapsayıcı: yatay kaydırılabilir */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-responsive table { min-width: 700px; }
+
+/* Grid ve row-flex: tek kolon */
+@media (max-width: 768px) {
+  .grid.g2, .grid.g3, .grid.g4,
+  .widgets, .tile-grid { grid-template-columns: 1fr !important; }
+
+  .row-flex,
+  .row-flex.g2,
+  .row-flex.g3 { flex-direction: column !important; }
+  .row-flex > div { min-width: 100% !important; flex: 1 1 100% !important; }
+
+  .card, .widget, .tile {
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .row.mb { flex-direction: column !important; align-items: stretch !important; }
+  .row.mb > * { width: 100% !important; margin-bottom: 8px; }
+
+  table tr th, table tr td {
+    padding: 8px !important;
+    font-size: 13px !important;
+  }
+  input, select, textarea, .btn {
+    font-size: 14px !important;
+    min-height: 44px !important;
+  }
+}
+
+/* Çok küçük ekran (480px altı) */
+@media (max-width: 480px) {
+  body { font-size: 14px !important; }
+  h1,h2,h3,h4 { font-size: 1.1em !important; }
+  .btn { padding: 10px 12px !important; font-size: 14px !important; }
+}
+
+
+/* === HAMBURGER: .menu-list destek (2025-08-22) === */
+@media (max-width: 768px) {
+  .nav { position: relative; }
+  .nav .menu-toggle { display:inline-block !important; cursor:pointer; font-size:26px; padding:8px 12px; color:#fff; }
+  .nav .menu-list {
+    display: none;
+    flex-direction: column;
+    position: absolute; top:100%; left:0; width:100%;
+    background:#0b1220; border-top:1px solid #222; z-index:9999; padding:8px 0;
+  }
+  .nav .menu-list.show { display:flex !important; }
+  .nav .menu-list > a,
+  .nav .menu-list .dropdown > .dropdown-toggle {
+    display:block; padding:12px; border-bottom:1px solid #222; background:#111827; color:#fff;
+  }
+  .nav .menu-list .dropdown .menu { position:static; display:none; background:#0f172a; border:none; padding:6px 0; }
+  .nav .menu-list .dropdown.open .menu { display:block; }
+}
+@media (min-width: 769px) {
+  .nav .menu-toggle { display:none !important; }
+  .nav .menu-list { display:flex !important; position:static !important; flex-direction:row !important; background:none !important; }
+  .nav .menu-list > a,
+  .nav .menu-list .dropdown > .dropdown-toggle { background:transparent !important; border:none !important; }
+}
+
+
+/* === NAV LINK COLOR OVERRIDE (WHITE) === */
+.nav a, .header a, header a, .topbar a {
+  color: #ffffff !important;
+}
+.nav a:hover, .header a:hover, header a:hover, .topbar a:hover {
+  color: #f5f5f5 !important;
+}
+
+/* === PRIMARY BUTTON SARI → TURUNCU === */
+.btn.primary {
+  background: linear-gradient(135deg, #FFD54F 0%, #EC7323 100%) !important;
+  border: none !important;
+  color: #fff !important;
+}
+.btn.primary:hover {
+  background: linear-gradient(135deg, #eea822 0%, #cf5807 100%) !important;
+  color: #fff !important;
+}
+
+/* === BACKGROUND DEGRADE TURUNCU-SARI === */
+:root {
+  --bz-bg: linear-gradient(135deg, #EC7323 0%, #FFD54F 100%) !important;
+}
+
+
+/* === PRIMARY BUTTON AÇIK TURUNCU → TURUNCU === */
+.btn.primary {
+  background: #f6a04d !important;  /* açık turuncu */
+  border: none !important;
+  color: #fff !important;
+}
+.btn.primary:hover {
+  background: #ec7323 !important; /* koyu turuncu */
+  color: #fff !important;
+}
+
+
+/* === RENPLAN ORANGE FOCUS: STRONG BOOTSTRAP OVERRIDES === */
+/* Put this block AFTER Bootstrap and all other CSS. */
+
+:root{
+  /* Override Bootstrap focus + brand tokens */
+  --bs-primary: #EC7323 !important;
+  --bs-primary-rgb: 236,115,35 !important;
+  --bs-focus-ring-width: .25rem !important;
+  --bs-focus-ring-color: rgba(236,115,35,.35) !important;
+}
+
+/* Universal focus ring reset (handles Bootstrap .form-control, native inputs, and custom comps) */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+.form-control:focus,
+.form-control:focus-visible,
+.form-select:focus,
+.form-select:focus-visible,
+.form-check-input:focus,
+.form-check-input:focus-visible,
+.input-group .form-control:focus,
+.input-group .form-select:focus {
+  border-color: #EC7323 !important;
+  outline: 0 !important;
+  box-shadow:
+    0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color) !important;
+}
+
+/* Edge cases some themes add */
+.was-validated .form-control:focus,
+.form-control.is-valid:focus,
+.form-control.is-invalid:focus {
+  border-color: #EC7323 !important;
+  box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color) !important;
+}
+
+/* Remove default blue outline in Firefox */
+:-moz-focusring {
+  outline: 0 !important;
+}
+
+/* WebKit autofill (keeps orange border when autofilled) */
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color) inset,
+                      0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color) !important;
+  border-color: #EC7323 !important;
+}
+
+/* Buttons ring to keep consistency */
+.btn:focus,
+.btn:focus-visible {
+  outline: 0 !important;
+  box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color) !important;
+}
+
