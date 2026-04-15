@@ -1,4 +1,29 @@
 <?php
+// --- MANUEL PSR-4 AUTOLOADER (Composer'a bağımlı kalmamak için) ---
+spl_autoload_register(function ($class) {
+    // Projemizin isim uzayı (namespace) öneki
+    $prefix = 'App\\';
+    
+    // Sınıfların bulunduğu ana dizin (helpers.php 'includes' içinde olduğu için ../app/ yapıyoruz)
+    $base_dir = __DIR__ . '/../app/'; 
+    
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return; // Sınıf App\ ile başlamıyorsa diğer autoloader'lara devret
+    }
+    
+    // Namespace'i dosya yoluna çevir
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    
+    // Dosya varsa dahil et
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
+// -------------------------------------------------------------------
+
+// (Aşağıda senin mevcut helpers.php kodların devam edecek...)
 // includes/helpers.php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
