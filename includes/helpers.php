@@ -1,29 +1,4 @@
 <?php
-// --- MANUEL PSR-4 AUTOLOADER (Composer'a bağımlı kalmamak için) ---
-spl_autoload_register(function ($class) {
-    // Projemizin isim uzayı (namespace) öneki
-    $prefix = 'App\\';
-    
-    // Sınıfların bulunduğu ana dizin (helpers.php 'includes' içinde olduğu için ../app/ yapıyoruz)
-    $base_dir = __DIR__ . '/../app/'; 
-    
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return; // Sınıf App\ ile başlamıyorsa diğer autoloader'lara devret
-    }
-    
-    // Namespace'i dosya yoluna çevir
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-    
-    // Dosya varsa dahil et
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-// -------------------------------------------------------------------
-
-// (Aşağıda senin mevcut helpers.php kodların devam edecek...)
 // includes/helpers.php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -56,9 +31,9 @@ if (!function_exists('pdo')) {
 }
 
 // Yardımcı fonksiyonlar
-function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-function redirect($to){ header('Location: '.$to); exit; }
-function method($m){ return $_SERVER['REQUEST_METHOD'] === strtoupper($m); }
+function h(?string $v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
+function redirect(string $to){ header('Location: '.$to); exit; }
+function method(string $m){ return $_SERVER['REQUEST_METHOD'] === strtoupper($m); }
 
 // CSRF
 if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
@@ -70,13 +45,13 @@ function csrf_input() {
 }
 
 // Action-based kullanım için (taxonomies.php gibi)
-function csrf_field($action = 'global') {
+function csrf_field(string $action = 'global') {
     echo '<input type="hidden" name="csrf" value="' . h($_SESSION['csrf']) . '">';
     echo '<input type="hidden" name="csrf_action" value="' . h($action) . '">';
 }
 
 // Basit kontrol (login.php gibi)
-function csrf_check($action = null, $onFailRedirect = null) {
+function csrf_check(?string $action = null, ?string $onFailRedirect = null) {
     $tokenMatch = (($_POST['csrf'] ?? '') === ($_SESSION['csrf'] ?? ''));
     
     // Eğer action belirtilmişse, onu da kontrol et
@@ -102,7 +77,7 @@ function csrf_check($action = null, $onFailRedirect = null) {
 
 // --- ROLLER ---
 function valid_roles(){ return ['admin','sistem_yoneticisi','musteri','plasiyer', 'uretim', 'muhasebe']; }
-function role_label($role){
+function role_label(string $role){
     $map = [
         'admin'             => 'Yönetici (Tam Yetki)',
         'sistem_yoneticisi' => 'Sistem Yöneticisi',
@@ -127,9 +102,9 @@ function current_user(){
     return null;
 }
 function current_role(){ return $_SESSION['urole'] ?? 'musteri'; }
-function has_role($role){ return current_role() === $role; }
-function require_login(){ if(!current_user()) redirect('login.php'); }
-function require_role($roles){
+function has_role(string $role){ return current_role() === $role; }
+function require_login(){ if(!current_user()) redirect('gir.php'); }
+function require_role(mixed $roles){
     if (!is_array($roles)) { $roles = [$roles]; }
     if (!in_array(current_role(), $roles, true)) { http_response_code(403); die('Yetkisiz erişim'); }
 }
@@ -180,13 +155,13 @@ function role_caps(){
         ],
     ];
 }
-function can($cap){
+function can(string $cap){
     $role = current_role();
     $caps = role_caps()[$role] ?? [];
     if (!empty($caps['*'])) return true;
     return !empty($caps[$cap]);
 }
-function require_cap($cap){ if (!can($cap)) { http_response_code(403); die('Bu işlem için yetkiniz yok'); } }
+function require_cap(string $cap){ if (!can($cap)) { http_response_code(403); die('Bu işlem için yetkiniz yok'); } }
 
 // --- Sipariş yardımcıları ---
 function next_order_code(){
@@ -195,7 +170,7 @@ function next_order_code(){
     $next = max($max, (int)ORDER_CODE_START) + 1;
     return (string)$next;
 }
-function order_total($order_id){
+function order_total(int|string $order_id){
     $db = pdo();
     $stmt = $db->prepare("SELECT SUM(qty*price) FROM order_items WHERE order_id=?");
     $stmt->execute([$order_id]);
@@ -206,17 +181,17 @@ function order_total($order_id){
 function todayYmd(){ return (new DateTime('now', new DateTimeZone('Europe/Istanbul')))->format('Ymd'); }
 
 // URL ve asset fonksiyonları
-function url($path=''){
+function url(string $path=''){
     $base = rtrim(BASE_URL, '/');
     $p = ltrim($path, '/');
     return $base . '/' . $p;
 }
-function asset_url($path=''){ return url($path); }
+function asset_url(string $path=''){ return url($path); }
 
 //-------------
 // site_url fonksiyonu
 if (!function_exists('site_url')) {
-    function site_url($path = '') {
+    function site_url(string $path = '') {
         // BASE_URL varsa onu kullan, yoksa root'tan başla
         $base = defined('BASE_URL') ? rtrim(BASE_URL, '/') : '';
         return $base . '/' . ltrim($path, '/');
@@ -238,7 +213,7 @@ function generate_next_ren(PDO $pdo){
     return $prefix . str_pad((string)$next, 4, '0', STR_PAD_LEFT);
 }
 
-function parse_post_date($key){
+function parse_post_date(string $key){
     if (empty($_POST[$key])) return null;
     $in = trim($_POST[$key]);
     $in = str_replace(['.', '/', ' '], ['-','-','-'], $in);
@@ -278,7 +253,7 @@ if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['uid'])) {
     $cu_role = $_SESSION['urole'] ?? '';
     if ($cu_role === 'musteri') {
         // Müşterinin URL'den girebileceği izinli sayfalar:
-        $allowed_pages = ['index.php', 'orders.php', 'order_view.php', 'logout.php', 'login.php', 'order_edit.php', 'order_pdf.php'];
+        $allowed_pages = ['index.php', 'orders.php', 'order_view.php', 'logout.php', 'gir.php', 'order_edit.php', 'order_pdf.php'];
         $current_file = basename($_SERVER['SCRIPT_NAME']);
         
         if (!in_array($current_file, $allowed_pages)) {

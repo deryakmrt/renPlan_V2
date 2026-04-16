@@ -1,0 +1,27 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Zorunlu HTTPS Yönlendirmesi
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # 1. PHP ve Sunucu versiyonunu gizleme
+    Header always unset X-Powered-By
+    Header always unset Server
+
+    # 2. HSTS Koruması
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+
+    # 3. Clickjacking Koruması
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # 4. MIME-Sniffing Koruması
+    Header always set X-Content-Type-Options "nosniff"
+
+    # 5. Tarayıcı Özellik Kısıtlaması
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+    # 6. Temel CSP (Esnetilmiş)
+    Header always set Content-Security-Policy "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+</IfModule>
