@@ -1,0 +1,345 @@
+/* =========================================
+   SİPARİŞ MODÜLÜ ÖZEL STİLLERİ (orders.css)
+   ========================================= */
+
+/* =========================================
+   1. EFSANE KART BAŞLIĞI (Görselindeki Sol Çizgili Tasarım)
+   ========================================= */
+.card-header-panel {
+    background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%) !important;
+    border-bottom: 2px solid #fbd38d !important;
+    border-left: 6px solid var(--orange-500) !important; /* Görselindeki o harika sol çizgi */
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* =========================================
+   2. ARAMA VE DURUM ÇUBUĞU (Geniş Arama, Dar Seçici)
+   ========================================= */
+.header-center .search-form {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+}
+
+/* Arama Kutusu Hapı (Genişletildi) */
+.header-center .search-input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 50px !important;
+    padding: 8px 16px !important;
+    height: 38px !important;
+    width: 320px !important; /* Eski: 220px, Yeni: 320px (Kocaman oldu) */
+    font-size: 13px !important;
+    outline: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+}
+.header-center .search-input:focus {
+    border-color: var(--orange-400) !important;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1) !important;
+}
+
+/* Durum Seçici Hapı (Daraltıldı) */
+.header-center select[name="status"] {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 50px !important;
+    padding: 0 10px 0 14px !important; /* Padding azaltıldı */
+    height: 38px !important;
+    max-width: 140px !important; /* Gereksiz uzaması engellendi */
+    font-size: 13px !important;
+    color: var(--slate-600) !important;
+    outline: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    cursor: pointer !important;
+}
+
+/* Filtrele Butonu Hapı */
+.header-center .search-btn {
+    background: #ffffff !important;
+    color: var(--slate-700) !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 50px !important;
+    padding: 0 20px !important;
+    height: 38px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    transition: all 0.2s !important;
+}
+.header-center .search-btn:hover {
+    background: var(--slate-50) !important;
+    border-color: var(--slate-400) !important;
+}
+
+/* =========================================
+   3. TOPLU İŞLEM MÜDAHALESİ (Silik & Turuncumsu Hover Efektli)
+   ========================================= */
+.header-right form {
+    background: #fff7ed !important; /* Çok uçuk turuncu arka plan */
+    border: 1px solid #fed7aa !important; /* Yumuşak turuncu sınır */
+    border-radius: 50px !important;
+    padding: 4px 6px 4px 16px !important;
+    height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    opacity: 0.60 !important; /* Göz yormasın diye %60 silik */
+    transition: all 0.3s ease !important; /* Yumuşak geçiş */
+}
+
+/* Mouse ile üzerine gelince netleşsin ve parlasın */
+.header-right form:hover {
+    opacity: 1 !important; 
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15) !important;
+}
+
+.header-right form > span {
+    color: #fb923c !important; /* Turuncu başlık yazısı */
+}
+
+.header-right select[name="bulk_status"] {
+    background: transparent !important;
+    border: none !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    outline: none !important;
+    cursor: pointer !important;
+    color: #ea580c !important; /* Daha koyu turuncu yazılar */
+}
+
+.header-right button {
+    background: #ffedd5 !important; /* Açık turuncu buton */
+    color: #ea580c !important; /* Koyu turuncu yazı */
+    border: 1px solid #fed7aa !important;
+    border-radius: 50px !important;
+    padding: 0 16px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: 0.2s !important;
+}
+.header-right button:hover {
+    background: #fed7aa !important; /* Hover olunca biraz daha koyu */
+    color: #c2410c !important;
+}
+/* =========================================
+   4. ARAMA ÇUBUĞUNU ORTALAMA VE ESNEME
+   ========================================= */
+.header-center {
+    flex: 1; /* Ortadaki boşluğu doldurur */
+    display: flex;
+    justify-content: center; /* Çubuğu tam merkeze alır */
+}
+/* =========================================
+   5. FİLTRE HAPLARI VE TABLO ARASINDAKİ BOŞLUĞU YOK ETME
+   ========================================= */
+.status-quick-filter {
+    margin-bottom: 8px !important; /* Eskiden 20px'di, devasa boşluğu kapattık */
+}
+/* =========================================
+   6. ANİMASYONLU ÜRETİM DURUM BARLARI (WP-STAT)
+   ========================================= */
+.wpstat-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 120px;
+    margin: 0 auto;
+}
+
+.wpstat-track {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background: #e2e8f0; /* Arkadaki gri yol */
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Animasyonlu Dolum Barı */
+.wpstat-bar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    border-radius: 50px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    background-size: 200% 200%;
+    animation: wpstat-pulse 2s infinite linear;
+}
+
+/* Yüzde ve İkon Metni */
+.wpstat-pct {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0f172a;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.9); /* Yazı her renkte okunsun diye beyaz parlama */
+    gap: 4px;
+    z-index: 2;
+}
+
+.wpstat-ico svg {
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+}
+
+.wpstat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* 🌈 Göz Alıcı Bar Renkleri (Gradient) */
+.wpstat-red    { background: linear-gradient(90deg, #f87171, #ef4444); }
+.wpstat-orange { background: linear-gradient(90deg, #fb923c, #f97316); }
+.wpstat-amber  { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.wpstat-yellow { background: linear-gradient(90deg, #facc15, #eab308); }
+.wpstat-lime   { background: linear-gradient(90deg, #a3e635, #84cc16); }
+.wpstat-green  { background: linear-gradient(90deg, #4ade80, #22c55e); }
+.wpstat-teal   { background: linear-gradient(90deg, #2dd4bf, #14b8a6); }
+.wpstat-blue   { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.wpstat-purple { background: linear-gradient(90deg, #c084fc, #a855f7); }
+.wpstat-done   { background: linear-gradient(90deg, #34d399, #10b981); }
+
+/* Nefes Alma Animasyonu */
+@keyframes wpstat-pulse {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+    100% { filter: brightness(1); }
+}
+/* =========================================
+   7. TABLO KOLON GENİŞLİKLERİ VE BUTON ŞEKİLLERİ
+   ========================================= */
+
+/* Müşteri Kolonu (Genişletildi) */
+.orders-table th:nth-child(2),
+.orders-table td:nth-child(2) {
+    width: 25% !important;
+    min-width: 200px !important;
+}
+
+/* Üretim Durumu Kolonu (Daraltıldı) */
+.orders-table th:nth-child(5),
+.orders-table td:nth-child(5) {
+    width: 110px !important;
+    padding: 2px 8px !important;
+}
+
+/* İşlem Kolonu (Genişletildi ki butonlar uzasın) */
+.orders-table th:last-child,
+.orders-table td:last-child {
+    width: 140px !important; /* Kolonu yaydık, içindeki butonlar mecburen uzayacak */
+}
+
+/* İşlem Butonları (Top şeklinden Dikdörtgen+Radius şekline) */
+.orders-table td:last-child .btn {
+    border-radius: 8px !important; /* 15px'lik top görünümünü kırıp Apple tarzı radius verdik */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    transition: all 0.2s ease !important;
+}
+.orders-table td:last-child .btn:hover {
+    transform: translateY(-1px) !important; /* Üzerine gelince hafif yukarı zıplar */
+}
+
+/* =========================================
+   8. TIKLANABİLİR SATIR (HOVER EFEKTİ)
+   ========================================= */
+.order-row {
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+}
+.order-row:hover td {
+    background-color: var(--orange-50) !important; /* Satırın üstüne gelince tatlı bir turuncu parlama */
+}
+
+/* =========================================
+   9. NİHAİ LAYOUT - SIFIR YATAY SCROLL GARANTİSİ
+   ========================================= */
+
+/* 1. Ekranı Kilitleyen Ana Yapı */
+html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    position: relative;
+}
+.app-layout, .app-main {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+/* 2. Tablo Disiplini */
+.orders-table {
+    table-layout: auto !important; 
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Müşteri ve Proje: Genişliği biraz daha düşürdük ki diğerleri nefes alsın */
+.orders-table th:nth-child(2), .orders-table td:nth-child(2),
+.orders-table th:nth-child(3), .orders-table td:nth-child(3) {
+    width: 14% !important; /* %16'dan %14'e çektik */
+    min-width: 110px !important; /* min-width'i de düşürdük */
+}
+
+/* Üretim Durumu: Rozetler sığacak kadar en dar hali */
+.orders-table th:nth-child(5),
+.orders-table td:nth-child(5) {
+    width: 75px !important;
+    min-width: 75px !important;
+    padding: 2px !important;
+}
+
+/* Tarih Kolonları: Yazıların sığması için standartlaştırdık */
+.orders-table th:nth-child(6), .orders-table td:nth-child(6),
+.orders-table th:nth-child(7), .orders-table td:nth-child(7),
+.orders-table th:nth-child(8), .orders-table td:nth-child(8),
+.orders-table th:nth-child(9), .orders-table td:nth-child(9),
+.orders-table th:nth-child(10), .orders-table td:nth-child(10) {
+    width: 85px !important;
+    min-width: 85px !important;
+    font-size: 11px !important;
+}
+
+/* 3. İşlem Kolonu (Grid) - Daha kompakt hale getirdik */
+.orders-table th:last-child,
+.orders-table td:last-child {
+    width: 95px !important; /* 105'den 95'e düştü */
+    min-width: 95px !important;
+    padding: 4px 2px !important;
+}
+
+/* 6 Butonu 2x3 Grid */
+.orders-table td:last-child > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 24px) !important; /* Yüksekliği biraz azalttık */
+    gap: 3px !important;
+    width: 100% !important;
+}
+
+.orders-table td:last-child > div > div {
+    display: contents !important;
+}
+
+.orders-table td:last-child .btn {
+    width: 100% !important;
+    height: 100% !important;
+    font-size: 9px !important; /* Yazılar kutuya tam otursun */
+    font-weight: 800 !important;
+    border-radius: 4px !important;
+}
