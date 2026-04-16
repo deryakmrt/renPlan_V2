@@ -1,5 +1,14 @@
-<head><link rel="stylesheet" href="assets/auth-login.css"><link rel="stylesheet" href="/assets/auth-login.css?v=9">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="description" content="RenPlan ERP Sistemi - Kurumsal Giriş Ekranı">
+
+<link rel="stylesheet" href="assets/auth-login.css">
+<link rel="stylesheet" href="/assets/auth-login.css?v=9">
 <title>RenPlan - ERP Sistemi</title>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="auth-only">
 <?php
@@ -17,22 +26,31 @@ if (current_user()) { audit_log_action('login', 'auth', null, null, null, ['resu
   redirect('index.php'); }
 
 $error = '';
-if (method('POST')) {// CAPTCHA verify (stateless)
-$captcha_ok = false;
-$qa = isset($_POST['hc_a']) ? (int)$_POST['hc_a'] : 0;
-$qb = isset($_POST['hc_b']) ? (int)$_POST['hc_b'] : 0;
-$ts = isset($_POST['hc_ts']) ? (int)$_POST['hc_ts'] : 0;
-$sg = isset($_POST['hc_sig']) ? (string)$_POST['hc_sig'] : '';
-$ans = isset($_POST['hc_answer']) ? trim((string)$_POST['hc_answer']) : '';
-if ($ans !== '' && preg_match('/^\d+$/', $ans) === 1 && ($qa + $qb) === (int)$ans) {
-    $age = hc_now() - $ts;
-    if ($age >= 0 && $age <= 600) {
-        $expected = hc_hmac($qa.'|'.$qb.'|'.$ts);
-        if ((function_exists('hash_equals') && hash_equals($expected, $sg)) || (!function_exists('hash_equals') && $expected === $sg)) {
+if (method('POST')) {
+    // CLOUDFLARE TURNSTILE (GÖRÜNMEZ KALKAN) DOĞRULAMASI
+    $captcha_ok = false;
+    $turnstile_res = $_POST['cf-turnstile-response'] ?? '';
+    if ($turnstile_res !== '') {
+        $verify_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        $data = [
+            'secret' => '0x4AAAAAAC-UPNImPXkfNeaIiT_6jiDdQZc',
+            'response' => $turnstile_res,
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ];
+        $options = [
+            'http' => [
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => http_build_query($data)
+            ]
+        ];
+        $context = stream_context_create($options);
+        $response = @file_get_contents($verify_url, false, $context);
+        $res_data = json_decode($response, true);
+        if (isset($res_data['success']) && $res_data['success'] === true) {
             $captcha_ok = true;
         }
     }
-}
 if (!$captcha_ok) {
     $error = 'Robot doğrulaması başarısız. Lütfen tekrar deneyin.';
 } else {
@@ -73,21 +91,13 @@ if (!$captcha_ok) {
       <input name="username" required autofocus placeholder="Kullanıcı Adı" autocomplete="username">
       <input type="password" name="password" required placeholder="Şifre" autocomplete="current-password">
     </div>
-<div class="human-check" style="margin-top:12px;padding:12px;border:1px dashed #cbd5e1;border-radius:12px;background:transparent">
-  <?php list($qa,$qb,$qts) = [mt_rand(1,9), mt_rand(1,9), hc_now()]; $qsig = hc_hmac($qa.'|'.$qb.'|'.$qts); ?>
-  <label style="display:block;margin:0 0 6px 0;">Cevabı Aşağıya Yazınız:
-    <strong><?=hc_h($qa)?> + <?=hc_h($qb)?></strong>
-  </label>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <input type="number" name="hc_answer" min="0" step="1" required placeholder="Cevap" style="min-width:120px;padding:10px;border:1px solid #cbd5e1;border-radius:10px">
-    <input type="hidden" name="hc_a" value="<?=hc_h($qa)?>">
-    <input type="hidden" name="hc_b" value="<?=hc_h($qb)?>">
-    <input type="hidden" name="hc_ts" value="<?=hc_h($qts)?>">
-    <input type="hidden" name="hc_sig" value="<?=hc_h($qsig)?>">
-    <a href="<?=hc_h($_SERVER['PHP_SELF'] ?? '')?>?r=<?=rawurlencode((string)microtime(true))?>" style="font-size:12px;text-decoration:none;border:1px dashed #94a3b8;padding:8px;border-radius:8px">Soruyu değiştir</a>    <a href="forgot_password.php" style="font-size:12px;text-decoration:none;border:1px dashed #94a3b8;padding:8px;border-radius:8px" id="forgot-open">Şifremi Unuttum</a>
-  
-    <button class="btn primary" type="submit" style="margin-left:10px;">Giriş Yap</button>
-</div>
+<div class="human-check" style="margin-top:12px;padding:12px;border:1px dashed #cbd5e1;border-radius:12px;background:transparent; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAC-UPCYurs8TH_ab"></div>
+    
+    <div style="display:flex; gap:10px; align-items:center;">
+        <a href="forgot_password.php" style="font-size:12px;text-decoration:none;border:1px dashed #94a3b8;padding:8px;border-radius:8px;color:#0f172a;" id="forgot-open">Şifremi Unuttum</a>
+        <button class="btn primary" type="submit">Giriş Yap</button>
+    </div>
 </div>
   </form>
 <!-- Forgot Password Modal (tiny & isolated) -->
