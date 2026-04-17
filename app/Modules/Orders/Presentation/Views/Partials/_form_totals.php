@@ -21,7 +21,7 @@
 
         <div style="font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">TCMB Kur Bilgileri</div>
         <div style="font-size: 11px; color: #94a3b8; font-style: italic; line-height: 1.8;">
-            <div style="margin-bottom: 6px;">🗓️ <span style="font-weight:600;"><?= $fatura_date_fmt ?? date('d.m.Y') ?></span> TCMB Satış Kuru:</div>
+            <div style="margin-bottom: 6px;">🗓️ <span id="lbl_fatura_tarihi_fmt" style="font-weight:600;"><?= $fatura_date_fmt ?? date('d.m.Y') ?></span> TCMB Satış Kuru:</div>
 
             <div id="kur_display_container" style="display: flex; align-items: flex-start; gap: 12px;">
                 <div style="display: flex; flex-direction: column; color: #475569;">

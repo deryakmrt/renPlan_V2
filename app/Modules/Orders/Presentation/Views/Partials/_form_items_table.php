@@ -93,16 +93,25 @@ if (!empty($items) && isset($db)) {
 
                     <td class="urun-gorsel" style="text-align:center; vertical-align:middle;">
                         <?php
-                        $showImg = $it['image'] ?? '';
+                        $showImg  = $it['image'] ?? '';
                         $finalSrc = '';
                         if (!empty($showImg)) {
-                            $docRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
                             if (preg_match('~^https?://~', $showImg) || strpos($showImg, '/') === 0) {
+                                // Tam URL veya / ile başlayan yol — direkt kullan
                                 $finalSrc = $showImg;
-                            } elseif (file_exists($docRoot . '/uploads/product_images/' . $showImg)) {
-                                $finalSrc = '/uploads/product_images/' . $showImg;
+                            } elseif (strpos($showImg, 'uploads/') === 0) {
+                                // uploads/ ile başlıyorsa başına / ekle
+                                $finalSrc = '/' . $showImg;
                             } else {
-                                $finalSrc = '/images/' . $showImg;
+                                // Sadece dosya adı — uploads/product_images/ altında ara
+                                $root = dirname(__DIR__, 5); // Partials'tan kök dizine
+                                if (file_exists($root . '/uploads/product_images/' . $showImg)) {
+                                    $finalSrc = '/uploads/product_images/' . $showImg;
+                                } elseif (file_exists($root . '/images/' . $showImg)) {
+                                    $finalSrc = '/images/' . $showImg;
+                                } else {
+                                    $finalSrc = '/uploads/product_images/' . $showImg;
+                                }
                             }
                         }
                         ?>
@@ -121,7 +130,7 @@ if (!empty($items) && isset($db)) {
                             <input type="hidden" name="product_id[]" class="product-id-input" value="<?= (int)($it['product_id'] ?? 0) ?>">
                             <div class="product-search-wrap" style="position: relative;">
                                 <input type="text" class="form-control product-search-input" placeholder="Ürün ara (En az 2 harf)..." value="<?= h($it['name'] ?? '') ?>" autocomplete="off">
-                                <ul class="product-search-dropdown" style="display:none; position:absolute; z-index:99999; background:#1e293b; border:1px solid #334155; border-radius:8px; margin:0; padding:4px 0; list-style:none; min-width:320px; max-height:260px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,.4);"></ul>
+                                <ul class="product-search-dropdown" style="display:none; position:absolute; z-index:99999; margin:0; padding:4px 0; list-style:none; min-width:320px; max-height:260px; overflow-y:auto;"></ul>
                             </div>
                         <?php else: ?>
                             <input type="text" class="form-control" value="<?= h($it['name'] ?? '—') ?>" readonly style="background-color:#f9fafb;cursor:not-allowed;color:#6b7280;">

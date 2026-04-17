@@ -38,7 +38,7 @@ function renderFileTable(array $files, bool $canDelete, int $order_id): void {
         echo '<td>'.date('d.m.Y H:i', strtotime($file['created_at'])).'</td>';
         echo '<td class="right">';
         if ($canDelete) {
-            echo '<a href="delete_file.php?id='.(int)$file['id'].'&order_id='.(int)$order_id.'" onclick="return confirm(\'Dosya tamamen silinecek!\');" class="btn btn-sm" style="color:#ef4444; border-color:#fecaca; background:#fef2f2;">Sil 🗑</a>';
+            echo '<a href="delete_file.php?id='.(int)$file['id'].'&order_id='.(int)$order_id.'" onclick="return confirm(\'Dosya tamamen silinecek!\');" class="btn btn-sm" style="color:#ef4444; border-color:#fecaca; background:#fef2f2;">Sil 🗑️</a>';
         } else {
             echo '—';
         }
