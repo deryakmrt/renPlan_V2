@@ -343,3 +343,65 @@ html, body {
     font-weight: 800 !important;
     border-radius: 4px !important;
 }
+/* =========================================
+     FORM KARTLARI (PASTEL RENKLİ ARKA PLAN & KENARLIK)
+     ========================================= */
+  .form-section {
+      /* background: #ffffff !important; BURAYI SİLDİK Kİ RENKLER GÖRÜNSÜN */
+      border-radius: 8px !important;
+      padding: 20px !important;
+      margin-bottom: 20px !important;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
+  }
+
+  .form-section-title {
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      margin-bottom: 16px !important;
+      border-bottom: 1px dashed #e2e8f0 !important;
+      padding-bottom: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+  }
+
+  /* 💙 Temel Bilgiler: Pastel Mavi */
+  .sec-temel {
+      background: rgba(239, 246, 255, 0.6) !important;
+      border: 1px solid #bfdbfe !important;
+  }
+  .sec-temel .form-section-title { color: #1d4ed8 !important; border-color: #bfdbfe !important; }
+
+  /* 💜 Kişiler: Pastel Mor */
+  .sec-kisiler {
+      background: rgba(245, 243, 255, 0.6) !important;
+      border: 1px solid #e9d5ff !important;
+  }
+  .sec-kisiler .form-section-title { color: #6d28d9 !important; border-color: #e9d5ff !important; }
+
+  /* 💚 Finans: Pastel Yeşil */
+  .sec-finans {
+      background: rgba(236, 253, 245, 0.6) !important;
+      border: 1px solid #a7f3d0 !important;
+  }
+  .sec-finans .form-section-title { color: #047857 !important; border-color: #a7f3d0 !important; }
+
+  /* 💛 Tarihler: Pastel Sarı */
+  .sec-tarih {
+      background: rgba(255, 251, 235, 0.6) !important;
+      border: 1px solid #fde68a !important;
+  }
+  .sec-tarih .form-section-title { color: #b45309 !important; border-color: #fde68a !important; }
+
+  /* Izgara (Grid) Ayarları */
+  .g-auto {
+      display: grid !important;
+      gap: 16px !important;
+  }
+
+  @media (min-width: 768px) {
+      .g-temel   { grid-template-columns: repeat(4, 1fr) !important; }
+      .g-kisiler { grid-template-columns: repeat(4, 1fr) !important; }
+      .g-finans  { grid-template-columns: repeat(5, 1fr) !important; }
+      .g-tarih   { grid-template-columns: repeat(6, 1fr) !important; }
+  }
