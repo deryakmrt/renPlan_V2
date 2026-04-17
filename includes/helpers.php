@@ -257,6 +257,9 @@ function flash() {
         unset($_SESSION['flash_error']);
     }
 }
+function csrf_token(): string {
+    return $_SESSION['csrf'] ?? '';
+}
 
 // --- 🔒 MÜŞTERİ GÜVENLİK DUVARI ---
 if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['uid'])) {
