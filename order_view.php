@@ -315,7 +315,7 @@ if (!function_exists('format_dmy')) {
     function mk(id) {
       var a = document.createElement('a');
       a.className = 'btn';
-      a.href = 'order_send_mail.php?id=' + id;
+      a.href = 'api/order_send_mail.php?id=' + id;
       a.title = 'E-posta gönder';
       a.setAttribute('aria-label', 'E-posta gönder');
       a.innerHTML = '✉︎';
