@@ -6,14 +6,48 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <style>
-  /* --- CUSTOM STİLLER VE ARAMA KUTUSU TASARIMI --- */
-  .product-search-dropdown li.selectable-item { padding: 8px 14px; cursor: pointer; color: #e2e8f0; font-size: 13px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #263348; transition: 0.1s; }
-  .product-search-dropdown li.selectable-item:hover { background: #3b82f6; color: #fff; }
-  .product-search-dropdown li.selectable-item img { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: #fff; }
-  
-  /* 🟢 YENİ: Seçilemeyen Ana Ürün Tasarımı */
-  .product-search-dropdown li.unselectable-item { padding: 8px 14px; cursor: not-allowed; color: #94a3b8; font-size: 13px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #263348; background: #0f172a; opacity: 0.8; }
-  
+  /* --- ÜRÜN ARAMA DROPDOWN --- */
+  .product-search-dropdown {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+
+  .product-search-dropdown li.selectable-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #1e293b;
+    font-size: 13px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.1s;
+  }
+  .product-search-dropdown li.selectable-item:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+  .product-search-dropdown li.selectable-item img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* Sonuç yok */
+  .product-search-dropdown li.no-result {
+    padding: 10px 14px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* --- DİĞER STİLLER --- */
   .row-index { display: inline-block; width: 20px; color: #cbd5e1; font-size: 11px; font-weight: bold; text-align: right; margin-right: 6px; user-select: none; }
   tr.active-editing td { background-color: #fff7ed !important; border-top: 1px solid #fdba74 !important; border-bottom: 1px solid #fdba74 !important; }
   .popover-overlay { position: fixed; inset: 0; background: transparent; z-index: 9990; display: none; }
@@ -51,79 +85,85 @@
         var searchInput = row.querySelector('.product-search-input');
         if (!searchInput) return;
 
-        var dropdown = row.querySelector('.product-search-dropdown');
-        var hiddenId = row.querySelector('.product-id-input');
+        var dropdown  = row.querySelector('.product-search-dropdown');
+        var hiddenId  = row.querySelector('.product-id-input');
         var nameInput = row.querySelector('input[name="name[]"]');
         var unitInput = row.querySelector('input[name="unit[]"]');
         var priceInput = row.querySelector('input[name="price[]"]');
-        var skuInput = row.querySelector('input[name="stok_kodu[]"]');
+        var skuInput  = row.querySelector('input[name="stok_kodu[]"]');
         var ozetInput = row.querySelector('input[name="urun_ozeti[]"]');
         var kalanInput = row.querySelector('input[name="kullanim_alani[]"]');
-        var imgCell = row.querySelector('.urun-gorsel');
+        var imgCell   = row.querySelector('.urun-gorsel');
         var debounce;
 
-        dropdown.style.top = "100%";
-        dropdown.style.left = "0";
-        dropdown.style.width = "100%";
+        // Fixed position — overflow:hidden container'dan kaçır
+        dropdown.style.position = 'fixed';
+        dropdown.style.zIndex   = '999999';
+        // dropdown body'e taşı, table'ın içinde kalmasın
+        document.body.appendChild(dropdown);
+
+        function positionDropdown() {
+            var rect = searchInput.getBoundingClientRect();
+            dropdown.style.top   = (rect.bottom + window.scrollY + 2) + 'px';
+            dropdown.style.left  = (rect.left + window.scrollX) + 'px';
+            dropdown.style.width = rect.width + 'px';
+        }
 
         function hide() { dropdown.style.display = 'none'; }
 
         function render(list) {
             dropdown.innerHTML = '';
             if (!list || !list.length) {
-                dropdown.innerHTML = '<li><span style="color:#64748b; padding:8px 14px;">Sonuç bulunamadı</span></li>';
-                dropdown.style.display = 'block'; return;
+                var li = document.createElement('li');
+                li.className = 'no-result';
+                li.textContent = 'Sonuç bulunamadı';
+                dropdown.appendChild(li);
+                dropdown.style.display = 'block';
+                return;
             }
-            
+
             list.forEach(function (p) {
                 var li = document.createElement('li');
-                
-                // 🟢 EĞER ANA ÜRÜNSE (Tıklanamaz Yap)
-                if (p.is_parent) {
-                    li.className = 'unselectable-item';
-                    li.innerHTML = '<span style="font-size:20px; opacity:0.6;">📁</span>' + 
-                                   '<div style="display:flex; flex-direction:column;">' +
-                                      '<b style="color:#cbd5e1">' + escH(p.display_name) + '</b>' +
-                                      '<i style="font-size:10px; color:#ef4444; margin-top:2px;">⚠️ Bu bir ana gruptur. Lütfen alt varyasyon seçiniz.</i>' +
-                                   '</div>';
-                    
-                    // Tıklanınca inputtan çıkmasını engelle, hiçbir işlem yapma
-                    li.addEventListener('mousedown', function (e) { e.preventDefault(); });
-                } 
-                // 🟢 EĞER SEÇİLEBİLİR ÜRÜNSE (Normal Davranış)
-                else {
-                    li.className = 'selectable-item';
-                    var img = p.image ? '<img src="' + escH(p.image) + '" onerror="this.style.display=\'none\'">' : '';
-                    li.innerHTML = img + '<span><b>' + escH(p.display_name) + '</b> ' 
-                                 + (p.sku ? '<span style="color:#cbd5e1;font-size:11px">(' + escH(p.sku) + ')</span> ' : '') 
-                                 + (p.price ? '<span style="color:#fcd34d;font-size:11px">₺' + escH(String(p.price)) + '</span>' : '') + '</span>';
+                li.className = 'selectable-item';
 
-                    li.addEventListener('mousedown', function (e) {
-                        e.preventDefault();
-                        if (hiddenId) hiddenId.value = p.id || '';
-                        if (skuInput) skuInput.value = p.sku || '';
-                        if (nameInput) nameInput.value = p.name || '';
-                        if (unitInput) unitInput.value = p.unit || '';
-                        if (ozetInput) ozetInput.value = p.urun_ozeti || '';
-                        if (kalanInput) kalanInput.value = p.kullanim_alani || '';
-                        if (priceInput && p.price) priceInput.value = String(p.price).replace('.', ',');
-                        
-                        searchInput.value = p.name || '';
+                var img = p.image
+                    ? '<img src="' + escH(p.image) + '" onerror="this.style.display=\'none\'">'
+                    : '';
 
-                        if (imgCell && p.image) {
-                            imgCell.innerHTML = '<a href="javascript:void(0);" onclick="openModal(\'' + escH(p.image) + '\'); return false;">'
-                                + '<img class="urun-gorsel-img" src="' + escH(p.image) + '" style="max-width:48px;max-height:48px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;background:#fff;display:block;margin:0 auto;">'
-                                + '</a>';
-                        } else if(imgCell) {
-                            imgCell.innerHTML = '<span class="no-img-icon" style="font-size:20px;color:#cbd5e1;display:block;margin-top:5px;">📦</span>';
-                        }
-                        hide();
-                        if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
-                    });
-                }
-                
+                // Çocuk ürünlerde hafif girinti göster
+                var nameHtml = '<b>' + escH(p.display_name) + '</b>';
+                var skuHtml  = p.sku   ? ' <span style="color:var(--color-text-secondary);font-size:11px">(' + escH(p.sku) + ')</span>' : '';
+                var priceHtml = p.price ? ' <span style="color:#d97706;font-size:11px">₺' + escH(String(p.price)) + '</span>' : '';
+
+                li.innerHTML = img + '<span>' + nameHtml + skuHtml + priceHtml + '</span>';
+
+                li.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    if (hiddenId)   hiddenId.value   = p.id   || '';
+                    if (skuInput)   skuInput.value   = p.sku  || '';
+                    if (nameInput)  nameInput.value  = p.name || '';
+                    if (unitInput)  unitInput.value  = p.unit || '';
+                    if (ozetInput)  ozetInput.value  = p.urun_ozeti    || '';
+                    if (kalanInput) kalanInput.value = p.kullanim_alani || '';
+                    if (priceInput && p.price) priceInput.value = String(p.price).replace('.', ',');
+
+                    searchInput.value = p.name || '';
+
+                    if (imgCell && p.image) {
+                        imgCell.innerHTML = '<a href="javascript:void(0);" onclick="openModal(\'' + escH(p.image) + '\'); return false;">'
+                            + '<img class="urun-gorsel-img" src="' + escH(p.image) + '" style="max-width:48px;max-height:48px;object-fit:contain;border-radius:4px;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary);display:block;margin:0 auto;">'
+                            + '</a>';
+                    } else if (imgCell) {
+                        imgCell.innerHTML = '<span class="no-img-icon" style="font-size:20px;color:#cbd5e1;display:block;margin-top:5px;">📦</span>';
+                    }
+
+                    hide();
+                    if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
+                });
+
                 dropdown.appendChild(li);
             });
+            positionDropdown();
             dropdown.style.display = 'block';
         }
 
@@ -132,14 +172,14 @@
             clearTimeout(debounce);
             debounce = setTimeout(function () {
                 var xhr = new XMLHttpRequest();
-                xhr.open('GET', 'api/products-search.php?q=' + encodeURIComponent(q));
+                xhr.open('GET', '/api/products-search.php?q=' + encodeURIComponent(q));
                 xhr.onload = function () {
-                    if (xhr.status === 200) { 
-                        try { 
-                            var data = JSON.parse(xhr.responseText); 
-                            cache[q] = data; 
-                            render(data); 
-                        } catch(e) { console.error("Arama Hatası:", e); render([]); } 
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            cache[q] = data;
+                            render(data);
+                        } catch(e) { console.error("Arama Hatası:", e); render([]); }
                     }
                 };
                 xhr.send();
@@ -147,8 +187,11 @@
         }
 
         searchInput.addEventListener('input', function () { var q = this.value.trim(); if (q.length < 2) { hide(); return; } search(q); });
-        searchInput.addEventListener('blur', function () { setTimeout(hide, 180); });
-        searchInput.addEventListener('focus', function () { var q = this.value.trim(); if (q.length >= 2) { search(q); dropdown.style.display = 'block'; } });
+        searchInput.addEventListener('blur',  function () { setTimeout(hide, 180); });
+        searchInput.addEventListener('focus', function () { var q = this.value.trim(); if (q.length >= 2) { positionDropdown(); search(q); dropdown.style.display = 'block'; } });
+        searchInput.addEventListener('scroll', positionDropdown);
+        window.addEventListener('scroll', positionDropdown, true);
+        window.addEventListener('resize', positionDropdown);
     };
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -171,7 +214,7 @@ function addRow() {
         <input type="hidden" name="product_id[]" class="product-id-input" value="0">
         <div class="product-search-wrap" style="position: relative;">
             <input type="text" class="form-control product-search-input" placeholder="Ürün ara..." autocomplete="off">
-            <ul class="product-search-dropdown" style="display:none; position:absolute; z-index:99999; background:#1e293b; border:1px solid #334155; border-radius:8px; margin:0; padding:4px 0; list-style:none; min-width:320px; max-height:260px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,.4);"></ul>
+            <ul class="product-search-dropdown" style="display:none; position:absolute; z-index:99999; margin:0; padding:4px 0; list-style:none; min-width:320px; max-height:260px; overflow-y:auto;"></ul>
         </div>
     </td>
     <td><input type="text" name="name[]" class="form-control" required></td>
@@ -183,7 +226,7 @@ function addRow() {
     <td class="right"><button type="button" class="btn-delete" onclick="delRow(this)">Sil 🗑️</button></td>
     `;
     document.querySelector('#itemsTable tbody').appendChild(tr);
-    window.bindSearch(tr); 
+    window.bindSearch(tr);
     renumberRows();
     if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
 }
@@ -207,66 +250,79 @@ function renumberRows() {
 // 3. FİNANSAL HESAPLAMALAR
 // ==========================================
 window.calculateFinancials = function() {
-    const kalemPb = document.querySelector('select[name="kalem_para_birimi"]')?.value || 'TL';
+    const kalemPb  = document.querySelector('select[name="kalem_para_birimi"]')?.value || 'TL';
     const faturaPb = document.querySelector('select[name="fatura_para_birimi"]')?.value || 'TL';
-    const status = document.querySelector('select[name="status"]')?.value || '';
-    const kdvOran = parseFloat(document.querySelector('select[name="kdv_orani"]')?.value || 20);
+    const status   = document.querySelector('select[name="status"]')?.value || '';
+    const kdvOran  = parseFloat(document.querySelector('select[name="kdv_orani"]')?.value || 20);
 
     const parseNum = (str) => { if (!str) return 0; let val = parseFloat(str.toString().replace(/\./g, '').replace(',', '.')); return isNaN(val) ? 0 : val; };
-    const fmt = (n) => n.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    const fmt      = (n) => n.toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
     const getSymbol = (cur) => (cur === 'USD' ? '$' : (cur === 'EUR' ? '€' : '₺'));
 
     let subtotal = 0;
     document.querySelectorAll('#itemsTable tbody tr').forEach(tr => {
-        const pInp = tr.querySelector('input[name="price[]"]'); const qInp = tr.querySelector('input[name="qty[]"]');
+        const pInp = tr.querySelector('input[name="price[]"]');
+        const qInp = tr.querySelector('input[name="qty[]"]');
         if (pInp && qInp) subtotal += (parseNum(pInp.value) * parseNum(qInp.value));
     });
 
-    const vatAmount = subtotal * (kdvOran / 100);
+    const vatAmount  = subtotal * (kdvOran / 100);
     const grandTotal = subtotal + vatAmount;
-    const sym = getSymbol(kalemPb);
+    const sym        = getSymbol(kalemPb);
 
-    if (document.getElementById('lbl_subtotal')) document.getElementById('lbl_subtotal').textContent = fmt(subtotal) + ' ' + sym;
-    if (document.getElementById('lbl_vat_amount')) document.getElementById('lbl_vat_amount').textContent = fmt(vatAmount) + ' ' + sym;
+    if (document.getElementById('lbl_subtotal'))          document.getElementById('lbl_subtotal').textContent          = fmt(subtotal)    + ' ' + sym;
+    if (document.getElementById('lbl_vat_amount'))        document.getElementById('lbl_vat_amount').textContent        = fmt(vatAmount)   + ' ' + sym;
     if (document.getElementById('lbl_grand_total_display')) document.getElementById('lbl_grand_total_display').innerHTML = fmt(grandTotal) + ' <span style="font-size:18px;">' + sym + '</span>';
 
     const kurSec = document.getElementById('fatura_kur_section');
     const cevSec = document.getElementById('fatura_cevrilmis_section');
     if (status === 'fatura_edildi') {
-        if(kurSec) kurSec.style.visibility = 'visible';
-        if(cevSec) cevSec.style.visibility = 'visible';
+        if (kurSec) kurSec.style.visibility = 'visible';
+        if (cevSec) cevSec.style.visibility = 'visible';
         const usdRate = parseNum(document.getElementById('lbl_usd_val')?.textContent);
         const eurRate = parseNum(document.getElementById('lbl_eur_val')?.textContent);
-        
-        const fSym = getSymbol(faturaPb);
+        const fSym    = getSymbol(faturaPb);
         const convertCurrency = (amount) => {
             let tryAmount = amount;
             if (kalemPb === 'USD') tryAmount = amount * usdRate; else if (kalemPb === 'EUR') tryAmount = amount * eurRate;
             if (faturaPb === 'USD') return tryAmount / usdRate; else if (faturaPb === 'EUR') return tryAmount / eurRate;
             return tryAmount;
         };
-        
-        if (document.getElementById('lbl_converted_subtotal')) document.getElementById('lbl_converted_subtotal').textContent = fmt(convertCurrency(subtotal)) + ' ' + fSym;
-        if (document.getElementById('lbl_converted_vat')) document.getElementById('lbl_converted_vat').textContent = fmt(convertCurrency(vatAmount)) + ' ' + fSym;
-        if (document.getElementById('lbl_converted_total')) document.getElementById('lbl_converted_total').innerHTML = fmt(convertCurrency(grandTotal)) + ' <span style="font-size:18px;">' + fSym + '</span>';
+        if (document.getElementById('lbl_converted_subtotal')) document.getElementById('lbl_converted_subtotal').textContent = fmt(convertCurrency(subtotal))    + ' ' + fSym;
+        if (document.getElementById('lbl_converted_vat'))      document.getElementById('lbl_converted_vat').textContent      = fmt(convertCurrency(vatAmount))   + ' ' + fSym;
+        if (document.getElementById('lbl_converted_total'))    document.getElementById('lbl_converted_total').innerHTML      = fmt(convertCurrency(grandTotal)) + ' <span style="font-size:18px;">' + fSym + '</span>';
     } else {
-        if(kurSec) kurSec.style.visibility = 'hidden';
-        if(cevSec) cevSec.style.visibility = 'hidden';
+        if (kurSec) kurSec.style.visibility = 'hidden';
+        if (cevSec) cevSec.style.visibility = 'hidden';
     }
 };
 
 window.updateRatesAndCalculate = async function() {
-    const status = document.querySelector('select[name="status"]')?.value;
+    const status       = document.querySelector('select[name="status"]')?.value;
     const faturaTarihi = document.querySelector('input[name="fatura_tarihi"]')?.value;
-    if (status === 'fatura_edildi' && faturaTarihi) {
+
+    // Tarihi anlık göster — id ile direkt hedef al
+    if (faturaTarihi) {
+        const parts = faturaTarihi.split('-'); // YYYY-MM-DD
+        if (parts.length === 3) {
+            const formatted = parts[2] + '.' + parts[1] + '.' + parts[0]; // DD.MM.YYYY
+            const lbl = document.getElementById('lbl_fatura_tarihi_fmt');
+            if (lbl) lbl.textContent = formatted;
+        }
+    }
+
+    if (faturaTarihi) {
         try {
-            const res = await fetch('ajax_get_rates.php?date=' + faturaTarihi);
+            const res  = await fetch('/api/rates.php?date=' + faturaTarihi);
             const data = await res.json();
             if (data.success) {
                 if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + data.rates.USD.toLocaleString('tr-TR', {minimumFractionDigits:4});
                 if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + data.rates.EUR.toLocaleString('tr-TR', {minimumFractionDigits:4});
                 if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = data.rates.USD;
                 if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = data.rates.EUR;
+            } else {
+                if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
+                if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
             }
         } catch (e) { console.error("Kur çekilemedi:", e); }
     }
@@ -279,12 +335,169 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var f = document.querySelector('form');
     if (f) {
-        f.addEventListener('input', function() { if (typeof window.calculateFinancials === 'function') window.calculateFinancials(); });
+        f.addEventListener('input',  function() { if (typeof window.calculateFinancials === 'function') window.calculateFinancials(); });
         f.addEventListener('change', function() { if (typeof window.calculateFinancials === 'function') window.calculateFinancials(); });
     }
     setTimeout(function() { if (typeof window.calculateFinancials === 'function') window.calculateFinancials(); }, 150);
 
-    document.querySelector('input[name="fatura_tarihi"]')?.addEventListener('change', window.updateRatesAndCalculate);
+    // Fatura tarihi değişince kurları güncelle
+    // Event delegation — input display:none içinde başlayabileceği için
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.name === 'fatura_tarihi') {
+            window.updateRatesAndCalculate();
+        }
+    });
+    // Durum değişince kurları güncelle
     document.querySelector('select[name="status"]')?.addEventListener('change', window.updateRatesAndCalculate);
+    // Sayfa ilk yüklendiğinde de çalıştır
+    window.updateRatesAndCalculate();
+});
+
+// ==========================================
+// 4. KUR DÜZENLEME FONKSİYONLARI
+// ==========================================
+var _originalUsd = null;
+var _originalEur = null;
+
+function toggleRateEdit(show) {
+    var displayEl = document.getElementById('kur_display_container');
+    var editEl    = document.getElementById('kur_edit_container');
+    var resetBtn  = document.getElementById('btn_reset_rate');
+    if (!displayEl || !editEl) return;
+
+    if (show) {
+        // Mevcut değerleri input'lara yaz
+        var usdTxt = document.getElementById('lbl_usd_val')?.textContent?.replace('₺','').replace(/\./g,'').replace(',','.').trim();
+        var eurTxt = document.getElementById('lbl_eur_val')?.textContent?.replace('₺','').replace(/\./g,'').replace(',','.').trim();
+        if (document.getElementById('input_usd_rate')) document.getElementById('input_usd_rate').value = usdTxt ? parseFloat(usdTxt).toFixed(4).replace('.',',') : '';
+        if (document.getElementById('input_eur_rate')) document.getElementById('input_eur_rate').value = eurTxt ? parseFloat(eurTxt).toFixed(4).replace('.',',') : '';
+        // Orijinali sakla
+        _originalUsd = usdTxt;
+        _originalEur = eurTxt;
+        displayEl.style.display = 'none';
+        editEl.style.display    = 'flex';
+        if (resetBtn) resetBtn.style.display = 'inline-block';
+    } else {
+        displayEl.style.display = 'flex';
+        editEl.style.display    = 'none';
+    }
+}
+
+function saveRateEdit() {
+    var usdInput = document.getElementById('input_usd_rate');
+    var eurInput = document.getElementById('input_eur_rate');
+    if (!usdInput || !eurInput) return;
+
+    var usd = parseFloat(usdInput.value.replace(',','.'));
+    var eur = parseFloat(eurInput.value.replace(',','.'));
+    if (isNaN(usd) || isNaN(eur) || usd <= 0 || eur <= 0) {
+        alert('Geçerli bir kur giriniz.');
+        return;
+    }
+
+    // Label'ları güncelle
+    if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + usd.toLocaleString('tr-TR', {minimumFractionDigits:4});
+    if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + eur.toLocaleString('tr-TR', {minimumFractionDigits:4});
+
+    // Hidden input'ları güncelle (form ile gönderilecek)
+    if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = usd;
+    if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = eur;
+
+    // Çapraz kur
+    var crossEl = document.getElementById('lbl_cross_rate');
+    var crossCon = document.getElementById('cross_rate_container');
+    if (crossEl) crossEl.textContent = (eur / usd).toFixed(4).replace('.',',');
+    if (crossCon) crossCon.style.display = 'block';
+
+    toggleRateEdit(false);
+    if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
+}
+
+function resetRate() {
+    if (_originalUsd !== null && _originalEur !== null) {
+        var usd = parseFloat(_originalUsd);
+        var eur = parseFloat(_originalEur);
+        if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + usd.toLocaleString('tr-TR', {minimumFractionDigits:4});
+        if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + eur.toLocaleString('tr-TR', {minimumFractionDigits:4});
+        if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = usd;
+        if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = eur;
+    }
+    var resetBtn = document.getElementById('btn_reset_rate');
+    if (resetBtn) resetBtn.style.display = 'none';
+    if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
+}
+
+// ==========================================
+// 5. SİPARİŞ NOTLARI
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    var addBtn    = document.getElementById('btn_add_note_ui');
+    var noteInput = document.getElementById('temp_note_input');
+    var ghost     = document.getElementById('notes-ghost');
+    var wrapper   = document.querySelector('.notes-wrapper');
+    if (!addBtn || !noteInput || !ghost) return;
+
+    function getNow() {
+        var now = new Date();
+        var pad = n => String(n).padStart(2,'0');
+        return pad(now.getDate()) + '.' + pad(now.getMonth()+1) + '.' + now.getFullYear()
+             + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    }
+
+    function addNote() {
+        var text = noteInput.value.trim();
+        if (!text) return;
+
+        var block   = document.getElementById('notes-block');
+        var userName = block ? (block.dataset.user || 'Kullanıcı') : 'Kullanıcı';
+        var dateStr  = getNow();
+        var line     = userName + ' | ' + dateStr + ': ' + text;
+
+        // Ghost textarea'ya ekle
+        var current = ghost.value.trim();
+        ghost.value = current ? current + '\n' + line : line;
+
+        // UI'ya ekle
+        if (wrapper) {
+            // "Henüz not" mesajını kaldır
+            var empty = wrapper.querySelector('div[style*="color:#94a3b8"]');
+            if (empty) empty.remove();
+
+            var noteDiv = document.createElement('div');
+            noteDiv.className = 'note-item';
+            noteDiv.dataset.original = line;
+            noteDiv.style.cssText = 'margin-bottom:10px; display:flex; gap:8px;';
+            noteDiv.innerHTML =
+                '<div style="flex:1;">' +
+                  '<div style="font-size:11px; color:#64748b; margin-bottom:2px;"><strong>' + userName + '</strong> · ' + dateStr + '</div>' +
+                  '<div style="display:inline-block; padding:8px 12px; border:1px solid #cbd5e1; border-radius:12px; border-top-left-radius:2px; background:#fff; font-size:13px; color:#334155;">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
+                '</div>' +
+                '<button type="button" class="note-del btn btn-sm" style="background:transparent; border:none; color:#ef4444;" title="Sil">🗑️</button>';
+            wrapper.appendChild(noteDiv);
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+        noteInput.value = '';
+    }
+
+    addBtn.addEventListener('click', addNote);
+
+    // Not silme (delegasyon ile)
+    if (wrapper) {
+        wrapper.addEventListener('click', function(e) {
+            var btn = e.target.closest('.note-del');
+            if (!btn) return;
+            var item = btn.closest('.note-item');
+            if (!item) return;
+            var original = item.dataset.original || '';
+            // Ghost'tan o satırı çıkar
+            ghost.value = ghost.value.split('\n').filter(l => l !== original).join('\n');
+            item.remove();
+            // Wrapper boşaldıysa mesaj göster
+            if (!wrapper.querySelector('.note-item')) {
+                wrapper.innerHTML = '<div style="color:#94a3b8; font-size:13px; text-align:center; margin-top:20px;">Henüz not eklenmemiş.</div>';
+            }
+        });
+    }
 });
 </script>

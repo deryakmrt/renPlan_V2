@@ -47,7 +47,7 @@
                                     <?= h($__text) ?>
                                 </div>
                             </div>
-                            <button type="button" class="note-del btn btn-sm" style="background:transparent; border:none; color:#ef4444;" title="Sil">🗑</button>
+                            <button type="button" class="note-del btn btn-sm" style="background:transparent; border:none; color:#ef4444;" title="Sil">🗑️</button>
                         </div>
                     <?php endforeach; else: ?>
                         <div style="color:#94a3b8; font-size:13px; text-align:center; margin-top:20px;">Henüz not eklenmemiş.</div>

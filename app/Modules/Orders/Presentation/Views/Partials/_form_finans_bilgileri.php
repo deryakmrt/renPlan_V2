@@ -20,10 +20,16 @@ if (empty($__raw_fatura) || $__raw_fatura === '0000-00-00' || strtotime($__raw_f
 }
 $fatura_date_fmt = date('d.m.Y', strtotime($fatura_date));
 
-// TCMB'den kur çek
-$exchange_rate = function_exists('tcmb_get_exchange_rate') ? tcmb_get_exchange_rate($order_currency, $fatura_date) : 1;
-$eur_info_rate = function_exists('tcmb_get_exchange_rate') ? tcmb_get_exchange_rate('EUR', $fatura_date) : null;
-$usd_info_rate = function_exists('tcmb_get_exchange_rate') ? tcmb_get_exchange_rate('USD', $fatura_date) : null;
+// TCMB'den kur çek — FinanceService üzerinden
+$usd_info_rate = null;
+$eur_info_rate = null;
+try {
+    // Autoloader App\ namespace'ini otomatik yükler
+    $__fs = new \App\Services\FinanceService();
+    $__rates = $__fs->getCurrentExchangeRates();
+    $usd_info_rate = $__rates['USD'] ?? null;
+    $eur_info_rate = $__rates['EUR'] ?? null;
+} catch (Throwable $__e) {}
 ?>
 
 <div class="form-section sec-finans mt">
