@@ -207,4 +207,37 @@ class OrderRepository
 
         return $counts;
     }
+    /**
+     * Edit sayfası için siparişi ve kalemlerini (resimleriyle birlikte) getirir.
+     */
+    public function getOrderDetails(int $id): ?array
+    {
+        // 1. Siparişin Ana Bilgilerini Çek
+        $stmt = $this->db->prepare("SELECT * FROM orders WHERE id = ?");
+        $stmt->execute([$id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            return null; // Sipariş bulunamadıysa null dön
+        }
+
+        // 2. Sipariş Kalemlerini (Ürünleri ve Akıllı Resimleri) Çek
+        $stmtItems = $this->db->prepare("
+            SELECT oi.*, p.parent_id,
+            COALESCE(NULLIF(p.image, ''), NULLIF(pp.image, '')) AS image
+            FROM order_items oi 
+            LEFT JOIN products p ON p.id = oi.product_id 
+            LEFT JOIN products pp ON pp.id = p.parent_id 
+            WHERE oi.order_id = ? 
+            ORDER BY oi.id ASC
+        ");
+        $stmtItems->execute([$id]);
+        $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+        // 3. İkisini temiz bir paket halinde gönder
+        return [
+            'order' => $order,
+            'items' => $items
+        ];
+    }
 }
