@@ -39,10 +39,14 @@ $db = pdo();
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) redirect('orders.php');
 
-$st = $db->prepare("SELECT * FROM orders WHERE id=?");
-$st->execute([$id]);
-$order = $st->fetch();
-if (!$order) redirect('orders.php');
+// Siparişi ve kalemlerini Repository üzerinden (Temiz Mimari ile) çek
+$orderRepo = new \App\Modules\Orders\Infrastructure\OrderRepository($db);
+$orderDetails = $orderRepo->getOrderDetails($id);
+
+if (!$orderDetails) redirect('orders.php');
+
+$order = $orderDetails['order'];
+$items = $orderDetails['items']; // Kalemleri de baştan hazır ettik, aşağıda tekrar çekmeye gerek kalmadı!
 
 if (method('POST')) {
     csrf_check();
@@ -68,91 +72,8 @@ if (method('POST')) {
         die("Güncelleme Hatası: " . htmlspecialchars($e->getMessage()));
     }
 }
-
-// Dropdown verileri
+// Dropdown verileri — ürün listesi artık AJAX ile geliyor
 $customers = $db->query("SELECT id,name FROM customers ORDER BY name ASC")->fetchAll();
-
-// --- ÖZEL HİYERARŞİK ÜRÜN LİSTESİ (AKORDİYON İÇİN) ---
-$raw_prods = $db->query("SELECT id, parent_id, sku, name, unit, price, urun_ozeti, kullanim_alani, image FROM products ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-$productMap = [];
-$roots = [];
-
-// 1. Herkesi listeye al
-foreach ($raw_prods as $p) {
-    $p['kids'] = [];
-    $productMap[$p['id']] = $p;
-}
-
-// 1.5. Resim Mirası ve YOL DÜZELTME (Javascript İçin)
-foreach ($productMap as $pid => &$prod) {
-    // A) Miras Alma (Çocuk boşsa Babadan al)
-    if (empty($prod['image']) && !empty($prod['parent_id'])) {
-        $parentId = $prod['parent_id'];
-        if (isset($productMap[$parentId]) && !empty($productMap[$parentId]['image'])) {
-            $prod['image'] = $productMap[$parentId]['image'];
-        }
-    }
-
-    // B) Yol Düzeltme (Tam Path Yap)
-    // Javascript'in yanlış klasöre bakmasını engellemek için tam yolu PHP'de hesaplıyoruz.
-    $rawImg = $prod['image'] ?? '';
-    // Eğer resim varsa ve zaten tam yol değilse (http veya / ile başlamıyorsa)
-    if ($rawImg && !preg_match('~^https?://~', $rawImg) && strpos($rawImg, '/') !== 0) {
-        if (file_exists(__DIR__ . '/uploads/product_images/' . $rawImg)) {
-            $prod['image'] = '/uploads/product_images/' . $rawImg;
-        } elseif (file_exists(__DIR__ . '/images/' . $rawImg)) {
-            $prod['image'] = '/images/' . $rawImg;
-        } else {
-            // Dosya bulunamazsa varsayılan uploads varsayımı
-            $prod['image'] = '/uploads/' . $rawImg;
-        }
-    }
-}
-unset($prod); // Döngü referansını temizle
-
-// 2. Çocukları Babalarına ata
-foreach ($raw_prods as $p) {
-    if (!empty($p['parent_id']) && isset($productMap[$p['parent_id']])) {
-        $productMap[$p['parent_id']]['kids'][] = $p['id'];
-    } else {
-        $roots[] = $p['id']; // Babası yoksa Ana Üründür
-    }
-}
-
-// 3. Listeyi senin istediğin sembollerle oluştur
-$products = [];
-foreach ($roots as $rid) {
-    $parent = $productMap[$rid];
-    $hasKids = !empty($parent['kids']);
-    
-    // ⊿ Sembolü ve varsa ▼ oku
-    $parent['display_name'] = '⊿ ' . $parent['name'] . ($hasKids ? ' ▼' : '');
-    $products[] = $parent;
-    
-    // Çocukları ekle (• Sembolü ile)
-    foreach ($parent['kids'] as $kidId) {
-        $kid = $productMap[$kidId];
-        $kid['display_name'] = '• ' . $kid['name'];
-        $products[] = $kid;
-    }
-}
-// ----------------------------------------------------
-// --- AKILLI GÖRSEL SORGUSU (Çocukta resim yoksa Babadan al) ---
-$it = $db->prepare("
-    SELECT oi.*, p.parent_id,
-    COALESCE(NULLIF(p.image, ''), NULLIF(pp.image, '')) AS image
-    FROM order_items oi 
-    LEFT JOIN products p ON p.id = oi.product_id 
-    LEFT JOIN products pp ON pp.id = p.parent_id 
-    WHERE oi.order_id = ? 
-    ORDER BY oi.id ASC
-");
-$it->execute([$id]);
-$items = $it->fetchAll();
-// -------------------------------------------------------------
-
-
 include __DIR__ . '/includes/header.php'; ?>
 <?php $mode = 'edit';
 
