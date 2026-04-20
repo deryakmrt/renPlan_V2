@@ -5,7 +5,7 @@
  */
 
 declare(strict_types=1);
-require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../../../includes/helpers.php';
 require_login();
 
 $db = pdo();
@@ -56,7 +56,7 @@ arsort($data_uretim);
 $json_tedarik = json_encode(['labels' => array_keys($data_tedarik), 'data' => array_values($data_tedarik)], JSON_UNESCAPED_UNICODE);
 $json_uretim = json_encode(['labels' => array_keys($data_uretim), 'data' => array_values($data_uretim)], JSON_UNESCAPED_UNICODE);
 
-include __DIR__ . '/../includes/header.php';
+include __DIR__ . '/../../../includes/header.php';
 ?>
 <link rel="stylesheet" href="/assets/reports.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -217,4 +217,4 @@ include __DIR__ . '/../includes/header.php';
         renderChart('chartUretim', dUretim, 25);
     });
 </script>
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php include __DIR__ . '/../../../includes/footer.php'; ?>
