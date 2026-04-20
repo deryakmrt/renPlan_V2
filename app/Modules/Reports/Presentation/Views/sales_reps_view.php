@@ -13,7 +13,7 @@
  * @var array $chart_payload
  */
 
-include __DIR__ . '/../../../includes/header.php';
+include __DIR__ . '/../../../../../includes/header.php';
 ?>
 <link rel="stylesheet" href="/assets/css/reports.css">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
