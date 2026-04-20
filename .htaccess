@@ -1,27 +1,27 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
     # Zorunlu HTTPS Yönlendirmesi
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # reports/ URL'lerini app/Modules/Reports/Presentation/ altına yönlendir
+    RewriteRule ^reports/sales_reps\.php$          app/Modules/Reports/Presentation/sales_reps.php [L,QSA]
+    RewriteRule ^reports/production\.php$           app/Modules/Reports/Presentation/production.php [L,QSA]
+    RewriteRule ^reports/report_daily_print\.php$   app/Modules/Reports/Presentation/report_daily_print.php [L,QSA]
+
+    # app/ klasörüne doğrudan tarayıcı erişimini engelle
+    # THE_REQUEST orijinal isteği kontrol eder, dahili yönlendirmeler etkilenmez
+    RewriteCond %{THE_REQUEST} \s/app/ [NC]
+    RewriteRule ^app/ - [F,L]
 </IfModule>
 
 <IfModule mod_headers.c>
-    # 1. PHP ve Sunucu versiyonunu gizleme
     Header always unset X-Powered-By
     Header always unset Server
-
-    # 2. HSTS Koruması
     Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
-
-    # 3. Clickjacking Koruması
     Header always set X-Frame-Options "SAMEORIGIN"
-
-    # 4. MIME-Sniffing Koruması
     Header always set X-Content-Type-Options "nosniff"
-
-    # 5. Tarayıcı Özellik Kısıtlaması
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
-
-    # 6. Temel CSP (Esnetilmiş)
     Header always set Content-Security-Policy "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
 </IfModule>
