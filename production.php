@@ -5,7 +5,7 @@
  */
 
 declare(strict_types=1);
-require_once __DIR__ . '/../../../includes/helpers.php';
+require_once __DIR__ . '/includes/helpers.php';
 require_login();
 
 $db = pdo();
@@ -56,7 +56,7 @@ arsort($data_uretim);
 $json_tedarik = json_encode(['labels' => array_keys($data_tedarik), 'data' => array_values($data_tedarik)], JSON_UNESCAPED_UNICODE);
 $json_uretim = json_encode(['labels' => array_keys($data_uretim), 'data' => array_values($data_uretim)], JSON_UNESCAPED_UNICODE);
 
-include __DIR__ . '/../../../includes/header.php';
+include __DIR__ . '/includes/header.php';
 ?>
 <link rel="stylesheet" href="/assets/reports.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -67,9 +67,9 @@ include __DIR__ . '/../../../includes/header.php';
         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <?php for ($i = 0; $i < 5; $i++): $d = date('Y-m-d', strtotime("-$i days"));
                 $label = ($i === 0) ? 'Bugün' : (($i === 1) ? 'Dün' : date('d.m', strtotime($d))); ?>
-                <a href="/reports/report_daily_print.php?date=<?= $d ?>" target="_blank" class="btn" style="background:#fff; border-color:#86efac; color:#14532d;">📄 <?= $label ?> <small>(<?= date('d.m', strtotime($d)) ?>)</small></a>
+                <a href="/report_daily_print.php?date=<?= $d ?>" target="_blank" class="btn" style="background:#fff; border-color:#86efac; color:#14532d;">📄 <?= $label ?> <small>(<?= date('d.m', strtotime($d)) ?>)</small></a>
             <?php endfor; ?>
-            <form action="/reports/report_daily_print.php" method="get" target="_blank" style="display:flex; gap:5px; border-left:1px solid #bbf7d0; padding-left:15px;">
+            <form action="/report_daily_print.php" method="get" target="_blank" style="display:flex; gap:5px; border-left:1px solid #bbf7d0; padding-left:15px;">
                 <input type="date" name="date" class="input" style="padding:5px; width:130px;" required>
                 <button type="submit" class="btn btn-primary" style="padding:5px 10px;">Raporla</button>
             </form>
@@ -217,4 +217,4 @@ include __DIR__ . '/../../../includes/header.php';
         renderChart('chartUretim', dUretim, 25);
     });
 </script>
-<?php include __DIR__ . '/../../../includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

@@ -5,13 +5,7 @@
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-    # reports/ URL'lerini app/Modules/Reports/Presentation/ altına yönlendir
-    RewriteRule ^reports/sales_reps\.php$          app/Modules/Reports/Presentation/sales_reps.php [L,QSA]
-    RewriteRule ^reports/production\.php$           app/Modules/Reports/Presentation/production.php [L,QSA]
-    RewriteRule ^reports/report_daily_print\.php$   app/Modules/Reports/Presentation/report_daily_print.php [L,QSA]
-
     # app/ klasörüne doğrudan tarayıcı erişimini engelle
-    # THE_REQUEST orijinal isteği kontrol eder, dahili yönlendirmeler etkilenmez
     RewriteCond %{THE_REQUEST} \s/app/ [NC]
     RewriteRule ^app/ - [F,L]
 </IfModule>
