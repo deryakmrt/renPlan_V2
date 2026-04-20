@@ -30,7 +30,7 @@ if ($q !== '') {
     $params = [$like, $like, $like, $like, $like];
 }
 
-$sql .= " ORDER BY o.order_code DESC";
+$sql .= " ORDER BY o.fatura_tarihi DESC, o.order_code DESC";
 
 // Toplam
 $count_stmt = $db->prepare("SELECT COUNT(*) FROM ($sql) t");
