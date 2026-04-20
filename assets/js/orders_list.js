@@ -164,7 +164,7 @@ $(function () {
 
     if (searchInput.length > 0) {
         searchInput.autocomplete({
-            source: "ajax_search_products.php",
+            source: "/api/ajax_search_products.php",
             minLength: 2, // 2 harf yazınca aramaya başlar
             select: function (event, ui) {
                 // Seçilince kutuya yaz ve git
