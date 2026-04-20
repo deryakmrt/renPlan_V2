@@ -1,8 +1,18 @@
 <?php
-// app/Views/projects/proje_detay_view.php
-// Değişkenler: $proje, $bound_orders, $unbound_orders,
-//              $grand_total_try, $grand_total_usd, $grand_total (uyumluluk),
-//              $rates, $can_edit, $sq, $pid
+/**
+ * Proje Detay View
+ *
+ * @var array  $proje
+ * @var bool   $can_edit
+ * @var array  $bound_orders
+ * @var array  $unbound_orders
+ * @var array  $rates
+ * @var string $sq
+ * @var int    $pid
+ * @var float  $grand_total_try
+ * @var float  $grand_total_usd
+ * @var float  $grand_total
+ */
 
 function prj_status_color(string $s): string {
     $map = [
