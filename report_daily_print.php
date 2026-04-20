@@ -6,7 +6,7 @@
  * 2. GRUPLAMA: Ürün koduna göre gruplayıp toplar.
  */
 
-require_once __DIR__ . '/../../../includes/helpers.php';
+require_once __DIR__ . '/includes/helpers.php';
 require_login();
 
 $db = pdo();
