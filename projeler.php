@@ -38,10 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // --- VERİ ---
 $projects = $model->all();
 
-// --- USD HESAPLAMA ---
-use App\Modules\Projects\Domain\ProjectModel;
-use App\Services\FinanceService;
-
 $financeService = new FinanceService();
 $rates          = $financeService->getCurrentExchangeRates();
 
