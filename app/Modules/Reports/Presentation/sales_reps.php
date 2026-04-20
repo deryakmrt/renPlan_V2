@@ -28,7 +28,10 @@ error_reporting(E_ALL);
  * 1. BAŞLANGIÇ & YETKİLENDİRME (SETUP & AUTH)
  * -----------------------------------------------------------------------------------------
  */
-require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../../../includes/helpers.php';
+
+use App\Modules\Reports\Domain\ReportModel;
+use App\Services\FinanceService;
 require_login();
 
 // --- 🔒 ADMİN VE MUHASEBE YETKİ KONTROLÜ ---
@@ -98,7 +101,7 @@ if (!function_exists('tr_to_float')) {
   }
 }
 
-function normalize_currency($cur): string
+function normalize_currency(mixed $cur): string
 {
   $cur = strtoupper(trim((string)$cur));
   if ($cur === '' || $cur === '—') return '—';
@@ -284,7 +287,7 @@ foreach ($rows as $r) {
   $totalsByCurrency[$cur] += (float)($r['line_total'] ?? 0) * (1 + $kdv / 100);
 }
 
-require_once __DIR__ . '/../app/Services/FinanceService.php';
+
 $financeService = new FinanceService();
 $rates   = $financeService->getCurrentExchangeRates();
 $usd_rate = $rates['USD'];
@@ -603,4 +606,4 @@ unset($data);
 
 $chart_payload['salesperson_enhanced'] = $salesperson_enhanced;
 
-require_once __DIR__ . '/../app/Views/reports/sales_reps_view.php';
+require_once __DIR__ . '/Views/sales_reps_view.php';

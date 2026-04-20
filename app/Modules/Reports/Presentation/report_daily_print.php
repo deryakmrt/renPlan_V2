@@ -6,7 +6,7 @@
  * 2. GRUPLAMA: Ürün koduna göre gruplayıp toplar.
  */
 
-require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../../../includes/helpers.php';
 require_login();
 
 $db = pdo();
@@ -21,7 +21,7 @@ $dateObj = new DateTime($dateParam);
 $trDate = $dateObj->format('d.m.Y');
 
 // --- YARDIMCI FONKSİYON: Sipariş İçeriğini Grupla ve Topla ---
-function get_order_grouped_items($pdo, $order_id) {
+function get_order_grouped_items(\PDO $pdo, int $order_id) {
     // Ürünleri SKU (Kod) ve Birim'e göre grupla
     // Eğer SKU yoksa Ürün Adını (name) kullan.
     $sql = "SELECT 
@@ -111,7 +111,7 @@ if (!empty($orderIdsToFetch)) {
     while ($r = $stO->fetch(PDO::FETCH_ASSOC)) { $ordersInfo[$r['id']] = $r; }
 }
 
-function getOrd($id) {
+function getOrd(int $id) {
     global $ordersInfo;
     return $ordersInfo[$id] ?? ['order_code'=>'#'.$id, 'project_name'=>'-', 'cust_name'=>'-'];
 }
