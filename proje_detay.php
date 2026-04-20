@@ -1,10 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+
+use App\Modules\Projects\Domain\ProjectModel;
+use App\Services\FinanceService;
 require_login();
 require_role(['admin', 'sistem_yoneticisi', 'muhasebe']);
 
-require_once __DIR__ . '/app/Models/ProjectModel.php';
-require_once __DIR__ . '/app/Services/FinanceService.php';
 
 $model    = new ProjectModel(pdo());
 $cu_role  = current_user()['role'] ?? '';
@@ -61,7 +62,7 @@ $unbound_orders = $model->unboundOrders($sq);
 // 3. Fatura edilmemiş (açık sipariş)       → Bugünkü güncel TCMB kuru
 
 if (!function_exists('prj_normalize_currency')) {
-    function prj_normalize_currency($cur): string
+    function prj_normalize_currency(mixed $cur): string
     {
         $cur = strtoupper(trim((string)$cur));
         if ($cur === '' || $cur === '—') return 'TRY';
@@ -201,5 +202,5 @@ $grand_total = $grand_total_try;
 
 // --- GÖRÜNÜM ---
 include __DIR__ . '/includes/header.php';
-include __DIR__ . '/app/Views/projects/proje_detay_view.php';
+include __DIR__ . '/app/Modules/Projects/Presentation/Views/proje_detay_view.php';
 include __DIR__ . '/includes/footer.php';

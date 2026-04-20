@@ -1,6 +1,8 @@
 <?php
-// app/Views/projects/projeler_view.php
-// Değişkenler: $projects (array), $can_edit (bool)
+/**
+ * @var array $projects
+ * @var bool  $can_edit
+ */
 ?>
 <style>
 .proj-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:18px; margin-top:20px; }

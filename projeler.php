@@ -1,9 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/helpers.php';
+
+use App\Modules\Projects\Domain\ProjectModel;
+use App\Services\FinanceService;
 require_login();
 require_role(['admin', 'sistem_yoneticisi', 'muhasebe']);
 
-require_once __DIR__ . '/app/Models/ProjectModel.php';
 
 $model    = new ProjectModel(pdo());
 $cu_role  = current_user()['role'] ?? '';
@@ -38,10 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $projects = $model->all();
 
 // --- USD HESAPLAMA (proje_detay.php ile aynı mantık) ---
-require_once __DIR__ . '/app/Services/FinanceService.php';
-
 if (!function_exists('prj_normalize_currency')) {
-    function prj_normalize_currency($cur): string {
+    function prj_normalize_currency(mixed $cur): string {
         $cur = strtoupper(trim((string)$cur));
         if ($cur === '' || $cur === '—') return 'TRY';
         if (in_array($cur, ['TL', '₺', 'TRL', 'TRY'])) return 'TRY';
@@ -143,5 +143,5 @@ unset($p);
 
 // --- GÖRÜNÜM ---
 include __DIR__ . '/includes/header.php';
-include __DIR__ . '/app/Views/projects/projeler_view.php';
+include __DIR__ . '/app/Modules/Projects/Presentation/Views/projeler_view.php';
 include __DIR__ . '/includes/footer.php';

@@ -1,10 +1,12 @@
 <?php
 
+namespace App\Modules\Projects\Domain;
+
 class ProjectModel
 {
-    private PDO $db;
+    private \PDO $db;
 
-    public function __construct(PDO $db)
+    public function __construct(\PDO $db)
     {
         $this->db = $db;
     }
