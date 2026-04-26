@@ -273,14 +273,28 @@ window.calculateFinancials = function() {
     if (document.getElementById('lbl_subtotal'))          document.getElementById('lbl_subtotal').textContent          = fmt(subtotal)    + ' ' + sym;
     if (document.getElementById('lbl_vat_amount'))        document.getElementById('lbl_vat_amount').textContent        = fmt(vatAmount)   + ' ' + sym;
     if (document.getElementById('lbl_grand_total_display')) document.getElementById('lbl_grand_total_display').innerHTML = fmt(grandTotal) + ' <span style="font-size:18px;">' + sym + '</span>';
+    // Başlıklardaki para birimi etiketlerini güncelle
+    const kalemPbLabel  = kalemPb === 'TL' ? 'TL' : kalemPb;
+    const faturaPbLabel = faturaPb === 'TL' ? 'TL' : faturaPb;
+    if (document.getElementById('lbl_kalem_pb_title'))  document.getElementById('lbl_kalem_pb_title').textContent  = kalemPbLabel;
+    if (document.getElementById('lbl_fatura_pb_title')) document.getElementById('lbl_fatura_pb_title').textContent = faturaPbLabel;
+    if (document.getElementById('lbl_kdv_rate'))          document.getElementById('lbl_kdv_rate').textContent          = kdvOran;
+    if (document.getElementById('lbl_converted_kdv_rate')) document.getElementById('lbl_converted_kdv_rate').textContent = kdvOran;
 
     const kurSec = document.getElementById('fatura_kur_section');
     const cevSec = document.getElementById('fatura_cevrilmis_section');
     if (status === 'fatura_edildi') {
         if (kurSec) kurSec.style.visibility = 'visible';
         if (cevSec) cevSec.style.visibility = 'visible';
-        const usdRate = parseNum(document.getElementById('lbl_usd_val')?.textContent);
-        const eurRate = parseNum(document.getElementById('lbl_eur_val')?.textContent);
+        // ₺ sembolünü temizleyip parse et
+        const parseRate = (el) => {
+            if (!el) return 0;
+            const txt = el.textContent.replace('₺','').replace(/\./g,'').replace(',','.').trim();
+            const n = parseFloat(txt);
+            return isNaN(n) ? 0 : n;
+        };
+        const usdRate = parseRate(document.getElementById('lbl_usd_val'));
+        const eurRate = parseRate(document.getElementById('lbl_eur_val'));
         const fSym    = getSymbol(faturaPb);
         const convertCurrency = (amount) => {
             let tryAmount = amount;
@@ -312,19 +326,25 @@ window.updateRatesAndCalculate = async function() {
     }
 
     if (faturaTarihi) {
-        try {
-            const res  = await fetch('/api/rates.php?date=' + faturaTarihi);
-            const data = await res.json();
-            if (data.success) {
-                if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + data.rates.USD.toLocaleString('tr-TR', {minimumFractionDigits:4});
-                if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + data.rates.EUR.toLocaleString('tr-TR', {minimumFractionDigits:4});
-                if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = data.rates.USD;
-                if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = data.rates.EUR;
-            } else {
-                if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
-                if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
-            }
-        } catch (e) { console.error("Kur çekilemedi:", e); }
+        // Manuel düzenlenmiş kur varsa API'den çekme
+        const editedBadge = document.getElementById('kur_edited_badge');
+        const kurManuel = editedBadge && editedBadge.style.display !== 'none';
+
+        if (!kurManuel) {
+            try {
+                const res  = await fetch('/api/rates.php?date=' + faturaTarihi);
+                const data = await res.json();
+                if (data.success) {
+                    if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + data.rates.USD.toLocaleString('tr-TR', {minimumFractionDigits:4});
+                    if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + data.rates.EUR.toLocaleString('tr-TR', {minimumFractionDigits:4});
+                    if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = data.rates.USD;
+                    if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = data.rates.EUR;
+                } else {
+                    if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
+                    if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').innerHTML = '<span style="color:#e53e3e">⚠️ Çekilemedi</span>';
+                }
+            } catch (e) { console.error("Kur çekilemedi:", e); }
+        }
     }
     if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
 };
@@ -341,9 +361,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() { if (typeof window.calculateFinancials === 'function') window.calculateFinancials(); }, 150);
 
     // Fatura tarihi değişince kurları güncelle
-    // Event delegation — input display:none içinde başlayabileceği için
     document.addEventListener('change', function(e) {
         if (e.target && e.target.name === 'fatura_tarihi') {
+            // Tarih değişince manuel kur sıfırla — API'den yeni tarih için çek
+            var editedBadge = document.getElementById('kur_edited_badge');
+            if (editedBadge) editedBadge.style.display = 'none';
+            var resetBtn = document.getElementById('btn_reset_rate');
+            if (resetBtn) resetBtn.style.display = 'none';
             window.updateRatesAndCalculate();
         }
     });
@@ -410,21 +434,29 @@ function saveRateEdit() {
     if (crossCon) crossCon.style.display = 'block';
 
     toggleRateEdit(false);
+    // "Düzenlendi" badge göster
+    var editedBadge = document.getElementById('kur_edited_badge');
+    if (!editedBadge) {
+        editedBadge = document.createElement('span');
+        editedBadge.id = 'kur_edited_badge';
+        editedBadge.style.cssText = 'display:inline-block; margin-left:8px; background:#fef3c7; border:1px solid #fcd34d; color:#92400e; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; vertical-align:middle;';
+        editedBadge.textContent = '✏️ Düzenlendi';
+        var tarihDiv = document.querySelector('#fatura_kur_section div[style*="margin-bottom: 6px"]');
+        if (tarihDiv) tarihDiv.appendChild(editedBadge);
+    }
+    editedBadge.style.display = 'inline-block';
     if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
 }
 
 function resetRate() {
-    if (_originalUsd !== null && _originalEur !== null) {
-        var usd = parseFloat(_originalUsd);
-        var eur = parseFloat(_originalEur);
-        if (document.getElementById('lbl_usd_val')) document.getElementById('lbl_usd_val').textContent = '₺' + usd.toLocaleString('tr-TR', {minimumFractionDigits:4});
-        if (document.getElementById('lbl_eur_val')) document.getElementById('lbl_eur_val').textContent = '₺' + eur.toLocaleString('tr-TR', {minimumFractionDigits:4});
-        if (document.getElementById('hidden_kur_usd')) document.getElementById('hidden_kur_usd').value = usd;
-        if (document.getElementById('hidden_kur_eur')) document.getElementById('hidden_kur_eur').value = eur;
-    }
+    // Badge'i gizle
+    var editedBadge = document.getElementById('kur_edited_badge');
+    if (editedBadge) editedBadge.style.display = 'none';
+    // Sıfırla butonunu gizle
     var resetBtn = document.getElementById('btn_reset_rate');
     if (resetBtn) resetBtn.style.display = 'none';
-    if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
+    // Fatura tarihine göre API'den tekrar çek
+    window.updateRatesAndCalculate();
 }
 
 // ==========================================

@@ -20,15 +20,35 @@ if (empty($__raw_fatura) || $__raw_fatura === '0000-00-00' || strtotime($__raw_f
 }
 $fatura_date_fmt = date('d.m.Y', strtotime($fatura_date));
 
-// TCMB'den kur çek — FinanceService üzerinden
+// Kur öncelik sırası:
+// 1. DB'de kayıtlı manuel kur varsa onu kullan (mühürlenmiş)
+// 2. Yoksa TCMB'den fatura tarihine göre çek
+$kur_usd_db = !empty($order['kur_usd']) ? (float)$order['kur_usd'] : 0;
+$kur_eur_db = !empty($order['kur_eur']) ? (float)$order['kur_eur'] : 0;
+$kur_manuel = ($kur_usd_db > 0 || $kur_eur_db > 0); // DB'de kayıtlı kur var mı?
+
 $usd_info_rate = null;
 $eur_info_rate = null;
 try {
-    // Autoloader App\ namespace'ini otomatik yükler
     $__fs = new \App\Services\FinanceService();
-    $__rates = $__fs->getCurrentExchangeRates();
-    $usd_info_rate = $__rates['USD'] ?? null;
-    $eur_info_rate = $__rates['EUR'] ?? null;
+    if ($kur_manuel) {
+        // DB'de kayıtlı kur var — mühürlenmiş, TCMB'ye gitme
+        $usd_info_rate = $kur_usd_db ?: null;
+        $eur_info_rate = $kur_eur_db ?: null;
+    } else {
+        // Fatura tarihine göre tarihsel kur çek
+        $__usd = $__fs->getHistoricalRate($fatura_date, 'USD', 0);
+        $__eur = $__fs->getHistoricalRate($fatura_date, 'EUR', 0);
+        if ($__usd > 0 && $__eur > 0) {
+            $usd_info_rate = $__usd;
+            $eur_info_rate = $__eur;
+        } else {
+            // Tarihsel kur gelmezse bugünkü kuru kullan
+            $__today = $__fs->getCurrentExchangeRates();
+            $usd_info_rate = $__today['USD'] ?? null;
+            $eur_info_rate = $__today['EUR'] ?? null;
+        }
+    }
 } catch (Throwable $__e) {}
 ?>
 
