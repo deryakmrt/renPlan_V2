@@ -81,7 +81,7 @@
 .will-animate { opacity:0; transform:translateY(6px); transition:opacity .4s ease, transform .4s ease; }
 .will-animate.appear { opacity:1; transform:none; }
 /* --- YENİ: YATAY İSTATİSTİK KARTLARI (En Üst Sıra) --- */
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
 @media (max-width: 1024px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .stat-row { grid-template-columns: 1fr; } }
 
@@ -134,4 +134,12 @@
 #reportTable th:nth-child(7),
 #reportTable td:nth-child(7) {
   text-align: center !important;
+}
+
+
+/* core.css'deki flex override — stat kartları dikey olmalı */
+.stat-row .stat-card {
+    display: block !important;
+    gap: unset !important;
+    align-items: unset !important;
 }
