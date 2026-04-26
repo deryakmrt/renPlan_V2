@@ -69,6 +69,7 @@
     </div>
 
     <div id="fatura_cevrilmis_section" style="visibility: <?= ($order['status'] ?? '') === 'fatura_edildi' ? 'visible' : 'hidden' ?>; border-left: 1px dashed #cbd5e1; padding-left: 20px; display: flex; flex-direction: column; align-items: flex-end; text-align: right;">
+        <input type="hidden" name="fatura_toplam" id="hidden_fatura_toplam" value="<?= $order['fatura_toplam'] ?? '' ?>">
         <div style="font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; width: 100%; text-align: right;">Fatura Karşılığı (<span id="lbl_fatura_pb_title" style="color:#0f172a;">TL</span>)</div>
 
         <div style="display: flex; justify-content: flex-end; gap: 15px; width: 100%; margin-bottom: 5px;">
