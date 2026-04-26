@@ -305,6 +305,10 @@ window.calculateFinancials = function() {
         if (document.getElementById('lbl_converted_subtotal')) document.getElementById('lbl_converted_subtotal').textContent = fmt(convertCurrency(subtotal))    + ' ' + fSym;
         if (document.getElementById('lbl_converted_vat'))      document.getElementById('lbl_converted_vat').textContent      = fmt(convertCurrency(vatAmount))   + ' ' + fSym;
         if (document.getElementById('lbl_converted_total'))    document.getElementById('lbl_converted_total').innerHTML      = fmt(convertCurrency(grandTotal)) + ' <span style="font-size:18px;">' + fSym + '</span>';
+        // Fatura toplamını hidden input'a yaz — DB'ye kaydedilecek
+        if (document.getElementById('hidden_fatura_toplam')) {
+            document.getElementById('hidden_fatura_toplam').value = convertCurrency(grandTotal).toFixed(4);
+        }
     } else {
         if (kurSec) kurSec.style.visibility = 'hidden';
         if (cevSec) cevSec.style.visibility = 'hidden';
