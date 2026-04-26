@@ -50,7 +50,9 @@ class ReportModel
             $args    = array_merge($args, $vals);
         }
         if (!empty($filters['project_query'])) {
-            $where[] = "$projectCol LIKE ?";
+            // Hem orders.proje_adi hem de bağlı projects.name'de ara
+            $where[] = "(orders.proje_adi LIKE ? OR proj.name LIKE ?)";
+            $args[]  = '%' . $filters['project_query'] . '%';
             $args[]  = '%' . $filters['project_query'] . '%';
         }
         if (!empty($filters['product_query'])) {
@@ -83,7 +85,7 @@ class ReportModel
                 orders.kdv_orani           AS kdv_orani,
                 orders.siparisi_alan       AS siparisi_alan,
                 orders.order_code          AS order_code,
-                orders.proje_adi           AS project_name,
+                COALESCE(proj.name, orders.proje_adi) AS project_name,
                 customers.name             AS customer_name,
                 products.name              AS product_name,
                 products.sku               AS sku,
@@ -98,6 +100,7 @@ class ReportModel
             JOIN products  ON products.id  = oi.product_id
             JOIN customers ON customers.id = orders.customer_id
             LEFT JOIN product_categories pc ON pc.id = products.category_id
+            LEFT JOIN projects proj ON proj.id = orders.project_id
             $whereSql
             ORDER BY orders.siparis_tarihi DESC, orders.id DESC, oi.id ASC
         ";
