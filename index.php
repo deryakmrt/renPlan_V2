@@ -9,39 +9,53 @@ $role = $cu['role'] ?? '';
 $welcome_name = h($cu['username']);
 $linked_customer = $cu['linked_customer'] ?? '';
 
-$pc = $db->query('SELECT COUNT(*) FROM products')->fetchColumn();
-$cc = $db->query('SELECT COUNT(*) FROM customers')->fetchColumn();
+// --- İSTATİSTİKLER: Tek sorguda çek ---
 
-// --- SİPARİŞ İSTATİSTİKLERİ (Yetkiye ve Müşteriye Göre Filtreli) ---
-$where_clause = " WHERE 1=1 ";
+// Sipariş filtresi oluştur
+$where_args  = [];
+$where_parts = [];
 
-// 1. KURAL: Admin/Sistem Yöneticisi DEĞİLSE taslakları asla göremez (Müşteri dahil)
-if (!in_array($role, ['admin', 'sistem_yoneticisi'])) {
-  $where_clause .= " AND status != 'taslak_gizli'";
+if (!in_array($role, ['admin', 'sistem_yoneticisi'], true)) {
+    $where_parts[] = "status != 'taslak_gizli'";
 }
 
-// 2. KURAL: Müşteriyse SADECE kendi siparişlerini görebilir
 if ($role === 'musteri') {
-  if ($linked_customer !== '') {
-    $where_clause .= " AND customer_id IN (SELECT id FROM customers WHERE name = " . $db->quote($linked_customer) . ")";
-  } else {
-    $where_clause .= " AND 1=0 ";
-  }
+    if ($linked_customer !== '') {
+        $where_parts[] = "customer_id IN (SELECT id FROM customers WHERE name = ?)";
+        $where_args[]  = $linked_customer;
+    } else {
+        $where_parts[] = "1=0";
+    }
 }
 
-// Toplam Sipariş
-$oc = $db->query("SELECT COUNT(*) FROM orders" . $where_clause)->fetchColumn();
+$where_sql = $where_parts ? ('WHERE ' . implode(' AND ', $where_parts)) : '';
 
-// Devam Edenler (Teslim edilenler ve iptaller hariç)
-$active_orders = $db->query("SELECT COUNT(*) FROM orders" . $where_clause . " AND status NOT IN ('teslim edildi', 'fatura_edildi', 'askiya_alindi', 'taslak_gizli')")->fetchColumn();
+// Ürün ve müşteri sayısı + sipariş istatistikleri tek sorguda
+$stats_st = $db->prepare("
+    SELECT
+        (SELECT COUNT(*) FROM products)  AS pc,
+        (SELECT COUNT(*) FROM customers) AS cc,
+        COUNT(*)                         AS oc,
+        SUM(CASE WHEN status NOT IN ('teslim edildi','fatura_edildi','askiya_alindi','taslak_gizli') THEN 1 ELSE 0 END) AS active_orders,
+        SUM(CASE WHEN status IN ('teslim edildi','fatura_edildi') THEN 1 ELSE 0 END) AS completed_orders
+    FROM orders
+    $where_sql
+");
+$stats_st->execute($where_args);
+$stats = $stats_st->fetch(PDO::FETCH_ASSOC);
 
-// Tamamlananlar
-$completed_orders = $db->query("SELECT COUNT(*) FROM orders" . $where_clause . " AND status IN ('teslim edildi', 'fatura_edildi')")->fetchColumn();
+$pc              = (int)($stats['pc']              ?? 0);
+$cc              = (int)($stats['cc']              ?? 0);
+$oc              = (int)($stats['oc']              ?? 0);
+$active_orders   = (int)($stats['active_orders']   ?? 0);
+$completed_orders = (int)($stats['completed_orders'] ?? 0);
 
-// Son 5 Sipariş (Müşteriler için ana sayfa mini tablosu)
+// Son siparişler (sadece müşteri için)
 $recent_orders = [];
 if ($role === 'musteri' && $linked_customer !== '') {
-  $recent_orders = $db->query("SELECT id, order_code, proje_adi, status, termin_tarihi FROM orders" . $where_clause . " ORDER BY id DESC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
+    $rs = $db->prepare("SELECT id, order_code, proje_adi, status, termin_tarihi FROM orders $where_sql ORDER BY id DESC LIMIT 3");
+    $rs->execute($where_args);
+    $recent_orders = $rs->fetchAll(PDO::FETCH_ASSOC);
 }
 
 include __DIR__ . '/includes/header.php';
@@ -336,7 +350,7 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
     <div class="tile t-purple">
       <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'muhasebe'], true)): ?>
-        <a href="/reports/sales_reps.php" class="stretch" aria-label="Raporlar"></a>
+        <a href="/sales_reps.php" class="stretch" aria-label="Raporlar"></a>
       <?php else: ?>
         <a href="#" onclick="alert('⚠️ Bu sayfaya erişim için admin/muhasebe yetkisi gereklidir.'); return false;" class="stretch" aria-label="Raporlar"></a>
       <?php endif; ?>
@@ -387,70 +401,45 @@ if (!in_array($role, ['muhasebe', 'musteri'])):
     // Not formatı: "derya | 05.02.2026 12:47: deneme not"
     // Nottan tarih/saati çıkarıp ona göre sıralıyoruz
     $rows = [];
-    try {
-      // En son satırdaki notu ve tarihini parse edip sıralıyoruz
-      $st = $db->query("
-      SELECT 
-        o.id, 
-        o.order_code, 
-        o.customer_id, 
-        o.notes AS note,
-        c.name AS customer_name,
-        -- En son not satırını al (son \\n'den sonrası)
-        TRIM(SUBSTRING_INDEX(o.notes, '\n', -1)) AS last_note_line,
-        -- Nottan tarihi parse et: \"derya | 05.02.2026 12:47: ...\" formatından
-        -- Tarih/saat kısmını al (| ile : arasındaki)
-        TRIM(
-          SUBSTRING_INDEX(
-            SUBSTRING_INDEX(TRIM(SUBSTRING_INDEX(o.notes, '\n', -1)), '|', -1), 
-            ':', 
-            1
-          )
-        ) AS note_datetime_str
-      FROM orders o
-      LEFT JOIN customers c ON c.id = o.customer_id
-      WHERE o.notes IS NOT NULL AND TRIM(o.notes) <> '' 
-      " . ($role === 'uretim' ? " AND o.status != 'fatura_edildi' " : "") . "
-      ORDER BY 
-        -- Tarih/saat string'ini MySQL datetime'a çevir ve sırala
-        -- Format: \"05.02.2026 12:47\" → datetime
-        STR_TO_DATE(
-          TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(TRIM(SUBSTRING_INDEX(o.notes, '\n', -1)), '|', -1), ':', 1)),
-          '%d.%m.%Y %H:%i'
-        ) DESC
-      LIMIT 10
-    ");
-      $rows = $st->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Throwable $e1) {
-      // Fallback: SQL parse başarısızsa basit sıralama
-      $st2 = $db->query("
-      SELECT o.id, o.order_code, o.customer_id, o.notes AS note, o.created_at AS last_modified,
-             c.name AS customer_name
-      FROM orders o
-      LEFT JOIN customers c ON c.id = o.customer_id
-      WHERE o.notes IS NOT NULL AND TRIM(o.notes) <> ''
-      " . ($role === 'uretim' ? " AND o.status != 'fatura_edildi' " : "") . "
-      ORDER BY o.created_at DESC
-      LIMIT 10
-    ");
-      $rows = $st2->fetchAll(PDO::FETCH_ASSOC);
+    // Notları PHP'de parse et — MySQL'de STR_TO_DATE/SUBSTRING_INDEX zinciri yok
+    $notes_sql = "
+        SELECT o.id, o.order_code, o.customer_id, o.notes AS note, o.created_at AS last_modified,
+               c.name AS customer_name
+        FROM orders o
+        LEFT JOIN customers c ON c.id = o.customer_id
+        WHERE o.notes IS NOT NULL AND TRIM(o.notes) <> ''
+    ";
+    if ($role === 'uretim') $notes_sql .= " AND o.status != 'fatura_edildi'";
+    $notes_sql .= " ORDER BY o.created_at DESC LIMIT 30"; // Fazladan çek, PHP'de sırala
+
+    $rows_raw = $db->query($notes_sql)->fetchAll(PDO::FETCH_ASSOC);
+
+    // PHP'de son notu parse et ve nota göre sırala
+    $rows = [];
+    foreach ($rows_raw as $r) {
+        $lines = array_filter(array_map('trim', preg_split('/[\r\n]+/', (string)($r['note'] ?? ''))));
+        $last  = end($lines);
+        if (!$last) continue;
+        // Format: "isim | gg.aa.yyyy hh:mm: not"
+        $ts = 0;
+        if (preg_match('/\|\s*(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/', $last, $dm)) {
+            $ts = mktime((int)$dm[4], (int)$dm[5], 0, (int)$dm[2], (int)$dm[1], (int)$dm[3]);
+        }
+        $r['_ts']   = $ts ?: strtotime((string)($r['last_modified'] ?? ''));
+        $r['_last'] = $last;
+        $rows[] = $r;
     }
+    // Nota tarihine göre sırala (en yeni önce)
+    usort($rows, fn($a, $b) => $b['_ts'] <=> $a['_ts']);
+    $rows = array_slice($rows, 0, 10);
 
     if (!$rows) {
       $tasks = [['prefix' => '', 'summary' => 'Henüz not bulunamadı', 'badge' => '', 'url' => '#']];
     } else {
       foreach ($rows as $r) {
-        // orders.notes formatı: "kullanici | tarih saat: not\r\nkullanici2 | tarih2: not2"
-        $fullNotes = (string)($r['note'] ?? '');
-
-        // En son notu bul (satırları ayır ve en sonuncuyu al)
-        $noteLines = preg_split('/[\r\n]+/', $fullNotes);
-        $noteLines = array_filter(array_map('trim', $noteLines)); // Boşları temizle
-        $lastNoteLine = end($noteLines); // Son satır
-
-        if (!$lastNoteLine) {
-          continue; // Boşsa atla
-        }
+        // Son not satırı PHP'de zaten parse edildi
+        $lastNoteLine = $r['_last'] ?? '';
+        if (!$lastNoteLine) continue;
 
         // Format: "derya | 05.02.2026 12:47: deneme"
         $userName = '';
