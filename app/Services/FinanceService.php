@@ -79,6 +79,70 @@ class FinanceService
     }
 
     // -------------------------------------------------------------------------
+    // Tüm satırların tarihsel kurlarını tek seferde önceden yükle
+    // Böylece foreach içinde tekrar tekrar HTTP isteği gitmez
+    // -------------------------------------------------------------------------
+    public function prefetchRates(array $rows, array $currentRates): void
+    {
+        $dates = [];
+        foreach ($rows as $r) {
+            $isInvoiced = (float)($r['fatura_toplam'] ?? 0) > 0
+                || str_contains(mb_strtolower((string)($r['order_status'] ?? ''), 'UTF-8'), 'fatura')
+                || (float)($r['kur_usd'] ?? 0) > 0
+                || (float)($r['kur_eur'] ?? 0) > 0;
+
+            if (!$isInvoiced) continue;
+
+            // Manuel kur varsa HTTP isteği atmaya gerek yok
+            $manualUsd = (float)str_replace(',', '.', (string)($r['kur_usd'] ?? ''));
+            $manualEur = (float)str_replace(',', '.', (string)($r['kur_eur'] ?? ''));
+            if ($manualUsd > 0 && $manualEur > 0) continue;
+
+            $date = !empty($r['fatura_tarihi'])
+                ? (string)$r['fatura_tarihi']
+                : (string)($r['order_date'] ?? '');
+
+            if ($date !== '') $dates[$date] = true;
+        }
+
+        foreach (array_keys($dates) as $date) {
+            try {
+                $dt  = new \DateTime($date);
+                $dow = (int)$dt->format('N');
+                if ($dow === 6) $dt->modify('-1 day');
+                if ($dow === 7) $dt->modify('-2 days');
+                $key = $dt->format('Ymd');
+
+                // Her iki kuru da aynı XML'den tek HTTP isteğiyle çek
+                $needUsd = !isset(self::$rateCache[$key . '_USD']);
+                $needEur = !isset(self::$rateCache[$key . '_EUR']);
+                if (!$needUsd && !$needEur) continue;
+
+                $url = 'https://www.tcmb.gov.tr/kurlar/' . $dt->format('Ym') . '/' . $dt->format('dmY') . '.xml';
+                $ctx = stream_context_create(['http' => ['timeout' => 4]]);
+                $xml = @file_get_contents($url, false, $ctx);
+                if (!$xml) continue;
+
+                $tcmb = @simplexml_load_string($xml);
+                if (!$tcmb) continue;
+
+                foreach ($tcmb->Currency as $c) {
+                    $code = (string)$c['CurrencyCode'];
+                    if ($code === 'USD') self::$rateCache[$key . '_USD'] = (float)$c->ForexSelling;
+                    if ($code === 'EUR') self::$rateCache[$key . '_EUR'] = (float)$c->ForexSelling;
+                }
+
+                // Bulunamadıysa fallback yaz, tekrar denemesin
+                if (!isset(self::$rateCache[$key . '_USD'])) self::$rateCache[$key . '_USD'] = $currentRates['USD'] ?? 0.0;
+                if (!isset(self::$rateCache[$key . '_EUR'])) self::$rateCache[$key . '_EUR'] = $currentRates['EUR'] ?? 0.0;
+
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Para birimi normalizasyonu: TL/₺ → TRY, USD/$→ USD, EUR/€ → EUR
     // -------------------------------------------------------------------------
     public function normalizeCurrency(mixed $cur): string

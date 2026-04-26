@@ -3,7 +3,7 @@
 // --- CLEAN ARCHITECTURE AUTOLOADER ---
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
-    $base_dir = __DIR__ . '/../app/'; // helpers.php'nin konumuna göre bir üst klasöre çıkıp app'e girer
+    $base_dir = __DIR__ . '/../app/';
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) return;
     $relative_class = substr($class, $len);
@@ -48,6 +48,10 @@ function method(string $m){ return $_SERVER['REQUEST_METHOD'] === strtoupper($m)
 // CSRF
 if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
 if (empty($_SESSION['csrf'])) { $_SESSION['csrf'] = bin2hex(random_bytes(16)); }
+
+function csrf_token(): string {
+    return $_SESSION['csrf'] ?? '';
+}
 
 // Basit kullanım için (login.php gibi)
 function csrf_input() {
@@ -113,7 +117,7 @@ function current_user(){
 }
 function current_role(){ return $_SESSION['urole'] ?? 'musteri'; }
 function has_role(string $role){ return current_role() === $role; }
-function require_login(){ if(!current_user()) redirect('gir.php'); }
+function require_login(){ if(!current_user()) redirect('/gir.php'); }
 function require_role(mixed $roles){
     if (!is_array($roles)) { $roles = [$roles]; }
     if (!in_array(current_role(), $roles, true)) { http_response_code(403); die('Yetkisiz erişim'); }
@@ -256,9 +260,6 @@ function flash() {
         echo '</div>';
         unset($_SESSION['flash_error']);
     }
-}
-function csrf_token(): string {
-    return $_SESSION['csrf'] ?? '';
 }
 
 // --- 🔒 MÜŞTERİ GÜVENLİK DUVARI ---
