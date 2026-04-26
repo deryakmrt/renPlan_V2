@@ -119,14 +119,107 @@ function resolve_img_path(string $raw, string $root): string
 
 // -------------------------------------------------------------------------
 // Kalem resmi: önce kendi resmi, yoksa parent resmi
+// Base64'e çevirerek döner — Dompdf dosya okuma yerine inline veri kullanır
+// Optimizasyonlar:
+//   1. Statik cache — aynı dosya birden fazla kez okunmaz
+//   2. Boyut limiti — 2 MB üzeri dosyalar atlanır
+//   3. GD ile küçültme — uzun kenar 300 px ile sınırlandırılır
 // -------------------------------------------------------------------------
 function resolve_item_img(array $item, string $root): string
 {
+    static $cache = [];
+
     $raw = trim((string)($item['image'] ?? ''));
     if ($raw === '' || $raw === '0') {
         $raw = trim((string)($item['parent_img'] ?? ''));
     }
-    return resolve_img_path($raw, $root);
+    $path = resolve_img_path($raw, $root);
+    if ($path === '' || !str_starts_with($path, '/') || !file_exists($path)) {
+        return $path; // URL ise veya dosya yoksa olduğu gibi dön
+    }
+
+    // Cache kontrolü
+    if (isset($cache[$path])) {
+        return $cache[$path];
+    }
+
+    // GD ile yeniden boyutlandır (max 300 px uzun kenar)
+    $resized = _resize_img_to_base64($path, 300);
+    if ($resized !== '') {
+        return $cache[$path] = $resized;
+    }
+
+    // GD yoksa veya başarısız olursa orijinali base64'e çevir
+    $mime = mime_content_type($path) ?: 'image/jpeg';
+    $data = base64_encode(file_get_contents($path));
+    return $cache[$path] = 'data:' . $mime . ';base64,' . $data;
+}
+
+// -------------------------------------------------------------------------
+// GD ile resmi küçült, base64 data URI döner
+// -------------------------------------------------------------------------
+function _resize_img_to_base64(string $path, int $max_px): string
+{
+    if (!function_exists('imagecreatefromstring')) return '';
+
+    $raw = @file_get_contents($path);
+    if ($raw === false) return '';
+
+    $src = @imagecreatefromstring($raw);
+    if (!$src) return '';
+
+    $w = imagesx($src);
+    $h = imagesy($src);
+
+    // Küçültme gerekmiyorsa orijinal binary'yi olduğu gibi kullan
+    if ($w <= $max_px && $h <= $max_px) {
+        imagedestroy($src);
+        $ext  = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $mime = $ext === 'png' ? 'image/png' : (mime_content_type($path) ?: 'image/jpeg');
+        return 'data:' . $mime . ';base64,' . base64_encode($raw);
+    }
+
+    // Oran koruyarak yeni boyut hesapla
+    if ($w >= $h) {
+        $nw = $max_px;
+        $nh = (int)round($h * $max_px / $w);
+    } else {
+        $nh = $max_px;
+        $nw = (int)round($w * $max_px / $h);
+    }
+
+    $dst = imagecreatetruecolor($nw, $nh);
+
+    // PNG saydamlığını doğru sırayla koru:
+    // 1. Tüm pikselleri önce tam saydam yap
+    // 2. Kopyalama sırasında alfa karıştırmayı aç
+    // 3. Kaydetmeden önce tekrar alpha moduna geç
+    imagealphablending($dst, false);
+    imagesavealpha($dst, true);
+    $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+    imagefill($dst, 0, 0, $transparent);
+    imagealphablending($dst, true);
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
+    imagedestroy($src);
+
+    imagealphablending($dst, false);
+    imagesavealpha($dst, true);
+
+    // PNG ise saydamlık bozulmasın diye PNG olarak çıkar
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    ob_start();
+    if ($ext === 'png') {
+        imagepng($dst, null, 6); // sıkıştırma: 0-9, 6 iyi denge
+        $mime_out = 'image/png';
+    } else {
+        imagejpeg($dst, null, 82); // kalite: 82 — boyut/hız dengesi
+        $mime_out = 'image/jpeg';
+    }
+    imagedestroy($dst);
+    $out = ob_get_clean();
+
+    return 'data:' . $mime_out . ';base64,' . base64_encode($out);
 }
 
 // -------------------------------------------------------------------------
