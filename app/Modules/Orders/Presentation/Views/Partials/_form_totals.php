@@ -21,7 +21,13 @@
 
         <div style="font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">TCMB Kur Bilgileri</div>
         <div style="font-size: 11px; color: #94a3b8; font-style: italic; line-height: 1.8;">
-            <div style="margin-bottom: 6px;">🗓️ <span id="lbl_fatura_tarihi_fmt" style="font-weight:600;"><?= $fatura_date_fmt ?? date('d.m.Y') ?></span> TCMB Satış Kuru:</div>
+            <div style="margin-bottom: 6px;">🗓️ <span id="lbl_fatura_tarihi_fmt" style="font-weight:600;"><?= $fatura_date_fmt ?? date('d.m.Y') ?></span> TCMB Satış Kuru:
+                <?php if (!empty($order['kur_usd']) || !empty($order['kur_eur'])): ?>
+                <span id="kur_edited_badge" style="display:inline-block; margin-left:8px; background:#fef3c7; border:1px solid #fcd34d; color:#92400e; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; vertical-align:middle;">✏️ Düzenlendi</span>
+                <?php else: ?>
+                <span id="kur_edited_badge" style="display:none; margin-left:8px; background:#fef3c7; border:1px solid #fcd34d; color:#92400e; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; vertical-align:middle;">✏️ Düzenlendi</span>
+                <?php endif; ?>
+            </div>
 
             <div id="kur_display_container" style="display: flex; align-items: flex-start; gap: 12px;">
                 <div style="display: flex; flex-direction: column; color: #475569;">

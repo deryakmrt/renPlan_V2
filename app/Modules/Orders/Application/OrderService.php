@@ -56,8 +56,9 @@ class OrderService
         $currency = ($odeme_para_birimi === 'TL' ? 'TRY' : ($odeme_para_birimi ?: 'TRY'));
 
         $kdv_orani     = (int)($postData['kdv_orani'] ?? 20);
-        $kur_usd       = (float)($postData['kur_usd'] ?? 0);
-        $kur_eur       = (float)($postData['kur_eur'] ?? 0);
+        // Kur sadece fatura_edildi durumunda kaydedilir, diğer durumlarda NULL bırak
+        $kur_usd       = ($status === 'fatura_edildi' && !empty($postData['kur_usd']))  ? (float)$postData['kur_usd']  : null;
+        $kur_eur       = ($status === 'fatura_edildi' && !empty($postData['kur_eur']))  ? (float)$postData['kur_eur']  : null;
         $fatura_toplam = !empty($postData['fatura_toplam']) ? (float)$postData['fatura_toplam'] : null;
 
         // 3. TARİHLER
@@ -200,11 +201,9 @@ class OrderService
 
             $u = trim((string)($units[$i] ?? 'adet'));
             
-            $q_raw = $qtys[$i] ?? 0;
-            $q = is_string($q_raw) ? (float)str_replace(',', '.', str_replace('.', '', $q_raw)) : (float)$q_raw;
-            
-            $p_raw = $prices[$i] ?? 0;
-            $pr = is_string($p_raw) ? (float)str_replace(',', '.', str_replace('.', '', $p_raw)) : (float)$p_raw;
+            // Güvenli sayı parse: sadece ilk virgülü noktaya çevir
+            $q  = (float)preg_replace('/,(?=.*,)/', '', str_replace(',', '.', (string)($qtys[$i]  ?? 0)));
+            $pr = (float)preg_replace('/,(?=.*,)/', '', str_replace(',', '.', (string)($prices[$i] ?? 0)));
 
             $oz = trim((string)($ozet[$i] ?? ''));
             $ka = trim((string)($kalan[$i] ?? ''));
