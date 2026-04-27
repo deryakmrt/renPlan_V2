@@ -20,12 +20,64 @@ $month = isset($_GET['m']) ? (int)$_GET['m'] : (int)date('n');
 if ($month < 1 || $month > 12) $month = (int)date('n');
 if ($year < 1970 || $year > 2100) $year = (int)date('Y');
 
+// Resmi tatiller — date.nager.at API (cache ile)
+$holidays = [];
+$holiday_cache_file = sys_get_temp_dir() . '/tr_holidays_' . $year . '.json';
+if (file_exists($holiday_cache_file) && (time() - filemtime($holiday_cache_file)) < 86400 * 30) {
+    $holidays_raw = json_decode(file_get_contents($holiday_cache_file), true) ?? [];
+} else {
+    try {
+        $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+        $api = @file_get_contents('https://date.nager.at/api/v3/PublicHolidays/' . $year . '/TR', false, $ctx);
+        $holidays_raw = $api ? (json_decode($api, true) ?? []) : [];
+        if ($holidays_raw) file_put_contents($holiday_cache_file, json_encode($holidays_raw));
+    } catch (Throwable $e) { $holidays_raw = []; }
+}
+foreach ($holidays_raw as $h) {
+    $holidays[$h['date']] = $h['localName'] ?? $h['name'];
+}
+
+// Dini bayramlar — Hicri takvime göre sabit liste
+$dini_bayramlar = [
+    // Ramazan Bayramı (3 gün) + Kurban Bayramı (4 gün)
+    2025 => [
+        '2025-03-30' => 'Ramazan Bayramı 1. Gün',
+        '2025-03-31' => 'Ramazan Bayramı 2. Gün',
+        '2025-04-01' => 'Ramazan Bayramı 3. Gün',
+        '2025-06-06' => 'Kurban Bayramı 1. Gün',
+        '2025-06-07' => 'Kurban Bayramı 2. Gün',
+        '2025-06-08' => 'Kurban Bayramı 3. Gün',
+        '2025-06-09' => 'Kurban Bayramı 4. Gün',
+    ],
+    2026 => [
+        '2026-03-20' => 'Ramazan Bayramı 1. Gün',
+        '2026-03-21' => 'Ramazan Bayramı 2. Gün',
+        '2026-03-22' => 'Ramazan Bayramı 3. Gün',
+        '2026-05-27' => 'Kurban Bayramı 1. Gün',
+        '2026-05-28' => 'Kurban Bayramı 2. Gün',
+        '2026-05-29' => 'Kurban Bayramı 3. Gün',
+        '2026-05-30' => 'Kurban Bayramı 4. Gün',
+    ],
+    2027 => [
+        '2027-03-09' => 'Ramazan Bayramı 1. Gün',
+        '2027-03-10' => 'Ramazan Bayramı 2. Gün',
+        '2027-03-11' => 'Ramazan Bayramı 3. Gün',
+        '2027-05-16' => 'Kurban Bayramı 1. Gün',
+        '2027-05-17' => 'Kurban Bayramı 2. Gün',
+        '2027-05-18' => 'Kurban Bayramı 3. Gün',
+        '2027-05-19' => 'Kurban Bayramı 4. Gün',
+    ],
+];
+if (!empty($dini_bayramlar[$year])) {
+    $holidays = array_merge($holidays, $dini_bayramlar[$year]);
+}
+
 $start = new DateTime(sprintf('%04d-%02d-01', $year, $month));
 $end   = (clone $start)->modify('last day of this month');
 
 // Fetch orders (prefer termin_tarihi, fallback siparis_tarihi)
 $stmt = $db->prepare("
-  SELECT o.id,
+  SELECT o.id, o.order_code,
          COALESCE(o.termin_tarihi, o.siparis_tarihi) AS etkin_tarih,
          o.customer_id,
          c.name AS customer_name
@@ -62,46 +114,59 @@ if (!defined('CAL_EMBED') || !CAL_EMBED) {
 // Inline styles if asked or not embedded (so it always looks fine)
 if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') || !CAL_EMBED)) {
     echo '<style>
-    .calendar{ background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 8px 20px rgba(17,24,39,.08); }
-    .cal-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; }
-    .cal-title{ margin:0; font-size:18px; font-weight:800; }
-    .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; padding:0 16px; color:#334155; font-weight:700; font-size:12px; }
-    .cal-weekdays > div{ padding:8px 0; text-align:center; }
-    .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; padding:12px 16px 16px 16px; }
-    .day{ background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; min-height:120px; display:flex; flex-direction:column; overflow:hidden; }
-    .day.today{ outline:2px solid #22c55e; background:#ecfeff; }
-    .day.empty{ background:transparent; border:none; box-shadow:none; }
-    .day .date{ font-weight:800; font-size:14px; color:#0f172a; padding:8px 10px; border-bottom:1px dashed #e5e7eb; }
-    .day .items{ padding:8px 10px; display:flex; flex-direction:column; gap:6px; overflow:auto; }
-    .item{ display:flex; gap:6px; align-items:center; padding:6px 8px; border-radius:8px; background:#fff; border:1px solid #e5e7eb; text-decoration:none; color:#0f172a; font-size:12px; }
-    .item:hover{ background:#eef2ff; border-color:#c7d2fe; transform:translateY(-1px); }
-    .item .code{ font-weight:800; opacity:.9; }
-    @media (max-width:960px){ .cal-weekdays{ display:none; } .cal-grid{ grid-template-columns:repeat(2,1fr); } .day{ min-height:100px; } }
+    .cal-wrap{}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 16px 0;}
+    .cal-nav{display:flex;gap:8px;}
+    .cal-nav a{padding:6px 14px;border-radius:8px;border:0.5px solid #e2e8f0;background:#fff;color:#0f172a;font-size:13px;text-decoration:none;}
+    .cal-nav a:hover{background:#f8fafc;}
+    .cal-nav a.primary{background:#ee7422;color:#fff;border-color:#ee7422;font-weight:500;}
+    .cal-nav a.primary:hover{background:#d4641a;}
+    .cal-title{font-size:18px;font-weight:500;color:#0f172a;}
+    .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+    .cal-weekday{text-align:center;font-size:11px;font-weight:500;color:#94a3b8;padding:6px 0;text-transform:uppercase;letter-spacing:0.5px;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+    .cal-day{background:#fff;border:1px solid #d1d9e0;border-radius:10px;min-height:100px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+    .cal-day:hover{border-color:#ee7422;box-shadow:0 3px 10px rgba(238,116,34,0.12);}
+    .cal-day.today{border:2px solid #ee7422;background:#fff9f5;}
+    .cal-day.holiday{border:1.5px solid #ef4444;background:#fff5f5;}
+    .cal-day.empty{background:transparent;border:none;box-shadow:none;}
+    .cal-day-num{padding:7px 9px 4px;font-size:13px;font-weight:700;color:#334155;}
+    .cal-day-num span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;}
+    .cal-day.today .cal-day-num span{background:#ee7422;color:#fff;font-weight:700;}
+    .cal-day.holiday .cal-day-num span{background:#ef4444;color:#fff;font-weight:700;}
+    .cal-holiday-name{padding:0 8px 4px;font-size:10px;color:#ef4444;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0.85;}
+    .cal-items{padding:2px 6px 6px;display:flex;flex-direction:column;gap:4px;}
+    .cal-item{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;text-decoration:none;font-size:11px;color:#1e293b;line-height:1.3;font-weight:500;}
+    .cal-item:hover{background:#fff3eb;border-color:#ee7422;color:#c2560f;}
+    .cal-item-code{font-weight:700;color:#ee7422;flex-shrink:0;font-size:10px;}
+    .cal-item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#334155;}
+    .cal-empty{color:#94a3b8;font-size:13px;text-align:center;padding:10px 0;}
+    @media(max-width:960px){.cal-weekdays{display:none;}.cal-grid{grid-template-columns:repeat(2,1fr);}}
     </style>';
 }
 ?>
-<div class="calendar card">
+<div class="cal-wrap card">
   <div class="cal-header">
-    <div class="left">
-      <a class="btn" href="calendar.php?y=<?= $prev->format('Y') ?>&m=<?= $prev->format('n') ?>">← Önceki</a>
-      <a class="btn" href="calendar.php?y=<?= date('Y') ?>&m=<?= date('n') ?>">Bugün</a>
-      <a class="btn" href="calendar.php?y=<?= $next->format('Y') ?>&m=<?= $next->format('n') ?>">Sonraki →</a>
+    <div class="cal-nav">
+      <a href="calendar.php?y=<?= $prev->format('Y') ?>&m=<?= $prev->format('n') ?>">← Önceki</a>
+      <a href="calendar.php?y=<?= date('Y') ?>&m=<?= date('n') ?>">Bugün</a>
+      <a href="calendar.php?y=<?= $next->format('Y') ?>&m=<?= $next->format('n') ?>">Sonraki →</a>
     </div>
-    <h2 class="cal-title"><?= htmlspecialchars($monthName) ?></h2>
-    <div class="right">
-      <a class="btn primary" href="order_add.php">+ Yeni Sipariş</a>
+    <div class="cal-title"><?= htmlspecialchars($monthName) ?></div>
+    <div class="cal-nav">
+      <a href="order_add.php" class="primary">+ Yeni Sipariş</a>
     </div>
   </div>
 
   <div class="cal-weekdays">
-    <?php foreach ($wdays as $w): ?><div><?= $w ?></div><?php endforeach; ?>
+    <?php foreach ($wdays as $w): ?><div class="cal-weekday"><?= $w ?></div><?php endforeach; ?>
   </div>
 
   <div class="cal-grid">
     <?php
-      $firstDow = (int)$start->format('N'); // Monday=1
+      $firstDow = (int)$start->format('N');
       for ($i=1; $i<$firstDow; $i++): ?>
-        <div class="day empty"></div>
+        <div class="cal-day empty"></div>
     <?php endfor; ?>
 
     <?php
@@ -111,17 +176,19 @@ if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') 
         $isToday = ($dateStr === $todayStr);
         $items = $byDate[$dateStr] ?? [];
     ?>
-      <div class="day<?= $isToday ? ' today' : '' ?>">
-        <div class="date"><?= $d ?></div>
-        <div class="items">
+      <?php $isHoliday = isset($holidays[$dateStr]); $holidayName = $holidays[$dateStr] ?? ''; ?>
+      <div class="cal-day<?= $isToday ? ' today' : ($isHoliday ? ' holiday' : '') ?>">
+        <div class="cal-day-num"><span><?= $d ?></span></div>
+        <?php if ($isHoliday): ?><div class="cal-holiday-name"><?= h($holidayName) ?></div><?php endif; ?>
+        <div class="cal-items">
           <?php foreach ($items as $o): ?>
-            <a class="item" href="order_edit.php?id=<?= (int)$o['id'] ?>">
-              <span class="code">#<?= (int)$o['id'] ?></span>
-              <span class="name"><?= htmlspecialchars($o['customer_name'] ?: ('Müşteri #' . (int)$o['customer_id'])) ?></span>
+            <a class="cal-item" href="order_edit.php?id=<?= (int)$o['id'] ?>">
+              <span class="cal-item-code">#<?= $o['order_code'] ?? $o['id'] ?></span>
+              <span class="cal-item-name"><?= htmlspecialchars($o['customer_name'] ?: ('Müşteri #' . (int)$o['customer_id'])) ?></span>
             </a>
           <?php endforeach; ?>
           <?php if (!$items): ?>
-            <div class="item" style="opacity:.6;justify-content:center">—</div>
+            <div class="cal-empty">—</div>
           <?php endif; ?>
         </div>
       </div>
