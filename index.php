@@ -60,208 +60,8 @@ if ($role === 'musteri' && $linked_customer !== '') {
 
 include __DIR__ . '/includes/header.php';
 ?>
-
+<link rel="stylesheet" href="assets/css/dashboard.css?v=<?= time() ?>">
 <!-- Inline minimal styles to guarantee the dashboard layout -->
-<style>
-  /* tiles */
-  .tile-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px
-  }
-
-  @media (max-width:1100px) {
-    .tile-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr))
-    }
-  }
-
-  @media (max-width:720px) {
-    .tile-grid {
-      grid-template-columns: 1fr
-    }
-  }
-
-  .tile {
-    position: relative;
-    border-radius: 22px;
-    padding: 18px;
-    background: linear-gradient(135deg, #e0e7ff 0%, #f5f3ff 100%);
-    box-shadow: 0 10px 24px rgba(17, 24, 39, .12), inset 0 1px 0 rgba(255, 255, 255, .6);
-    border: 1px solid rgba(255, 255, 255, .5);
-    overflow: hidden;
-    transition: transform .18s ease, box-shadow .18s ease;
-    cursor: pointer
-  }
-
-  .tile:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 16px 36px rgba(17, 24, 39, .18)
-  }
-
-  .tile .icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 255, 255, .6);
-    border: 1px solid rgba(255, 255, 255, .8);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8)
-  }
-
-  .tile .title {
-    margin: 10px 0 0;
-    font-weight: 700;
-    font-size: 16px;
-    color: #0f172a
-  }
-
-  .tile .value {
-    font-size: 48px;
-    font-weight: 800;
-    line-height: 1;
-    margin-top: 6px;
-    letter-spacing: -.02em;
-    color: #0b1220
-  }
-
-  .tile.t-blue {
-    background: linear-gradient(135deg, #dbeafe 0%, #e9d5ff 100%)
-  }
-
-  .tile.t-teal {
-    background: linear-gradient(135deg, #ccfbf1 0%, #bfdbfe 100%)
-  }
-
-  .tile.t-yellow {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)
-  }
-
-  .tile.t-green {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)
-  }
-
-  .tile.t-orange {
-    background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)
-  }
-
-  .tile.t-purple {
-    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)
-  }
-
-  .tile a.stretch {
-    position: absolute;
-    inset: 0;
-    z-index: 1
-  }
-
-  /* quick actions */
-  .quick-actions {
-    background: rgba(255, 255, 255, .6);
-    border: 1px solid rgba(255, 255, 255, .7);
-    border-radius: 18px;
-    padding: 14px;
-    box-shadow: 0 6px 18px rgba(17, 24, 39, .12);
-    margin-top: 18px
-  }
-
-  /* widgets */
-  .widgets {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 18px
-  }
-
-  @media (max-width:1100px) {
-    .widgets {
-      grid-template-columns: repeat(2, minmax(0, 1fr))
-    }
-  }
-
-  @media (max-width:720px) {
-    .widgets {
-      grid-template-columns: 1fr
-    }
-  }
-
-  .widget {
-    background: rgba(255, 255, 255, .65);
-    border: 1px solid rgba(255, 255, 255, .75);
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(17, 24, 39, .12);
-    padding: 16px;
-    overflow: hidden
-  }
-
-  .widget h4 {
-    margin: 0 0 12px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #0f172a
-  }
-
-  .list {
-    margin: 0;
-    padding: 0;
-    list-style: none
-  }
-
-  .list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px dashed rgba(15, 23, 42, .12)
-  }
-
-  .list li:last-child {
-    border-bottom: none
-  }
-
-  .badge {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: #eef2ff;
-    color: #312e81
-  }
-
-  .badge.danger {
-    background: #fee2e2;
-    color: #991b1b
-  }
-
-  .badge.warn {
-    background: #ffedd5;
-    color: #9a3412
-  }
-
-  .badge.ok {
-    background: #dcfce7;
-    color: #065f46
-  }
-
-  .widget .see-all {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 12px;
-    text-decoration: underline
-  }
-
-  /* calendar container spacing when embedded */
-  .mt {
-    margin-top: 16px
-  }
-
-  .list li a.row-link {
-    display: inline-block;
-    max-width: calc(100% - 72px);
-    text-decoration: none;
-    color: inherit
-  }
-</style>
 
 <div class="welcome-box" style="background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; border-bottom: 3px solid #f97316;">
   <h2 style="margin:0; color: #7c2d12; font-size: 1.25rem;">👋 Hoş Geldiniz, <span style="font-weight: 800;"><?= $welcome_name ?></span></h2>
@@ -371,26 +171,15 @@ include __DIR__ . '/includes/header.php';
 if (!in_array($role, ['muhasebe', 'musteri'])):
 ?>
 
-  <div class="quick-actions mt">
-    <h3>Hızlı İşlemler</h3>
-    <div class="row mt">
-      <a href="products.php?a=new" class="btn primary">Yeni Ürün</a>
-      <a href="customers.php?a=new" class="btn">Yeni Müşteri</a>
-      <a href="order_add.php" class="btn">Yeni Sipariş</a>
-      <a href="satinalma-sys/talep_olustur.php" class="btn">Yeni Talep</a>
-      <a href="orders.php" class="btn">Tüm Siparişler</a>
-    </div>
-  </div>
-
   <?php
   // Widgets data
   // Last orders with customer names
   $lastOrders = $db->query('
-  SELECT o.id, o.customer_id, c.name AS customer_name
+  SELECT o.id, o.order_code, o.customer_id, c.name AS customer_name
   FROM orders o
   LEFT JOIN customers c ON c.id = o.customer_id
   ORDER BY o.id DESC
-  LIMIT 10
+  LIMIT 5
 ')->fetchAll(PDO::FETCH_ASSOC);
 
 
@@ -410,7 +199,7 @@ if (!in_array($role, ['muhasebe', 'musteri'])):
         WHERE o.notes IS NOT NULL AND TRIM(o.notes) <> ''
     ";
     if ($role === 'uretim') $notes_sql .= " AND o.status != 'fatura_edildi'";
-    $notes_sql .= " ORDER BY o.created_at DESC LIMIT 30"; // Fazladan çek, PHP'de sırala
+    $notes_sql .= " ORDER BY o.created_at DESC LIMIT 50"; // Fazladan çek, PHP'de sırala
 
     $rows_raw = $db->query($notes_sql)->fetchAll(PDO::FETCH_ASSOC);
 
@@ -535,7 +324,7 @@ if (!in_array($role, ['muhasebe', 'musteri'])):
 
   // Upcoming deliveries within next 7 days based on termin_tarihi
   $upcoming = $db->query("
-  SELECT o.id, o.customer_id, o.termin_tarihi, c.name AS customer_name
+  SELECT o.id, o.order_code, o.customer_id, o.termin_tarihi, c.name AS customer_name
   FROM orders o
   LEFT JOIN customers c ON c.id = o.customer_id
   WHERE o.termin_tarihi IS NOT NULL
@@ -546,81 +335,220 @@ if (!in_array($role, ['muhasebe', 'musteri'])):
 ")->fetchAll(PDO::FETCH_ASSOC);
   ?>
 
-  <div class="widgets">
-    <?php if ($role !== 'musteri'): ?>
-      <div class="widget">
-        <h4>Son Siparişler</h4>
-        <ul class="list">
-          <?php foreach ($lastOrders as $o): ?>
-            <li>
-              <span>#<?= (int)$o['id'] ?> · <?= htmlspecialchars($o['customer_name'] ?: ('Müşteri #' . (int)$o['customer_id'])) ?></span>
-              <a class="badge" href="order_edit.php?id=<?= (int)$o['id'] ?>">Aç</a>
-            </li>
-          <?php endforeach; ?>
-          <?php if (!$lastOrders): ?>
-            <li><span>Henüz sipariş yok</span></li>
-          <?php endif; ?>
-        </ul>
-        <a class="see-all" href="orders.php">Tümünü Gör →</a>
-      </div>
-    <?php endif; ?>
+  <?php if ($role !== 'musteri'): ?>
+  <?php if (!in_array($role, ['musteri', 'muhasebe'])): ?>
+
+  <div class="db-layout mt">
 
     <?php
-    // --- MÜŞTERİ VE MUHASEBE KALKANI BAŞLANGICI ---
-    // Bu roller detay panelleri ve takvimi görmemelidir
-    if (!in_array($role, ['musteri', 'muhasebe'])):
+    // Notları tarihe göre grupla
+    $notesByDate = [];
+    foreach ($tasks ?? [] as $t) {
+        $badge = $t['badge'] ?? '';
+        if (str_starts_with($badge, 'Bugün')) $dateKey = date('d.m.Y');
+        elseif (str_starts_with($badge, 'Dün')) $dateKey = date('d.m.Y', strtotime('-1 day'));
+        else $dateKey = $badge;
+        if (!$dateKey) $dateKey = 'Bilinmiyor';
+        $notesByDate[$dateKey][] = $t;
+    }
+    $uniqueDates = array_keys($notesByDate);
+
+    // Sipariş durum istatistikleri grafik için (İptal kaldırıldı)
+    try {
+        $sc = $db->query("
+            SELECT
+              SUM(CASE WHEN status NOT IN ('teslim edildi','fatura_edildi','askiya_alindi','taslak_gizli') THEN 1 ELSE 0 END) AS aktif,
+              SUM(CASE WHEN status IN ('teslim edildi','fatura_edildi') THEN 1 ELSE 0 END) AS tamamlandi,
+              SUM(CASE WHEN status = 'askiya_alindi' THEN 1 ELSE 0 END) AS askida
+            FROM orders
+        ")->fetch(PDO::FETCH_ASSOC);
+        $status_counts = $sc ?: ['aktif'=>0,'tamamlandi'=>0,'askida'=>0];
+    } catch(Throwable $e) {
+        $status_counts = ['aktif'=>0,'tamamlandi'=>0,'askida'=>0];
+    }
+
+    // Son 6 ay sipariş adedi
+    $monthly_counts = [];
+    try {
+        $mc = $db->query("
+            SELECT DATE_FORMAT(siparis_tarihi,'%Y-%m') AS ym, COUNT(*) AS cnt
+            FROM orders
+            WHERE siparis_tarihi >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            GROUP BY ym ORDER BY ym ASC
+        ")->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($mc as $m) $monthly_counts[$m['ym']] = (int)$m['cnt'];
+    } catch(Throwable $e) {}
     ?>
-      <div class="widget">
+
+    <!-- SOL: Notlar (chat tarzı) -->
+    <div class="notes-panel">
+      <div class="notes-panel-head">
         <h4>Sipariş Notları</h4>
-        <ul class="list">
-          <?php foreach ($tasks ?? [] as $t): ?>
-            <li>
-              <a href="<?= htmlspecialchars($t['url'] ?? '#') ?>" class="row-link" style="max-width:calc(100% - 80px)">
-                <div style="color:#64748b;font-size:11px;margin-bottom:2px"><?= htmlspecialchars($t['prefix'] ?? '') ?></div>
-                <div style="color:#0f172a;font-weight:500"><?= htmlspecialchars($t['summary'] ?? '') ?></div>
-              </a>
-              <span class="badge"><?= htmlspecialchars($t['badge'] ?? '') ?></span>
-            </li>
+        <div class="notes-nav">
+          <a id="notes-prev" onclick="notesPrev()" style="display:none;">← Önceki</a>
+          <span id="notes-page-lbl" style="font-size:10px;color:#cbd5e1;"></span>
+          <a id="notes-next" onclick="notesNext()" style="display:none;">Sonraki →</a>
+        </div>
+      </div>
+      <div class="notes-body">
+        <?php
+        $groupIdx = 0;
+        foreach ($notesByDate as $dateKey => $dayTasks):
+        ?>
+        <div class="note-day-group" data-group="<?= $groupIdx ?>">
+          <div class="day-sep"><span><?= h($dateKey) ?></span></div>
+          <?php foreach ($dayTasks as $t):
+            $prefixParts = explode(' · ', $t['prefix'] ?? '');
+            $author    = count($prefixParts) > 1 ? trim($prefixParts[1]) : '';
+            $initials  = mb_strtoupper(mb_substr($author, 0, 2, 'UTF-8'), 'UTF-8');
+            $orderCode = $prefixParts[0] ?? '';
+            $customer  = count($prefixParts) > 3 ? $prefixParts[3] : (count($prefixParts) > 2 ? $prefixParts[2] : '');
+            $time      = count($prefixParts) > 2 ? $prefixParts[2] : '';
+
+            // Dinamik Pastel Renk Paletleri
+            $palettes = [
+                ['bg' => 'linear-gradient(135deg,#fff3eb,#ffe4cc)', 'border' => '#fed7aa', 'text' => '#c2560f'], // 0 - Turuncu
+                ['bg' => 'linear-gradient(135deg,#f0fdf4,#dcfce7)', 'border' => '#bbf7d0', 'text' => '#15803d'], // 1 - Yeşil
+                ['bg' => 'linear-gradient(135deg,#eff6ff,#dbeafe)', 'border' => '#bfdbfe', 'text' => '#1d4ed8'], // 2 - Mavi
+                ['bg' => 'linear-gradient(135deg,#fdf4ff,#e9d5ff)', 'border' => '#d8b4fe', 'text' => '#7e22ce'], // 3 - Mor
+                ['bg' => 'linear-gradient(135deg,#fff1f2,#ffe4e6)', 'border' => '#fecdd3', 'text' => '#be123c'], // 4 - Pembe
+                ['bg' => 'linear-gradient(135deg,#fefce8,#fef08a)', 'border' => '#fde047', 'text' => '#a16207'], // 5 - Sarı
+                ['bg' => 'linear-gradient(135deg,#f0f9ff,#bae6fd)', 'border' => '#7dd3fc', 'text' => '#0369a1'], // 6 - Gök Mavisi
+                ['bg' => 'linear-gradient(135deg,#f5f3ff,#ede9fe)', 'border' => '#ddd6fe', 'text' => '#6d28d9'], // 7 - Menekşe
+            ];
+            
+            // İsmi standartlaştır (Sorun çıkmasın diye küçük harf yapıp boşlukları siliyoruz)
+            $cleanAuthor = mb_strtolower(trim($author), 'UTF-8');
+            
+            // 👑 VIP RENK ATAMALARI (İstediğin kişinin numarasını buradan seç!)
+            $vipColors = [
+                'dilara' => 3, // 3 Numara = Mor
+                'ali'    => 2, // 2 Numara = Mavi
+                'murat'  => 0, // 0 Numara = Turuncu
+                'derya'  => 4, // 4 Numara = Pembe
+            ];
+
+            if (isset($vipColors[$cleanAuthor])) {
+                // Eğer kişi VIP listedeyse, ona özel belirlediğin rengi ver
+                $cIdx = $vipColors[$cleanAuthor];
+            } else {
+                // Listede olmayan (yeni) biriyse ismine göre sabit bir renk üret (çakışmayı önlemek için 'renplan' kelimesiyle şifreledik)
+                $cIdx = $cleanAuthor ? abs(crc32($cleanAuthor . 'renplan')) % count($palettes) : 0;
+            }
+            
+            $color = $palettes[$cIdx];
+          ?>
+          <div class="note-bubble">
+            <div class="n-avatar" style="background: <?= $color['bg'] ?>; border-color: <?= $color['border'] ?>; color: <?= $color['text'] ?>;">
+                <?= h($initials ?: '?') ?>
+            </div>
+            <div class="n-body">
+              <div class="n-card">
+                <div class="n-meta">
+                  <span class="n-code"><?= h($orderCode) ?></span>
+                  <?php if ($customer): ?><span class="n-dot">·</span><span><?= h($customer) ?></span><?php endif; ?>
+                </div>
+                <div class="n-text">
+                  <a href="<?= h($t['url'] ?? '#') ?>"><?= h($t['summary'] ?? '') ?></a>
+                </div>
+                <?php if ($author || $time): ?>
+                <div class="n-time"><?= h($author) ?><?= ($author && $time) ? ' · ' : '' ?><?= h($time) ?></div>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
           <?php endforeach; ?>
-        </ul>
+        </div>
+        <?php $groupIdx++; endforeach; ?>
+      </div>
+    </div>
+
+    <!-- ORTA: Grafikler -->
+    <div class="chart-col">
+
+      <!-- Sipariş Durum Dağılımı -->
+      <div class="panel">
+        <div class="panel-head"><h4>Sipariş Durumları</h4></div>
+        <div class="stat-donut-wrap" style="justify-content: center; padding: 20px 15px;">
+          <div style="position: relative; width: 100%; height: 160px; display: flex; justify-content: center; align-items: center;">
+            <canvas id="statusDonut"></canvas>
+          </div>
+        </div>
       </div>
 
-      <div class="widget">
-        <h4>Teslimatı Yaklaşan</h4>
-        <ul class="list">
-          <?php foreach ($upcoming as $u): ?>
-            <?php
+      <!-- Son 6 Ay Sipariş Grafiği -->
+      <div class="panel">
+        <div class="panel-head"><h4>Son 6 Ay — Sipariş Adedi</h4></div>
+        <div class="sparkline-wrap" style="padding-top:12px; height: 160px; position: relative; width: 100%;">
+          <canvas id="monthlyBar"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SAĞ: Hızlı İşlemler + Teslimatı Yaklaşan + Son Siparişler -->
+    <div class="right-col">
+
+      <div class="mini-panel">
+        <div class="mini-head"><h4>Hızlı İşlemler</h4></div>
+        <div class="mini-body" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:10px;">
+          <a href="order_add.php" class="quick-btn"><span>📋</span> Yeni Sipariş</a>
+          <a href="products.php?a=new" class="quick-btn"><span>📦</span> Yeni Ürün</a>
+          <a href="customers.php?a=new" class="quick-btn"><span>👤</span> Yeni Müşteri</a>
+          <a href="satinalma-sys/talep_olustur.php" class="quick-btn"><span>🛒</span> Yeni Talep</a>
+        </div>
+      </div>
+
+      <div class="mini-panel">
+        <div class="mini-head"><h4>Teslimatı Yaklaşan</h4></div>
+        <div class="mini-body">
+          <?php foreach ($upcoming as $u):
             $d1 = new DateTime(date('Y-m-d'));
             $d2 = new DateTime($u['termin_tarihi']);
             $diff = (int)$d1->diff($d2)->format('%r%a');
-            if ($diff <= 0) {
-              $label = 'Bugün';
-              $cls = 'danger';
-            } elseif ($diff <= 2) {
-              $label = $diff . ' gün kaldı';
-              $cls = 'warn';
-            } else {
-              $label = $diff . ' gün kaldı';
-              $cls = 'ok';
-            }
-            ?>
-            <li>
-              <span>#<?= (int)$u['id'] ?> · <?= htmlspecialchars($u['customer_name'] ?: ('Müşteri #' . (int)$u['customer_id'])) ?> · <?= htmlspecialchars(date('d.m.Y', strtotime($u['termin_tarihi']))) ?></span>
-              <span>
-                <span class="badge <?= $cls ?>"><?= htmlspecialchars($label) ?></span>
-                <a class="badge" href="order_edit.php?id=<?= (int)$u['id'] ?>">Aç</a>
-              </span>
-            </li>
+            if ($diff <= 0) { $label='Bugün'; $cls='danger'; }
+            elseif ($diff <= 2) { $label=$diff.' gün kaldı'; $cls='warn'; }
+            else { $label=$diff.' gün kaldı'; $cls='ok'; }
+          ?>
+          <div class="del-row">
+            <div class="del-l">
+              <div class="del-code">#<?= h($u['order_code'] ?? $u['id']) ?></div>
+              <div class="del-name"><?= h($u['customer_name'] ?: 'Müşteri #'.(int)$u['customer_id']) ?></div>
+              <div class="del-date"><?= date('d.m.Y', strtotime($u['termin_tarihi'])) ?></div>
+            </div>
+            <span class="del-badge <?= $cls ?>"><?= $label ?></span>
+          </div>
           <?php endforeach; ?>
-          <?php if (!$upcoming): ?>
-            <li><span>Önümüzdeki 7 gün içinde teslimat yok</span></li>
-          <?php endif; ?>
-        </ul>
-        <a class="see-all" href="orders.php?filter=yaklasan">Tümünü Gör →</a>
+          <?php if (!$upcoming): ?><div style="font-size:11px;color:#94a3b8;padding:8px 0;">7 gün içinde teslimat yok</div><?php endif; ?>
+          <a class="see-all" href="orders.php?filter=yaklasan">Tümünü Gör →</a>
+        </div>
       </div>
-    <?php endif; // --- WİDGET KALKANI SONU --- 
-    ?>
-  </div> <?php if (!in_array($role, ['musteri', 'muhasebe'])): ?>
+
+      </div> <div class="right-col">
+      <div class="mini-panel">
+        <div class="mini-head"><h4>Son Siparişler</h4></div>
+        <div class="mini-body">
+          <?php foreach ($lastOrders as $o): ?>
+          <div class="ord-row">
+            <div class="ord-l">
+              <div class="ord-code">#<?= h($o['order_code'] ?? $o['id']) ?></div>
+              <div class="ord-name"><?= h($o['customer_name'] ?: 'Müşteri #'.(int)$o['customer_id']) ?></div>
+            </div>
+            <a class="ord-open" href="order_edit.php?id=<?= (int)$o['id'] ?>">Aç</a>
+          </div>
+          <?php endforeach; ?>
+          <?php if (!$lastOrders): ?><div style="font-size:11px;color:#94a3b8;padding:8px 0;">Henüz sipariş yok</div><?php endif; ?>
+          <a class="see-all" href="orders.php">Tümünü Gör →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <?php endif; ?>
+  <?php endif; ?> <?php if (!in_array($role, ['musteri', 'muhasebe'])): ?>
     <div class="mt">
       <?php define('CAL_EMBED', true);
             define('CAL_EMBED_STYLES', true);
@@ -677,4 +605,17 @@ if (!in_array($role, ['muhasebe', 'musteri'])):
       </div>
     </div>
   <?php endif; ?>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+<script>
+window.DASHBOARD_DATA = {
+    status_aktif: <?= (int)($status_counts['aktif'] ?? 0) ?>,
+    status_tamamlandi: <?= (int)($status_counts['tamamlandi'] ?? 0) ?>,
+    status_askida: <?= (int)($status_counts['askida'] ?? 0) ?>,
+    monthlyData: <?= json_encode(array_values($monthly_counts ?? [])) ?: '[]' ?>,
+    monthlyLabels: <?= json_encode(array_keys($monthly_counts ?? [])) ?: '[]' ?>
+};
+</script>
+
+<script src="assets/js/dashboard.js?v=<?= time() ?>"></script>
   <?php include __DIR__ . '/includes/footer.php'; ?>
