@@ -573,7 +573,6 @@
   }
 
   .orders-table td:nth-child(11) .btn {
-      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
