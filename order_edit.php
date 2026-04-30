@@ -47,16 +47,37 @@ if (!$orderDetails) redirect('orders.php');
 
 $order = $orderDetails['order'];
 
+$__cu   = current_user();
+$__role = $__cu['role'] ?? '';
+
 // 🛡️ taslak_gizli sadece admin ve sistem_yoneticisi görebilir
 if (($order['status'] ?? '') === 'taslak_gizli') {
-    $__cu = current_user();
-    if (!in_array($__cu['role'] ?? '', ['admin', 'sistem_yoneticisi'])) {
+    if (!in_array($__role, ['admin', 'sistem_yoneticisi'])) {
+        redirect('orders.php');
+    }
+}
+
+// 🛡️ Müşteri sadece kendi müşterisine ait siparişleri görebilir
+if ($__role === 'musteri') {
+    $__linked = $__cu['linked_customer'] ?? '';
+    if ($__linked === '') {
+        redirect('orders.php');
+    }
+    $__owner = $db->prepare(
+        "SELECT 1 FROM orders o
+         JOIN customers c ON c.id = o.customer_id
+         WHERE o.id = ? AND c.name = ? LIMIT 1"
+    );
+    $__owner->execute([$id, $__linked]);
+    if (!$__owner->fetchColumn()) {
         redirect('orders.php');
     }
 }
 $items = $orderDetails['items']; // Kalemleri de baştan hazır ettik, aşağıda tekrar çekmeye gerek kalmadı!
 
 if (method('POST')) {
+    // Müşteri readonly modda — POST kabul etme
+    if ($__role === 'musteri') redirect('order_view.php?id=' . $id);
     csrf_check();
 
     // --- 🛡️ GÜVENLİK ZIRHI: FRONTEND'E ASLA GÜVENME! ---
@@ -83,8 +104,11 @@ if (method('POST')) {
 // Dropdown verileri — ürün listesi artık AJAX ile geliyor
 $customers = $db->query("SELECT id,name FROM customers ORDER BY name ASC")->fetchAll();
 include __DIR__ . '/includes/header.php'; ?>
-<?php $mode = 'edit';
-
-require_once __DIR__ . '/app/Modules/Orders/Presentation/Views/form_view.php'; ?>
+<?php
+$mode              = 'edit';
+$__readonly        = ($__role === 'musteri');  // Müşteri: sadece okuyabilir
+$__uretim_readonly = ($__role === 'uretim');   // Üretim: sadece status + tarihler
+require_once __DIR__ . '/app/Modules/Orders/Presentation/Views/form_view.php';
+?>
 <script src="/assets/js/order_form.js"></script>
 <?php include __DIR__ . '/includes/footer.php';

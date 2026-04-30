@@ -51,7 +51,7 @@ class ReportModel
         }
         if (!empty($filters['project_query'])) {
             // Hem orders.proje_adi hem de bağlı projects.name'de ara
-            $where[] = "(orders.proje_adi LIKE ? OR proj.name LIKE ?)";
+            $where[] = "(CONVERT(orders.proje_adi USING utf8mb4) LIKE ? OR CONVERT(proj.name USING utf8mb4) LIKE ?)";
             $args[]  = '%' . $filters['project_query'] . '%';
             $args[]  = '%' . $filters['project_query'] . '%';
         }

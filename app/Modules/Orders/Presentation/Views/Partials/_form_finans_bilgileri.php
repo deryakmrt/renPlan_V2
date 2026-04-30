@@ -52,6 +52,14 @@ try {
 } catch (Throwable $__e) {}
 ?>
 
+<?php if (!$__is_admin_like): ?>
+<style>
+  /* Finansal alanlar: sadece admin ve sistem_yoneticisi değiştirebilir */
+  .sec-finans input, .sec-finans select, .sec-finans textarea
+  { pointer-events:none; opacity:.8; background:#f8fafc !important; }
+</style>
+<?php endif; ?>
+
 <div class="form-section sec-finans mt">
     <div class="form-section-title">💰 Finansal Bilgiler</div>
     <div class="g-auto g-finans">

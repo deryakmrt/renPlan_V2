@@ -11,7 +11,7 @@ $__cnt_sql = "SELECT o.status, COUNT(DISTINCT o.id) AS cnt FROM orders o LEFT JO
 $cu = current_user();
 $cu_role = $cu['role'] ?? '';
 if (!in_array($cu_role, ['admin', 'sistem_yoneticisi'])) $__cnt_sql .= " AND o.status != 'taslak_gizli'";
-if ($cu_role === 'uretim') $__cnt_sql .= " AND o.status != 'fatura_edildi'";
+
 if ($cu_role === 'musteri') {
   $linked = $cu['linked_customer'] ?? '';
   if ($linked !== '') $__cnt_sql .= " AND c.name = " . $db->quote($linked);
@@ -54,7 +54,7 @@ $total_in_scope = array_sum(array_diff_key($status_counts, ['revize' => 1]));
       <select name="status" style="border:none; background:transparent; outline:none; font-size:13px; font-weight:600; color:var(--slate-700); cursor:pointer;">
         <option value="">Tüm Durumlar</option>
         <?php
-        $select_statuses = ['tedarik' => 'Tedarik', 'sac lazer' => 'Sac Lazer', 'boru lazer' => 'Boru Lazer', 'kaynak' => 'Kaynak', 'boya' => 'Boya', 'elektrik montaj' => 'Elektrik Montaj', 'test' => 'Test', 'paketleme' => 'Paketleme', 'sevkiyat' => 'Sevkiyat', 'teslim edildi' => 'Teslim Edildi'];
+        $select_statuses = ['tedarik' => 'Tedarik', 'sac lazer' => 'Sac Lazer', 'boru lazer' => 'Boru Lazer', 'kaynak' => 'Kaynak', 'boya' => 'Boya', 'elektrik montaj' => 'Elektrik Montaj', 'test' => 'Test', 'paketleme' => 'Paketleme', 'sevkiyat' => 'Sevkiyat', 'teslim edildi' => 'Teslim Edildi', 'fatura_edildi' => 'Fatura Edildi'];
         if ((current_user()['role'] ?? '') === 'muhasebe') {
           $select_statuses = ['teslim edildi' => 'Teslim Edildi', 'fatura_edildi' => 'Fatura Edildi'];
         }
