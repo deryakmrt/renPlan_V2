@@ -5,7 +5,7 @@ require_login();
 // --- 🔒 YETKİ KALKANI ---
 $__role = current_user()['role'] ?? '';
 if (!in_array($__role, ['admin', 'sistem_yoneticisi', 'uretim'])) {
-    die('<div style="margin:50px auto; max-width:500px; padding:30px; background:#fff1f2; border:2px solid #fda4af; border-radius:12px; color:#e11d48; font-family:sans-serif; text-align:center; box-shadow:0 10px 25px rgba(225,29,72,0.1);">
+  die('<div style="margin:50px auto; max-width:500px; padding:30px; background:#fff1f2; border:2px solid #fda4af; border-radius:12px; color:#e11d48; font-family:sans-serif; text-align:center; box-shadow:0 10px 25px rgba(225,29,72,0.1);">
           <h2 style="margin-top:0; font-size:24px;">⛔ YETKİSİZ ERİŞİM</h2>
           <p style="font-size:15px; line-height:1.5;">Bu sayfayı görüntülemek için yeterli yetkiniz bulunmamaktadır.</p>
           <a href="index.php" style="display:inline-block; margin-top:15px; padding:10px 20px; background:#e11d48; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">Panele Dön</a>
@@ -24,52 +24,54 @@ if ($year < 1970 || $year > 2100) $year = (int)date('Y');
 $holidays = [];
 $holiday_cache_file = sys_get_temp_dir() . '/tr_holidays_' . $year . '.json';
 if (file_exists($holiday_cache_file) && (time() - filemtime($holiday_cache_file)) < 86400 * 30) {
-    $holidays_raw = json_decode(file_get_contents($holiday_cache_file), true) ?? [];
+  $holidays_raw = json_decode(file_get_contents($holiday_cache_file), true) ?? [];
 } else {
-    try {
-        $ctx = stream_context_create(['http' => ['timeout' => 3]]);
-        $api = @file_get_contents('https://date.nager.at/api/v3/PublicHolidays/' . $year . '/TR', false, $ctx);
-        $holidays_raw = $api ? (json_decode($api, true) ?? []) : [];
-        if ($holidays_raw) file_put_contents($holiday_cache_file, json_encode($holidays_raw));
-    } catch (Throwable $e) { $holidays_raw = []; }
+  try {
+    $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+    $api = @file_get_contents('https://date.nager.at/api/v3/PublicHolidays/' . $year . '/TR', false, $ctx);
+    $holidays_raw = $api ? (json_decode($api, true) ?? []) : [];
+    if ($holidays_raw) file_put_contents($holiday_cache_file, json_encode($holidays_raw));
+  } catch (Throwable $e) {
+    $holidays_raw = [];
+  }
 }
 foreach ($holidays_raw as $h) {
-    $holidays[$h['date']] = $h['localName'] ?? $h['name'];
+  $holidays[$h['date']] = $h['localName'] ?? $h['name'];
 }
 
 // Dini bayramlar — Hicri takvime göre sabit liste
 $dini_bayramlar = [
-    // Ramazan Bayramı (3 gün) + Kurban Bayramı (4 gün)
-    2025 => [
-        '2025-03-30' => 'Ramazan Bayramı 1. Gün',
-        '2025-03-31' => 'Ramazan Bayramı 2. Gün',
-        '2025-04-01' => 'Ramazan Bayramı 3. Gün',
-        '2025-06-06' => 'Kurban Bayramı 1. Gün',
-        '2025-06-07' => 'Kurban Bayramı 2. Gün',
-        '2025-06-08' => 'Kurban Bayramı 3. Gün',
-        '2025-06-09' => 'Kurban Bayramı 4. Gün',
-    ],
-    2026 => [
-        '2026-03-20' => 'Ramazan Bayramı 1. Gün',
-        '2026-03-21' => 'Ramazan Bayramı 2. Gün',
-        '2026-03-22' => 'Ramazan Bayramı 3. Gün',
-        '2026-05-27' => 'Kurban Bayramı 1. Gün',
-        '2026-05-28' => 'Kurban Bayramı 2. Gün',
-        '2026-05-29' => 'Kurban Bayramı 3. Gün',
-        '2026-05-30' => 'Kurban Bayramı 4. Gün',
-    ],
-    2027 => [
-        '2027-03-09' => 'Ramazan Bayramı 1. Gün',
-        '2027-03-10' => 'Ramazan Bayramı 2. Gün',
-        '2027-03-11' => 'Ramazan Bayramı 3. Gün',
-        '2027-05-16' => 'Kurban Bayramı 1. Gün',
-        '2027-05-17' => 'Kurban Bayramı 2. Gün',
-        '2027-05-18' => 'Kurban Bayramı 3. Gün',
-        '2027-05-19' => 'Kurban Bayramı 4. Gün',
-    ],
+  // Ramazan Bayramı (3 gün) + Kurban Bayramı (4 gün)
+  2025 => [
+    '2025-03-30' => 'Ramazan Bayramı 1. Gün',
+    '2025-03-31' => 'Ramazan Bayramı 2. Gün',
+    '2025-04-01' => 'Ramazan Bayramı 3. Gün',
+    '2025-06-06' => 'Kurban Bayramı 1. Gün',
+    '2025-06-07' => 'Kurban Bayramı 2. Gün',
+    '2025-06-08' => 'Kurban Bayramı 3. Gün',
+    '2025-06-09' => 'Kurban Bayramı 4. Gün',
+  ],
+  2026 => [
+    '2026-03-20' => 'Ramazan Bayramı 1. Gün',
+    '2026-03-21' => 'Ramazan Bayramı 2. Gün',
+    '2026-03-22' => 'Ramazan Bayramı 3. Gün',
+    '2026-05-27' => 'Kurban Bayramı 1. Gün',
+    '2026-05-28' => 'Kurban Bayramı 2. Gün',
+    '2026-05-29' => 'Kurban Bayramı 3. Gün',
+    '2026-05-30' => 'Kurban Bayramı 4. Gün',
+  ],
+  2027 => [
+    '2027-03-09' => 'Ramazan Bayramı 1. Gün',
+    '2027-03-10' => 'Ramazan Bayramı 2. Gün',
+    '2027-03-11' => 'Ramazan Bayramı 3. Gün',
+    '2027-05-16' => 'Kurban Bayramı 1. Gün',
+    '2027-05-17' => 'Kurban Bayramı 2. Gün',
+    '2027-05-18' => 'Kurban Bayramı 3. Gün',
+    '2027-05-19' => 'Kurban Bayramı 4. Gün',
+  ],
 ];
 if (!empty($dini_bayramlar[$year])) {
-    $holidays = array_merge($holidays, $dini_bayramlar[$year]);
+  $holidays = array_merge($holidays, $dini_bayramlar[$year]);
 }
 
 $start = new DateTime(sprintf('%04d-%02d-01', $year, $month));
@@ -98,8 +100,8 @@ foreach ($rows as $r) {
 }
 
 // Names
-$months = [1=>'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-$wdays  = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+$months = [1 => 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+$wdays  = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 $monthName = $months[(int)$start->format('n')] . ' ' . $start->format('Y');
 $todayStr  = date('Y-m-d');
 
@@ -108,12 +110,12 @@ $next = (clone $start)->modify('+1 month');
 
 // Header only when not embedded
 if (!defined('CAL_EMBED') || !CAL_EMBED) {
-    include __DIR__ . '/includes/header.php';
+  include __DIR__ . '/includes/header.php';
 }
 
 // Inline styles if asked or not embedded (so it always looks fine)
 if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') || !CAL_EMBED)) {
-    echo '<style>
+  echo '<style>
     .cal-wrap{}
     .cal-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 16px 0;}
     .cal-nav{display:flex;gap:8px;}
@@ -146,15 +148,27 @@ if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') 
 }
 ?>
 <div class="cal-wrap card">
-  <div class="cal-header">
-    <div class="cal-nav">
+  <div class="cal-header" style="position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+    <?php
+      // 🟢 Mevsime Göre Başlık Rengi Belirleme
+      $mColor = '#0f172a'; // Varsayılan
+      if     (in_array($month, [12, 1, 2]))  $mColor = '#3b82f6'; // Kış: Mavi ❄️
+      elseif (in_array($month, [3, 4, 5]))   $mColor = '#16a34a'; // İlkbahar: Yeşil 🌱
+      elseif (in_array($month, [6, 7, 8]))   $mColor = '#f97316'; // Yaz: Turuncu ☀️
+      elseif (in_array($month, [9, 10, 11])) $mColor = '#b45309'; // Sonbahar: Kahverengi 🍂
+    ?>
+    
+    <div class="cal-nav" style="position: relative; z-index: 2;">
       <a href="calendar.php?y=<?= $prev->format('Y') ?>&m=<?= $prev->format('n') ?>">← Önceki</a>
       <a href="calendar.php?y=<?= date('Y') ?>&m=<?= date('n') ?>">Bugün</a>
-      <a href="calendar.php?y=<?= $next->format('Y') ?>&m=<?= $next->format('n') ?>">Sonraki →</a>
     </div>
-    <div class="cal-title"><?= htmlspecialchars($monthName) ?></div>
-    <div class="cal-nav">
-      <a href="order_add.php" class="primary">+ Yeni Sipariş</a>
+    
+    <div class="cal-title" style="position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; color: <?= $mColor ?>; font-weight: 800; font-size: 20px; transition: color 0.3s; white-space: nowrap;">
+      <?= htmlspecialchars($monthName) ?>
+    </div>
+    
+    <div class="cal-nav" style="position: relative; z-index: 2;">
+      <a href="calendar.php?y=<?= $next->format('Y') ?>&m=<?= $next->format('n') ?>">Sonraki →</a>
     </div>
   </div>
 
@@ -164,19 +178,20 @@ if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') 
 
   <div class="cal-grid">
     <?php
-      $firstDow = (int)$start->format('N');
-      for ($i=1; $i<$firstDow; $i++): ?>
-        <div class="cal-day empty"></div>
+    $firstDow = (int)$start->format('N');
+    for ($i = 1; $i < $firstDow; $i++): ?>
+      <div class="cal-day empty"></div>
     <?php endfor; ?>
 
     <?php
-      $daysInMonth = (int)$start->format('t');
-      for ($d=1; $d <= $daysInMonth; $d++):
-        $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $d);
-        $isToday = ($dateStr === $todayStr);
-        $items = $byDate[$dateStr] ?? [];
+    $daysInMonth = (int)$start->format('t');
+    for ($d = 1; $d <= $daysInMonth; $d++):
+      $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $d);
+      $isToday = ($dateStr === $todayStr);
+      $items = $byDate[$dateStr] ?? [];
     ?>
-      <?php $isHoliday = isset($holidays[$dateStr]); $holidayName = $holidays[$dateStr] ?? ''; ?>
+      <?php $isHoliday = isset($holidays[$dateStr]);
+      $holidayName = $holidays[$dateStr] ?? ''; ?>
       <div class="cal-day<?= $isToday ? ' today' : ($isHoliday ? ' holiday' : '') ?>">
         <div class="cal-day-num"><span><?= $d ?></span></div>
         <?php if ($isHoliday): ?><div class="cal-holiday-name"><?= h($holidayName) ?></div><?php endif; ?>
@@ -197,6 +212,6 @@ if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') 
 </div>
 <?php
 if (!defined('CAL_EMBED') || !CAL_EMBED) {
-    include __DIR__ . '/includes/footer.php';
+  include __DIR__ . '/includes/footer.php';
 }
 ?>
