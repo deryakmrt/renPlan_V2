@@ -46,6 +46,14 @@ $orderDetails = $orderRepo->getOrderDetails($id);
 if (!$orderDetails) redirect('orders.php');
 
 $order = $orderDetails['order'];
+
+// 🛡️ taslak_gizli sadece admin ve sistem_yoneticisi görebilir
+if (($order['status'] ?? '') === 'taslak_gizli') {
+    $__cu = current_user();
+    if (!in_array($__cu['role'] ?? '', ['admin', 'sistem_yoneticisi'])) {
+        redirect('orders.php');
+    }
+}
 $items = $orderDetails['items']; // Kalemleri de baştan hazır ettik, aşağıda tekrar çekmeye gerek kalmadı!
 
 if (method('POST')) {
