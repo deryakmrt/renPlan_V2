@@ -91,11 +91,14 @@ $page = max(1, (int)($_GET['page'] ?? 1));
 // Yeni Repository'mizi çağırıyoruz
 $orderRepo = new \App\Modules\Orders\Infrastructure\OrderRepository($db);
 
+$__cu   = current_user();
+$__role = $__cu['role'] ?? '';
+
 $filters = [
-  'search' => $q,
-  'status' => $status,
-  'role_exclude_taslak' => !in_array(current_user()['role'] ?? '', ['admin', 'sistem_yoneticisi']),
-  'role_uretim' => (current_user()['role'] ?? '') === 'uretim',
+  'search'              => $q,
+  'status'              => $status,
+  'role_exclude_taslak' => !in_array($__role, ['admin', 'sistem_yoneticisi']),
+  'customer_name'       => ($__role === 'musteri') ? ($__cu['linked_customer'] ?? '') : '',
 ];
 
 // Veriyi N+1 problemi olmadan milisaniyeler içinde çekiyoruz!

@@ -9,10 +9,18 @@
  * @var \PDO   $db        Veritabanı bağlantısı
  */
 
-$__role = current_user()['role'] ?? '';
+$__role          = current_user()['role'] ?? '';
 $__is_admin_like = in_array($__role, ['admin', 'sistem_yoneticisi'], true);
-$__is_muhasebe = ($__role === 'muhasebe');
-$__is_uretim = ($__role === 'uretim');
+$__is_muhasebe   = ($__role === 'muhasebe');
+$__is_uretim     = ($__role === 'uretim');
+
+// Dışarıdan gelebilir (order_edit.php set eder), yoksa false
+$__readonly        = $__readonly        ?? false;
+$__uretim_readonly = $__uretim_readonly ?? false;
+
+// Kaydet butonu: müşteri her zaman, üretim+fatura_edildi durumunda gizlenir
+$__form_readonly = $__readonly
+    || ($__uretim_readonly && ($order['status'] ?? '') === 'fatura_edildi');
 
 // 1. BAŞLIK
 include __DIR__ . '/Partials/_form_header.php'; 
@@ -42,7 +50,7 @@ include __DIR__ . '/Partials/_form_header.php';
             <button type="submit" name="yayinla_butonu" value="1" class="btn" style="background-color:#8b5cf6; color:#fff; font-weight:bold;">🚀 SİPARİŞİ YAYINLA</button>
         <?php endif; ?>
 
-        <?php if ($__role !== 'musteri'): ?>
+        <?php if (!$__form_readonly): ?>
             <button type="submit" class="btn btn-primary" style="font-size:15px; padding: 10px 24px;">
                 <?= $mode === 'edit' ? '💾 Güncelle' : '💾 Kaydet' ?>
             </button>

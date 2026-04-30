@@ -54,11 +54,16 @@
                     <?php endif; ?>
                 </div>
 
+                <?php $__notes_readonly = !empty($__readonly) || (!empty($__uretim_readonly) && ($order['status'] ?? '') === 'fatura_edildi'); ?>
+                <?php if (!$__notes_readonly): ?>
                 <div class="note-input" style="display:flex; gap:8px; align-items:center;">
                     <input type="text" id="temp_note_input" class="form-control" placeholder="Yeni not ekle (Enter'a bas)" onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('btn_add_note_ui').click();}">
                     <button type="button" id="btn_add_note_ui" class="btn btn-success" style="padding: 0 16px;">Ekle</button>
                     <textarea name="notes" id="notes-ghost" style="display:none;"><?= h($order['notes'] ?? '') ?></textarea>
                 </div>
+                <?php else: ?>
+                    <textarea name="notes" id="notes-ghost" style="display:none;"><?= h($order['notes'] ?? '') ?></textarea>
+                <?php endif; ?>
             </div>
         </div>
 

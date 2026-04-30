@@ -1,6 +1,8 @@
 <?php
 /**
  * Sipariş Formu - Temel Bilgiler ve Kişiler
+ * @var bool $__readonly        Müşteri: tüm form readonly
+ * @var bool $__uretim_readonly Üretim: sadece status + tarihler değiştirilebilir
  * * --- DIŞARIDAN GELEN DEĞİŞKENLER ---
  * @var string $mode
  * @var array  $order
@@ -41,8 +43,14 @@
                         if ($__curStat === 'teslim edildi' || $__curStat === 'fatura_edildi') $status_list = ['teslim edildi' => 'Teslim Edildi', 'fatura_edildi' => 'Fatura Edildi'];
                         else $status_list = [$__curStat => ($status_list[$__curStat] ?? ucfirst($__curStat))];
                     } elseif ($__is_uretim) {
-                        unset($status_list['fatura_edildi']);
-                        if ($__curStat === 'fatura_edildi') $status_list = ['fatura_edildi' => 'Fatura Edildi'];
+                        // Üretim fatura_edildi'yi görebilir ama değiştiremez
+                        if ($__curStat === 'fatura_edildi') {
+                            $status_list = ['fatura_edildi' => 'Fatura Edildi'];
+                            $status_disabled = 'disabled';
+                        } else {
+                            // Fatura edildi seçeneğini listeden çıkar (değiştirme yetkisi yok)
+                            unset($status_list['fatura_edildi']);
+                        }
                         if ($__curStat && $__curStat !== 'fatura_edildi' && !isset($status_list[$__curStat]) && $__curStat !== 'taslak_gizli') $status_list[$__curStat] = ucfirst($__curStat);
                     } else {
                         if ($__curStat && !isset($status_list[$__curStat]) && $__curStat !== 'taslak_gizli') $status_list[$__curStat] = ucfirst($__curStat);
@@ -94,6 +102,24 @@
         <div><label>Nakliye Türü</label><input type="text" name="nakliye_turu" class="form-control" value="<?= h($order['nakliye_turu'] ?? 'DEPO TESLİM') ?>"></div>
     </div>
 </div>
+
+<?php // Müşteri veya üretim+fatura_edildi: temel bilgiler readonly ?>
+<?php if (!empty($__readonly) || (!empty($__uretim_readonly) && ($order['status'] ?? '') === 'fatura_edildi')): ?>
+<style>
+  .sec-temel input, .sec-temel select, .sec-temel textarea,
+  .sec-kisiler input, .sec-kisiler select, .sec-kisiler textarea
+  { pointer-events:none; opacity:.8; background:#f8fafc !important; }
+  .sec-temel select[name=status] { pointer-events:none; }
+</style>
+<?php elseif (!empty($__uretim_readonly)): ?>
+<style>
+  /* Üretim: status değiştirilebilir, diğer temel alanlar readonly */
+  .sec-temel input:not([name=status]), .sec-temel textarea,
+  .sec-temel select:not([name=status]),
+  .sec-kisiler input, .sec-kisiler select, .sec-kisiler textarea
+  { pointer-events:none; opacity:.8; background:#f8fafc !important; }
+</style>
+<?php endif; ?>
 
 <div class="form-section sec-kisiler mt">
     <div class="form-section-title">👤 İlgili Kişiler & Roller</div>

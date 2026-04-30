@@ -39,9 +39,11 @@ class OrderRepository
             $countSql  .= " AND o.status != 'taslak_gizli'";
         }
 
-        if (!empty($filters['role_uretim'])) {
-            $selectSql .= " AND o.status != 'fatura_edildi'";
-            $countSql  .= " AND o.status != 'fatura_edildi'";
+        // Musteri rolu: sadece kendi musterisine ait siparisler
+        if (!empty($filters['customer_name'])) {
+            $selectSql .= " AND c.name = ?";
+            $countSql  .= " AND c.name = ?";
+            array_push($params, $filters['customer_name']);
         }
 
         if (!empty($filters['search'])) {
@@ -167,6 +169,12 @@ class OrderRepository
         }
         if (!empty($filters['role_uretim'])) {
             $baseConditions .= " AND o.status != 'fatura_edildi'";
+        }
+
+        // Musteri rolu: sadece kendi musterisine ait siparisler
+        if (!empty($filters['customer_name'])) {
+            $baseConditions .= " AND EXISTS (SELECT 1 FROM customers c WHERE c.id = o.customer_id AND c.name = ?)";
+            $params[] = $filters['customer_name'];
         }
 
         if (!empty($filters['search'])) {
