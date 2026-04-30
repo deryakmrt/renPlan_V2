@@ -120,161 +120,142 @@ if (!function_exists('__wpstat_icon_svg')) {
     return date('d-m-Y', $t);
   }
 
-  function bitis_badge_html(?string $bitis = null, ?string $termin = null)
-  {
-    $wrapStyle = 'display:grid;grid-template-rows:1fr auto;row-gap:4px;height:48px;align-items:end;justify-items:center';
-    $badgeBase = 'font-size:10px !important;line-height:1.2;padding:3px 8px;display:inline-block;max-width:120px;text-align:center;white-space:normal';
-    if (!$bitis || $bitis === '0000-00-00') return '<div class="bitis-badge" style="' . $wrapStyle . '"><span class="badge gray" style="' . $badgeBase . '">—</span><div class="bitis-date" style="font-size:.78rem;opacity:.75;white-space:nowrap"></div></div>';
-    $dateHtml = '<div class="bitis-date" style="font-size:.78rem;opacity:.75;white-space:nowrap">' . fmt_date_dmy($bitis) . '</div>';
-    if (!$termin || $termin === '0000-00-00') return '<div class="bitis-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-    try {
-      $dBitis = new DateTime($bitis);
-      $dTermin = new DateTime($termin);
-    } catch (Exception $e) {
-      return '<div class="bitis-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-    }
+  function bitis_badge_html(?string $bitis = null, ?string $termin = null) {
+    // 🟢 flex-direction:column geri geldi (alt alta dizer)
+    $wrapStyle = 'display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:48px; text-align:center; line-height:1.2;';
+    if (!$bitis || $bitis === '0000-00-00') return '<div style="' . $wrapStyle . '"><span style="color:#94a3b8; font-size:13px;">—</span></div>';
+    
+    // 🟢 white-space:nowrap eklendi (tarih asla kırılmaz)
+    $dateHtml = '<span style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap;">' . fmt_date_dmy($bitis) . '</span>';
+    if (!$termin || $termin === '0000-00-00') return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>';
+    
+    try { $dBitis = new DateTime($bitis); $dTermin = new DateTime($termin); } catch (Exception $e) { return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>'; }
     $signedDays = (int)$dBitis->diff($dTermin)->format('%r%a');
     $absDays    = abs($signedDays);
-    if ($signedDays > 0) {
-      $txt = 'Üretim ' . $absDays . ' gün önce bitti';
-      $cls = 'green';
-    } elseif ($signedDays === 0) {
-      $txt = 'Üretim tam gününde tamamlandı';
-      $cls = 'green';
-    } else {
-      $txt = 'Üretim ' . $absDays . ' gün gecikti';
-      $cls = 'red';
-    }
+    
+    // 🟢 Metinler kısa ve öz tutuldu
+    if ($signedDays > 0)      { $txt = '✓ ' . $absDays . ' gün erken'; $col = '#16a34a'; }
+    elseif ($signedDays === 0) { $txt = '✓ Zamanında'; $col = '#16a34a'; }
+    else                       { $txt = '⚠️ ' . $absDays . ' gün gecikti'; $col = '#ef4444'; }
+    
     $title = 'Bitiş: ' . fmt_date_dmy($bitis) . ' • Termin: ' . fmt_date_dmy($termin);
-    $badge = '<span class="badge ' . $cls . '" style="' . $badgeBase . '" title="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '">' . $txt . '</span>';
-    return '<div class="bitis-badge" style="' . $wrapStyle . '">' . $badge . $dateHtml . '</div>';
+    // 🟢 white-space:nowrap eklendi (durum yazısı asla alt satıra bölünmez)
+    $statusHtml = '<span style="font-size:11px; font-weight:700; color:' . $col . '; white-space:nowrap;" title="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '">' . $txt . '</span>';
+    
+    return '<div style="' . $wrapStyle . '">' . $dateHtml . $statusHtml . '</div>';
   }
 
-  function teslim_badge_html(?string $teslim, ?string $bitis)
-  {
-    $wrapStyle = 'display:grid;grid-template-rows:1fr auto;row-gap:4px;height:48px;align-items:end;justify-items:center';
-    $badgeBase = 'font-size:10px !important;line-height:1.2;padding:3px 8px;display:inline-block;max-width:120px;text-align:center;white-space:normal';
+  function teslim_badge_html(?string $teslim, ?string $bitis) {
+    $wrapStyle = 'display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:48px; text-align:center; line-height:1.2;';
+    
     if (!$bitis || $bitis === '0000-00-00') {
-      if ($teslim && $teslim !== '0000-00-00') {
-        $dateHtml = '<div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap">' . fmt_date_dmy($teslim) . '</div>';
-        return '<div class="teslim-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      }
-      return '<div class="teslim-badge" style="' . $wrapStyle . '"><span class="badge gray" style="' . $badgeBase . '">—</span><div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap"></div></div>';
+      if ($teslim && $teslim !== '0000-00-00') return '<div style="' . $wrapStyle . '"><span style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap;">' . fmt_date_dmy($teslim) . '</span></div>';
+      return '<div style="' . $wrapStyle . '"><span style="color:#94a3b8; font-size:13px;">—</span></div>';
     }
-    try {
-      $dBitis = new DateTime($bitis);
-    } catch (Exception $e) {
-      if ($teslim && $teslim !== '0000-00-00') {
-        $dateHtml = '<div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap">' . fmt_date_dmy($teslim) . '</div>';
-        return '<div class="teslim-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      }
-      return '<div class="teslim-badge" style="' . $wrapStyle . '"><span class="badge gray" style="' . $badgeBase . '">—</span><div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap"></div></div>';
+    
+    try { $dBitis = new DateTime($bitis); } catch (Exception $e) {
+      if ($teslim && $teslim !== '0000-00-00') return '<div style="' . $wrapStyle . '"><span style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap;">' . fmt_date_dmy($teslim) . '</span></div>';
+      return '<div style="' . $wrapStyle . '"><span style="color:#94a3b8; font-size:13px;">—</span></div>';
     }
+    
     if ($teslim && $teslim !== '0000-00-00') {
-      $dateHtml = '<div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap">' . fmt_date_dmy($teslim) . '</div>';
-      try {
-        $dTeslim = new DateTime($teslim);
-      } catch (Exception $e) {
-        return '<div class="teslim-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      }
+      $dateHtml = '<span style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap;">' . fmt_date_dmy($teslim) . '</span>';
+      try { $dTeslim = new DateTime($teslim); } catch (Exception $e) { return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>'; }
       $gecikmeGun = (int)$dBitis->diff($dTeslim)->format('%r%a');
-      if ($gecikmeGun < 14) return '<div class="teslim-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      else return '<div class="teslim-badge" style="' . $wrapStyle . '"><span class="badge red" style="' . $badgeBase . '" title="Bitiş: ' . fmt_date_dmy($bitis) . ' • Teslim: ' . fmt_date_dmy($teslim) . '">' . $gecikmeGun . ' gün gecikmeli teslim</span>' . $dateHtml . '</div>';
+      
+      if ($gecikmeGun < 14) return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#16a34a; white-space:nowrap;">✓ Teslim Edildi</span></div>';
+      else return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#ef4444; white-space:nowrap;" title="Bitiş: ' . fmt_date_dmy($bitis) . ' • Teslim: ' . fmt_date_dmy($teslim) . '">⚠️ ' . $gecikmeGun . ' gün geç</span></div>';
     } else {
-      $dateHtml   = '<div class="teslim-date" style="font-size:.78rem;opacity:.75;white-space:nowrap"></div>';
-      $today       = new DateTime('today');
-      $gecikmeGun  = (int)$dBitis->diff($today)->format('%r%a');
-      if ($gecikmeGun < 14) return '<div class="teslim-badge" style="' . $wrapStyle . '"><span class="badge gray" style="' . $badgeBase . '">—</span>' . $dateHtml . '</div>';
-      else return '<div class="teslim-badge" style="' . $wrapStyle . '"><span class="badge red" style="' . $badgeBase . '" title="Bitiş: ' . fmt_date_dmy($bitis) . ' • Henüz Teslim Edilmedi">' . $gecikmeGun . ' gün gecikti</span>' . $dateHtml . '</div>';
+      $dateHtml  = '<span style="color:#94a3b8; font-size:13px; white-space:nowrap;">—</span>';
+      $today      = new DateTime('today');
+      $gecikmeGun = (int)$dBitis->diff($today)->format('%r%a');
+      if ($gecikmeGun < 14) return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#64748b; white-space:nowrap;">Bekliyor</span></div>';
+      else return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#ef4444; white-space:nowrap;" title="Bitiş: ' . fmt_date_dmy($bitis) . ' • Henüz Teslim Edilmedi">⚠️ ' . $gecikmeGun . ' gün gecikti</span></div>';
     }
   }
 
-  function termin_badge_html(?string $termin, ?string $teslim = null, ?string $bitis = null)
-  {
-    $wrapStyle = 'display:grid;grid-template-rows:1fr auto;row-gap:4px;height:48px;align-items:end;justify-items:center';
-    $badgeBase = 'font-size:10px !important;line-height:1.2;padding:3px 8px;display:inline-block;max-width:120px;text-align:center;white-space:normal';
-    if (!$termin || $termin === '0000-00-00') return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge gray" style="' . $badgeBase . '">—</span><div class="termin-date" style="font-size:.78rem;opacity:.75;white-space:nowrap"></div></div>';
-    $dateHtml = '<div class="termin-date" style="font-size:.78rem;opacity:.75;white-space:nowrap">' . fmt_date_dmy($termin) . '</div>';
+  function termin_badge_html(?string $termin, ?string $teslim = null, ?string $bitis = null) {
+    $wrapStyle = 'display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:48px; text-align:center; line-height:1.2;';
+    if (!$termin || $termin === '0000-00-00') return '<div style="' . $wrapStyle . '"><span style="color:#94a3b8; font-size:13px;">—</span></div>';
+    
+    $dateHtml = '<span style="font-size:12px; font-weight:600; color:#1e293b; white-space:nowrap;">' . fmt_date_dmy($termin) . '</span>';
     $teslimGecikmesiVar = false;
+    
     if ($bitis && $bitis !== '0000-00-00') {
       try {
         $dBitis   = new DateTime($bitis);
         $dCompare = ($teslim && $teslim !== '0000-00-00') ? new DateTime($teslim) : new DateTime('today');
         if ((int)$dBitis->diff($dCompare)->format('%r%a') >= 14) $teslimGecikmesiVar = true;
-      } catch (Exception $e) {
-      }
+      } catch (Exception $e) {}
     }
+    
     $today  = new DateTime('today');
     $dTermin = new DateTime($termin);
+    
     if ($teslim && $teslim !== '0000-00-00') {
       try {
         $dTeslim = new DateTime($teslim);
         $diff    = (int)$dTeslim->diff($dTermin)->format('%r%a');
-        if ($dTeslim < $dTermin)      return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge green" style="' . $badgeBase . '">' . abs($diff) . ' gün önce teslim</span>' . $dateHtml . '</div>';
-        elseif ($dTeslim == $dTermin) return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge green" style="' . $badgeBase . '">Tam gününde teslim</span>' . $dateHtml . '</div>';
-        else                           return '<div class="termin-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      } catch (Exception $e) {
-        return '<div class="termin-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
-      }
+        if ($dTeslim < $dTermin)      return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#16a34a; white-space:nowrap;">✓ ' . abs($diff) . ' gün erken</span></div>';
+        elseif ($dTeslim == $dTermin) return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#16a34a; white-space:nowrap;">✓ Zamanında</span></div>';
+        else                           return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>';
+      } catch (Exception $e) { return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>'; }
     }
-    if ($teslimGecikmesiVar) return '<div class="termin-badge" style="' . $wrapStyle . '">' . $dateHtml . '</div>';
+    
+    if ($teslimGecikmesiVar) return '<div style="' . $wrapStyle . '">' . $dateHtml . '</div>';
+    
     $diff = (int)$today->diff($dTermin)->format('%r%a');
-    if ($diff > 0)      return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge orange" style="' . $badgeBase . '">' . $diff . ' gün kaldı</span>' . $dateHtml . '</div>';
-    elseif ($diff == 0) return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge orange" style="' . $badgeBase . '">Bugün</span>' . $dateHtml . '</div>';
-    else                return '<div class="termin-badge" style="' . $wrapStyle . '"><span class="badge red" style="' . $badgeBase . '">' . abs($diff) . ' gün gecikti</span>' . $dateHtml . '</div>';
+    if ($diff > 0)      return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#d97706; white-space:nowrap;">⏳ ' . $diff . ' gün kaldı</span></div>';
+    elseif ($diff == 0) return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#d97706; white-space:nowrap;">⏳ Bugün</span></div>';
+    else                return '<div style="' . $wrapStyle . '">' . $dateHtml . '<span style="font-size:11px; font-weight:700; color:#ef4444; white-space:nowrap;">⚠️ ' . abs($diff) . ' gün gecikti</span></div>';
   }
 
   // === AKSİYON BUTONLARI BİLEŞENİ ===
   if (!function_exists('render_action_buttons')) {
     function render_action_buttons(object $o, string $role, bool $is_admin, string $csrf_token, bool $show_delete, int $remaining_sec, float $remaining_pct) {
       ob_start(); ?>
-      <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:30px 30px 30px; gap:2px; width:100%;">
+      <!-- 🟢 Satır yükseklikleri 26px'e indirildi, gap (boşluk) 4px yapılarak üst üste binme engellendi -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:26px 26px 26px; gap:4px; width:100%;">
+        
+        <?php // ── HÜCRE 1: Düzenle ?>
+        <a href="order_edit.php?id=<?= $o->id ?>" title="Düzenle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">✏️</span></a>
 
-        <?php // ── HÜCRE 1: Düzenle 
-        ?>
-        <a class="btn" href="order_edit.php?id=<?= $o->id ?>" title="Düzenle" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#333;"><span style="font-size:15px;">✏️</span></a>
+        <?php // ── HÜCRE 2: Görüntüle ?>
+        <a href="order_view.php?id=<?= $o->id ?>" title="Görüntüle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">👁️</span></a>
 
-        <?php // ── HÜCRE 2: Görüntüle 
-        ?>
-        <a class="btn" href="order_view.php?id=<?= $o->id ?>" title="Görüntüle" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#333;"><span style="font-size:15px;">👁️</span></a>
-
-        <?php // ── HÜCRE 3: STF 
-        ?>
+        <?php // ── HÜCRE 3: STF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'muhasebe', 'musteri'], true)): ?>
-          <a class="btn" href="order_pdf.php?id=<?= $o->id ?>" target="_blank" title="STF" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:13px; font-weight:800;">STF</a>
-        <?php else: ?><div style="height:30px;"></div><?php endif; ?>
+          <a href="order_pdf.php?id=<?= $o->id ?>" target="_blank" title="STF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:11px; font-weight:800; text-decoration:none;">STF</a>
+        <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
-        <?php // ── HÜCRE 4: ÜSTF 
-        ?>
+        <?php // ── HÜCRE 4: ÜSTF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'uretim'], true)): ?>
-          <a class="btn" href="order_pdf_uretim.php?id=<?= $o->id ?>" target="_blank" title="ÜSTF" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:13px; font-weight:800;">ÜSTF</a>
-        <?php else: ?><div style="height:30px;"></div><?php endif; ?>
+          <a href="order_pdf_uretim.php?id=<?= $o->id ?>" target="_blank" title="ÜSTF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; font-weight:800; text-decoration:none;">ÜSTF</a>
+        <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
-        <?php // ── HÜCRE 5: Sil 
-        ?>
+        <?php // ── HÜCRE 5: Sil ?>
         <?php if ($show_delete && $role !== 'musteri'): ?>
           <form method="post" action="order_delete.php" class="inline-delete-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
             <input type="hidden" name="csrf" value="<?= h($csrf_token) ?>">
             <input type="hidden" name="id" value="<?= $o->id ?>">
             <?php if ($is_admin): ?>
-              <button type="submit" class="btn" title="Sil" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#ef4444;"><span style="font-size:15px;">🗑️</span></button>
+              <button type="submit" title="Sil" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#ef4444; cursor:pointer;"><span style="font-size:13px;">🗑️</span></button>
             <?php else: $tm = sprintf('%d:%02d', floor($remaining_sec / 60), $remaining_sec % 60); ?>
-              <button type="submit" class="btn btn-delete-timer" data-remaining="<?= (int)$remaining_sec ?>" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; font-size:9px; --timer-pct:<?= number_format($remaining_pct, 2) ?>%"><?= $tm ?></button>
+              <button type="submit" class="btn-delete-timer" data-remaining="<?= (int)$remaining_sec ?>" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; font-size:9px; --timer-pct:<?= number_format($remaining_pct, 2) ?>%; border:1px solid #e1e5ea; background:#fff; color:#333; cursor:pointer;"><?= $tm ?></button>
             <?php endif; ?>
           </form>
-        <?php else: ?><div style="height:30px;"></div><?php endif; ?>
+        <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
-        <?php // ── HÜCRE 6: Mail 
-        ?>
+        <?php // ── HÜCRE 6: Mail ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi'], true)): ?>
           <form method="post" action="api/order_send_mail.php?ajax=1" class="inline-mail-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
             <input type="hidden" name="csrf" value="<?= h($csrf_token) ?>">
             <input type="hidden" name="id" value="<?= $o->id ?>">
-            <button type="submit" class="btn" title="Mail Gönder" style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#d97706;"><span style="font-size:15px;">📧</span></button>
+            <button type="submit" title="Mail Gönder" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#d97706; cursor:pointer;"><span style="font-size:13px;">📧</span></button>
           </form>
-        <?php else: ?><div style="height:30px;"></div><?php endif; ?>
+        <?php else: ?><div style="height:26px;"></div><?php endif; ?>
       </div>
-<?php return ob_get_clean();
+      <?php return ob_get_clean();
     }
   }
 }
