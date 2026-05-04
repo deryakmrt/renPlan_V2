@@ -154,7 +154,7 @@ if (!empty($items) && isset($db)) {
                     <td><input type="text" name="kullanim_alani[]" class="form-control" value="<?= h($it['kullanim_alani'] ?? '') ?>" <?= $__is_admin_like ? '' : 'readonly style="background-color:#f9fafb;cursor:not-allowed;"' ?>></td>
 
                     <?php if ($__is_admin_like): ?>
-                        <td class="right"><button type="button" class="btn-delete" onclick="delRow(this)">Sil 🗑️</button></td>
+                        <td class="right"><button type="button" class="btn-delete" onclick="delRow(this)">🗑️</button></td>
                     <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>

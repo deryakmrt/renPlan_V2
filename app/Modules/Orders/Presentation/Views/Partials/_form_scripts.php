@@ -104,8 +104,9 @@
 
         function positionDropdown() {
             var rect = searchInput.getBoundingClientRect();
-            dropdown.style.top   = (rect.bottom + window.scrollY + 2) + 'px';
-            dropdown.style.left  = (rect.left + window.scrollX) + 'px';
+            // position:fixed → viewport koordinatları, scrollY ekleme!
+            dropdown.style.top   = (rect.bottom + 2) + 'px';
+            dropdown.style.left  = rect.left + 'px';
             dropdown.style.width = rect.width + 'px';
         }
 
@@ -194,8 +195,24 @@
         window.addEventListener('resize', positionDropdown);
     };
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function initAllSearch() {
         document.querySelectorAll('#itemsTable tbody tr').forEach(window.bindSearch);
+    }
+
+    // Hem DOMContentLoaded hem load ile dene — ob_start timing sorunu için
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAllSearch);
+    } else {
+        initAllSearch();
+    }
+    window.addEventListener('load', function() {
+        // Henüz bind edilmemiş satırları tekrar dene
+        document.querySelectorAll('#itemsTable tbody tr').forEach(function(tr) {
+            if (!tr.dataset.searchBound) {
+                window.bindSearch(tr);
+                tr.dataset.searchBound = '1';
+            }
+        });
     });
 })();
 
@@ -535,5 +552,148 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+
+// ==========================================
+// 6. POPOVER TETİKLEYİCİ
+// Ürün özeti ve kullanım alanı inputlarına tıklayınca büyük editör aç
+// ==========================================
+(function() {
+    var popover  = document.getElementById('__popover');
+    var overlay  = document.getElementById('__popover_overlay');
+    var textarea = document.getElementById('__popover_text');
+    var label    = document.getElementById('__popover_label');
+    var saveBtn  = document.getElementById('__popover_save');
+    var cancelBtn= document.getElementById('__popover_cancel');
+    if (!popover) return;
+
+    var _activeInput = null;
+
+    function openPopover(input, labelText) {
+        _activeInput = input;
+        if (label)    label.textContent = labelText;
+        if (textarea) textarea.value    = input.value;
+
+        var pw = 420, ph = 280;
+        popover.style.width  = pw + 'px';
+        popover.style.height = ph + 'px';
+
+        // Input'un yanında aç
+        var rect = input.getBoundingClientRect();
+        var top  = rect.bottom + 6;
+        var left = rect.left;
+
+        // Sağa taşarsa sola kaydır
+        if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+        // Alta taşarsa yukarı aç
+        if (top + ph > window.innerHeight - 12) top = rect.top - ph - 6;
+        // Negatif olmasın
+        if (top  < 8) top  = 8;
+        if (left < 8) left = 8;
+
+        popover.style.left   = left + 'px';
+        popover.style.top    = top  + 'px';
+        popover.style.display = 'flex';
+        overlay.style.display = 'block';
+        setTimeout(function() { if (textarea) textarea.focus(); }, 50);
+    }
+
+    function closePopover(save) {
+        if (save && _activeInput && textarea) {
+            _activeInput.value = textarea.value;
+        }
+        popover.style.display  = 'none';
+        overlay.style.display  = 'none';
+        _activeInput = null;
+    }
+
+    // Drag (sürükleme) desteği
+    var header = document.getElementById('__popover_header');
+    if (header) {
+        var dragging = false, ox, oy;
+        header.addEventListener('mousedown', function(e) {
+            dragging = true;
+            ox = e.clientX - popover.offsetLeft;
+            oy = e.clientY - popover.offsetTop;
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!dragging) return;
+            popover.style.left = (e.clientX - ox) + 'px';
+            popover.style.top  = (e.clientY - oy) + 'px';
+        });
+        document.addEventListener('mouseup', function() { dragging = false; });
+    }
+
+    if (saveBtn)   saveBtn.addEventListener('click',   function() { closePopover(true); });
+    if (cancelBtn) cancelBtn.addEventListener('click', function() { closePopover(false); });
+    if (overlay)   overlay.addEventListener('click',   function() { closePopover(false); });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && popover.style.display === 'flex') closePopover(false);
+        if (e.key === 'Enter' && e.ctrlKey && popover.style.display === 'flex') closePopover(true);
+    });
+
+    // Tablodaki input'lara delegasyon
+    document.addEventListener('click', function(e) {
+        var input = e.target;
+        if (!input || input.tagName !== 'INPUT') return;
+        var name = input.getAttribute('name') || '';
+        if (name.startsWith('urun_ozeti')) {
+            openPopover(input, '📝 Ürün Özeti');
+        } else if (name.startsWith('kullanim_alani')) {
+            openPopover(input, '📍 Kullanım Alanı');
+        }
+    });
+})();
+
+
+// ==========================================
+// 7. STOK KODU ENTER — Ürün bilgilerini doldur
+// ==========================================
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var input = e.target;
+    if (!input || !input.classList.contains('stok-kodu')) return;
+    e.preventDefault();
+
+    var q = input.value.trim();
+    if (!q) return;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/products-search.php?q=' + encodeURIComponent(q) + '&exact=1');
+    xhr.onload = function() {
+        if (xhr.status !== 200) return;
+        var data;
+        try { data = JSON.parse(xhr.responseText); } catch(e) { return; }
+        var p = Array.isArray(data) ? data[0] : data;
+        if (!p || !p.id) { input.style.borderColor = '#ef4444'; setTimeout(function(){ input.style.borderColor = ''; }, 1500); return; }
+
+        var row = input.closest('tr');
+        if (!row) return;
+
+        var setVal = function(sel, val) { var el = row.querySelector(sel); if (el) el.value = val || ''; };
+        setVal('.product-id-input',      p.id);
+        setVal('.product-search-input',  p.name || p.display_name);
+        setVal('input[name="name[]"]',   p.name || p.display_name);
+        setVal('input[name="unit[]"]',   p.unit);
+        setVal('input[name="urun_ozeti[]"]',    p.urun_ozeti);
+        setVal('input[name="kullanim_alani[]"]', p.kullanim_alani);
+        if (p.price) setVal('input[name="price[]"]', String(p.price).replace('.', ','));
+
+        // Görsel güncelle
+        if (p.image) {
+            var imgCell = row.querySelector('.urun-gorsel');
+            if (imgCell) {
+                imgCell.innerHTML = '<a href="javascript:void(0);" onclick="openModal(\'' + p.image + '\'); return false;">'
+                    + '<img class="urun-gorsel-img" src="' + p.image + '" style="max-width:48px;max-height:48px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;background:#fff;display:block;margin:0 auto;">'
+                    + '</a>';
+            }
+        }
+
+        input.style.borderColor = '#16a34a';
+        setTimeout(function(){ input.style.borderColor = ''; }, 1500);
+        if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
+    };
+    xhr.send();
 });
 </script>

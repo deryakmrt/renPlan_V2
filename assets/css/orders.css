@@ -407,9 +407,9 @@ textarea.form-control {
   grid-template-columns: repeat(5, 1fr);
 }
 
-/* Tarihler: 5 sütun */
+/* Tarihler: 6 sütun */
 .g-tarihler {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
 }
 
 /* Tek sütun */
@@ -524,6 +524,7 @@ textarea.form-control {
 @media (max-width: 1100px) {
   .g-temel    { grid-template-columns: repeat(2, 1fr); }
   .g-tarihler { grid-template-columns: repeat(3, 1fr); }
+  .g-tarih    { grid-template-columns: repeat(3, 1fr); }
   .g-finans   { grid-template-columns: repeat(3, 1fr); }
 }
 
@@ -884,7 +885,7 @@ textarea.form-control {
 
 /* ─── Tarih grid (5 sütun) ───────────────────────────────── */
 .g-tarih {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
 }
 
 @media (max-width: 1100px) { .g-tarih { grid-template-columns: repeat(3, 1fr); } }
@@ -914,10 +915,6 @@ textarea.form-control {
   flex-wrap: wrap;
   gap: 4px;
 }
-
-/* ═══════════════════════════════════════════════════════════
-   SAYFA BAŞLIĞI — turuncu sol bordür
-   ═══════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════
    RENKLİ FORM SECTION KARTLARI
@@ -1123,69 +1120,6 @@ textarea.form-control {
   color: #1e293b !important;
 }
 
-/* ─── Header aksiyon butonları ───────────────────────────── */
-.page-header-actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* Tüm header butonları — normal boyut (sm değil) */
-.page-header-actions .btn {
-  height: 38px !important;
-  padding: 0 16px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  border-radius: 10px !important;
-  white-space: nowrap;
-}
-
-/* Görüntüle — app.css'den gelir */
-
-/* STF — mor */
-.btn-stf {
-  background: #f5f3ff !important;
-  color: #6d28d9 !important;
-  border: 1.5px solid #c4b5fd !important;
-}
-.btn-stf:hover {
-  background: #ede9fe !important;
-  border-color: #8b5cf6 !important;
-}
-
-/* Üretim Föyü — yeşil */
-.btn-uretim {
-  background: #f0fdf4 !important;
-  color: #15803d !important;
-  border: 1.5px solid #86efac !important;
-}
-.btn-uretim:hover {
-  background: #dcfce7 !important;
-  border-color: #4ade80 !important;
-}
-
-/* Vazgeç ghost — app.css'den gelir */
-
-/* 💾 Güncelle / Kaydet — turuncu, baskın */
-.btn-guncelle {
-  background: #ee7422 !important;
-  color: #fff !important;
-  border: 1.5px solid #ee7422 !important;
-  box-shadow: 0 3px 10px rgba(238,116,34,.30) !important;
-  font-weight: 700 !important;
-}
-.btn-guncelle:hover {
-  background: #d4621a !important;
-  border-color: #d4621a !important;
-  box-shadow: 0 4px 14px rgba(238,116,34,.40) !important;
-  transform: translateY(-1px);
-}
-.btn-guncelle:active {
-  transform: translateY(0);
-  box-shadow: none !important;
-}
 
 /* ─── wpstat track ve metin düzeni ──────────────────────── */
 .wpstat-track {
@@ -1243,12 +1177,9 @@ textarea.form-control {
   gap: 0;
   background: #fff;
   border: 1.5px solid #e2e8f0;
-  border-radius: 50px;
+  border-radius: 10px;
   overflow: hidden;
   transition: border-color .15s, box-shadow .15s;
-  max-width: 420px;
-  width: 100%;
-  margin: 0 auto;
 }
 
 .orders-search-wrap:focus-within {
@@ -1267,7 +1198,7 @@ textarea.form-control {
 .orders-search-input {
   flex: 1;
   min-width: 0;
-  height: 44px;
+  height: 38px;
   border: none;
   outline: none;
   background: transparent;
@@ -1280,7 +1211,7 @@ textarea.form-control {
 
 /* Durum select — arama içinde */
 .orders-status-select {
-  height: 44px;
+  height: 38px;
   border: none;
   border-left: 1.5px solid #e2e8f0;
   outline: none;
@@ -1296,12 +1227,11 @@ textarea.form-control {
 }
 
 .orders-search-btn {
-  height: 44px;
-  padding: 0 20px;
+  height: 38px;
+  padding: 0 16px;
   background: #ee7422;
   color: #fff;
   border: none;
-  border-radius: 0 50px 50px 0;
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -1451,9 +1381,18 @@ textarea.form-control {
    ARAMA BARI — dar, yuvarlak pill stili
    ═══════════════════════════════════════════════════════════ */
 
-/* orders-search-wrap max-width yukarıda tanımlı */
+.orders-search-wrap {
+  border-radius: 50px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  background: #fff !important;
+  max-width: 380px;
+  margin: 0 auto;
+}
 
-/* orders-search-btn radius yukarıda tanımlı */
+.orders-search-btn {
+  border-radius: 0 50px 50px 0 !important;
+  padding: 0 18px !important;
+}
 
 .orders-status-select {
   background: transparent !important;
@@ -1465,11 +1404,10 @@ textarea.form-control {
    ═══════════════════════════════════════════════════════════ */
 
 .orders-bulk-form {
-  opacity: 0.4;
-  transition: opacity .2s, box-shadow .2s, border-color .2s;
+  opacity: 0.55;
+  transition: opacity .2s, box-shadow .2s;
   border-color: transparent !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  background: rgba(255,255,255,.5) !important;
 }
 
 .orders-bulk-form:hover,
@@ -1477,7 +1415,7 @@ textarea.form-control {
   opacity: 1;
   border-color: #ee7422 !important;
   background: #fff !important;
-  box-shadow: 0 0 0 3px rgba(238,116,34,.10) !important;
+  box-shadow: 0 0 0 3px rgba(238,116,34,.12) !important;
 }
 
 .btn-uygula {
@@ -1486,45 +1424,24 @@ textarea.form-control {
 
 .btn-uygula:hover { background: #d4621a !important; }
 
-/* Header buton overrideları — app.css'den gelir */
-/* table-card — header'dan ayrı */
-.table-card { margin-top: 12px; }
 
-/* orders.php — admin-container sıfır padding, page-header zaten kart */
-.orders-page .admin-container,
-body.renv2 .admin-container {
-  padding-top: 0 !important;
+/* ─── TCMB Kur ve Drive bölüm renkleri ──────────────────── */
+.sec-kur {
+  border-left-color: #0891b2 !important;  /* cyan — finans tonu */
+  background: linear-gradient(to right, #ecfeff, #ffffff) !important;
 }
+.sec-kur .form-section-title { color: #0e7490; }
 
-/* admin-container üst boşluk */
-.admin-container { padding: 16px 20px 40px !important; }
-
-/* ─── orders.php kart ayrımı ────────────────────────────── */
-/* page-header kart gibi, altındaki table-card ayrı görünsün */
-.table-card {
-  box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
-  border: 1px solid #e2e8f0 !important;
+.sec-drive {
+  border-left-color: #1d4ed8 !important;  /* mavi — Drive tonu */
+  background: linear-gradient(to right, #eff6ff, #ffffff) !important;
   border-radius: 14px !important;
-  overflow: hidden !important;
 }
+.sec-drive .form-section-title { color: #1d4ed8; }
 
-/* Status sekmeleri ve pagination table-card dışında */
-.table-card > div[style*="padding: 16px"] {
-  padding: 12px 20px 0 !important;
-}
-
-/* ─── Arama barı yükseklik = Yeni Sipariş butonu (44px) ─── */
-.orders-list-header {
-  align-items: center !important;
-  min-height: 44px;
-}
-
-.orders-search-wrap {
-  height: 44px !important;
-  align-items: stretch !important;
-}
-
-.orders-search-icon {
-  display: flex !important;
-  align-items: center !important;
+/* ─── Tarih input minimum genişlik ──────────────────────── */
+.g-tarih .form-control[type="date"] {
+  min-width: 0;
+  font-size: 12px !important;
+  padding: 0 6px !important;
 }

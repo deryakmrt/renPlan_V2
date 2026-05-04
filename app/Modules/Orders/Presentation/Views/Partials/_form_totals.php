@@ -13,7 +13,7 @@
 ?>
 
 <?php if ($__is_admin_like || $__is_muhasebe): ?>
-<div class="mt" style="background: #ffffff; border-radius: 12px; padding: 25px 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: flex-start;">
+<div class="form-section sec-kur mt" style="background: #ffffff; border-radius: 12px; padding: 25px 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: flex-start;">
 
     <div id="fatura_kur_section" style="visibility: <?= ($order['status'] ?? '') === 'fatura_edildi' ? 'visible' : 'hidden' ?>;">
         <input type="hidden" name="kur_usd" id="hidden_kur_usd" value="<?= $order['kur_usd'] ?? '' ?>">
