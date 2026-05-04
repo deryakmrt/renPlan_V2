@@ -48,9 +48,9 @@ function renderFileTable(array $files, bool $canDelete, int $order_id): void {
 }
 ?>
 
-<div class="card mt" style="border-top: 4px solid #3b82f6;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3 style="margin:0; font-size:16px; color:#1e293b;">📁 Proje Dosyaları (Google Drive)</h3>
+<div class="form-section sec-drive mt">
+    <div class="form-section-title" style="justify-content:space-between;">
+        <span>📁 Proje Dosyaları (Google Drive)</span>
         <?php if ($__is_admin_like && !empty($order['drive_folder_id'])): ?>
             <a href="https://drive.google.com/drive/folders/<?= h($order['drive_folder_id']) ?>" target="_blank" class="btn btn-sm" style="color:#2563eb;">📂 Ana Klasöre Git</a>
         <?php endif; ?>
