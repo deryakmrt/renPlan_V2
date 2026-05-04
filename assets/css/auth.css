@@ -1,0 +1,568 @@
+/**
+ * renPlan ERP – Auth Styles
+ * assets/css/auth.css
+ *
+ * Giriş / şifre sıfırlama ekranları için stil.
+ * Eski: assets/auth-login.css  →  YENİ: assets/css/auth.css
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import '_variables.css';
+
+/* ─── Reset / Temel ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body.auth-only {
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-base);
+  color: var(--rp-slate-800);
+  background: var(--rp-slate-100);
+  min-height: 100dvh;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+/* ─── İki Sütun Kabuk ────────────────────────────────────── */
+.auth-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100dvh;
+}
+
+/* ─── SOL PANEL (hero / marka) ───────────────────────────── */
+.auth-panel {
+  flex: 0 0 48%;
+  background:
+    linear-gradient(145deg, #0c1322 0%, #162032 50%, #1a2a45 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 52px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Süsleyici daireler */
+.auth-panel::before,
+.auth-panel::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.auth-panel::before {
+  width: 520px; height: 520px;
+  top: -180px; right: -160px;
+  background: radial-gradient(circle, rgba(238,116,34,.14) 0%, transparent 65%);
+}
+.auth-panel::after {
+  width: 380px; height: 380px;
+  bottom: -120px; left: -80px;
+  background: radial-gradient(circle, rgba(30,41,59,.8) 0%, transparent 70%);
+  border: 1px solid rgba(255,255,255,.04);
+}
+
+/* Panel iç dot grid desen */
+.auth-panel-bg {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* Logo + marka */
+.auth-brand {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-brand img {
+  height: 36px;
+  filter: brightness(0) invert(1);
+}
+
+.auth-brand-name {
+  font-size: var(--rp-text-xl);
+  font-weight: var(--rp-weight-bold);
+  color: var(--rp-white);
+  letter-spacing: -0.02em;
+}
+
+/* Orta içerik */
+.auth-panel-body {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--rp-space-8);
+}
+
+.auth-panel-headline {
+  color: var(--rp-white);
+}
+
+.auth-panel-headline h2 {
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: var(--rp-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: var(--rp-leading-tight);
+  margin-bottom: var(--rp-space-3);
+}
+
+.auth-panel-headline p {
+  font-size: var(--rp-text-base);
+  color: rgba(255,255,255,.55);
+  line-height: var(--rp-leading-base);
+  max-width: 340px;
+}
+
+/* Özellik kartları */
+.auth-features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+.auth-feature-card {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-4);
+  padding: var(--rp-space-4) var(--rp-space-5);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--rp-radius-lg);
+  backdrop-filter: blur(8px);
+  transition: background var(--rp-dur) var(--rp-ease),
+              border-color var(--rp-dur) var(--rp-ease),
+              transform var(--rp-dur) var(--rp-ease);
+}
+
+.auth-feature-card:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(238,116,34,.35);
+  transform: translateX(4px);
+}
+
+.auth-feature-icon {
+  width: 42px; height: 42px;
+  min-width: 42px;
+  background: rgba(238,116,34,.15);
+  border: 1px solid rgba(238,116,34,.25);
+  border-radius: var(--rp-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.auth-feature-text strong {
+  display: block;
+  font-size: var(--rp-text-sm);
+  font-weight: var(--rp-weight-semi);
+  color: var(--rp-white);
+  line-height: var(--rp-leading-snug);
+}
+
+.auth-feature-text span {
+  font-size: var(--rp-text-xs);
+  color: rgba(255,255,255,.45);
+}
+
+/* Footer / alt marka notu */
+.auth-panel-footer {
+  position: relative;
+  z-index: 2;
+  font-size: var(--rp-text-xs);
+  color: rgba(255,255,255,.3);
+  letter-spacing: 0.02em;
+}
+
+/* ─── SAĞ PANEL (form) ───────────────────────────────────── */
+.auth-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rp-space-12) var(--rp-space-8);
+  background: var(--rp-white);
+}
+
+.card-inner {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-6);
+}
+
+/* Logo sağ panel */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--rp-space-2);
+}
+
+.brand-logo {
+  height: 32px;
+}
+
+/* Form başlık */
+.auth-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-2);
+}
+
+.auth-heading h1 {
+  font-size: var(--rp-text-2xl);
+  font-weight: var(--rp-weight-bold);
+  color: var(--rp-slate-900);
+  letter-spacing: -0.025em;
+  line-height: var(--rp-leading-tight);
+}
+
+.auth-heading p {
+  font-size: var(--rp-text-sm);
+  color: var(--rp-slate-500);
+}
+
+/* ─── Form alanları ──────────────────────────────────────── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-4);
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-2);
+}
+
+.auth-field label {
+  font-size: var(--rp-text-sm);
+  font-weight: var(--rp-weight-medium);
+  color: var(--rp-slate-700);
+  letter-spacing: 0.01em;
+}
+
+.auth-field-wrap {
+  position: relative;
+}
+
+.auth-field-wrap .field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rp-slate-400);
+  font-size: 16px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.auth-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-sm);
+  color: var(--rp-slate-900);
+  background: var(--rp-slate-50);
+  border: 1.5px solid var(--rp-slate-200);
+  border-radius: var(--rp-radius);
+  outline: none;
+  transition: border-color var(--rp-dur-fast) var(--rp-ease),
+              background var(--rp-dur-fast) var(--rp-ease),
+              box-shadow var(--rp-dur-fast) var(--rp-ease);
+}
+
+.auth-field input:focus {
+  border-color: var(--rp-orange);
+  background: var(--rp-white);
+  box-shadow: 0 0 0 3px var(--rp-orange-muted);
+}
+
+.auth-field input::placeholder {
+  color: var(--rp-slate-400);
+}
+
+/* Şifre göster/gizle butonu */
+.pwd-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--rp-slate-400);
+  padding: 4px;
+  font-size: 15px;
+  line-height: 1;
+  transition: color var(--rp-dur-fast);
+}
+.pwd-toggle:hover { color: var(--rp-slate-600); }
+
+/* ─── Captcha alanı ──────────────────────────────────────── */
+.auth-captcha-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) var(--rp-space-4);
+  background: var(--rp-slate-50);
+  border: 1.5px dashed var(--rp-slate-200);
+  border-radius: var(--rp-radius);
+  flex-wrap: wrap;
+}
+
+.auth-captcha-row .cf-turnstile {
+  flex-shrink: 0;
+}
+
+.auth-captcha-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-3);
+  margin-left: auto;
+}
+
+/* ─── Butonlar ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rp-space-2);
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-sm);
+  font-weight: var(--rp-weight-semi);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  border-radius: var(--rp-radius);
+  transition: background var(--rp-dur-fast) var(--rp-ease),
+              opacity var(--rp-dur-fast),
+              transform var(--rp-dur-fast) var(--rp-ease),
+              box-shadow var(--rp-dur-fast) var(--rp-ease);
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn.primary {
+  height: 42px;
+  padding: 0 var(--rp-space-6);
+  background: var(--rp-orange);
+  color: var(--rp-white);
+}
+
+.btn.primary:hover {
+  background: var(--rp-orange-dark);
+  box-shadow: 0 4px 14px rgba(238,116,34,.35);
+}
+
+/* Büyük giriş butonu */
+.btn-auth-submit {
+  width: 100%;
+  height: 48px;
+  font-size: var(--rp-text-base);
+  border-radius: var(--rp-radius);
+  background: var(--rp-orange);
+  color: var(--rp-white);
+  font-family: var(--rp-font-sans);
+  font-weight: var(--rp-weight-semi);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rp-space-2);
+  letter-spacing: 0.01em;
+  transition: background var(--rp-dur-fast) var(--rp-ease),
+              transform var(--rp-dur-fast) var(--rp-ease),
+              box-shadow var(--rp-dur-fast) var(--rp-ease);
+}
+
+.btn-auth-submit:hover {
+  background: var(--rp-orange-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(238,116,34,.4);
+}
+
+.btn-auth-submit:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Şifremi unuttum linki */
+.auth-forgot-link {
+  font-size: var(--rp-text-xs);
+  color: var(--rp-slate-500);
+  text-decoration: none;
+  border: 1px solid var(--rp-slate-200);
+  border-radius: var(--rp-radius-sm);
+  padding: 7px 10px;
+  transition: color var(--rp-dur-fast), border-color var(--rp-dur-fast);
+}
+
+.auth-forgot-link:hover {
+  color: var(--rp-orange);
+  border-color: var(--rp-orange-light);
+}
+
+/* ─── Hata / uyarı alert ─────────────────────────────────── */
+.alert {
+  padding: var(--rp-space-3) var(--rp-space-4);
+  border-radius: var(--rp-radius);
+  font-size: var(--rp-text-sm);
+  line-height: var(--rp-leading-snug);
+  border-left: 3px solid;
+  animation: alertIn .2s var(--rp-ease-out);
+}
+
+@keyframes alertIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.alert { /* varsayılan: hata */
+  background: var(--rp-danger-bg);
+  color: var(--rp-danger);
+  border-left-color: var(--rp-danger);
+}
+
+.alert.success {
+  background: var(--rp-success-bg);
+  color: var(--rp-success);
+  border-left-color: var(--rp-success);
+}
+
+.alert.mb { margin-bottom: var(--rp-space-4); }
+
+/* ─── Şifre sıfırlama modal ──────────────────────────────── */
+#forgot-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--rp-z-modal);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#forgot-modal.auth-open { display: flex; }
+
+#forgot-modal .fm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 19, 34, .55);
+  backdrop-filter: blur(3px);
+}
+
+#forgot-modal .fm-dialog {
+  position: relative;
+  background: var(--rp-white);
+  border-radius: var(--rp-radius-xl);
+  box-shadow: var(--rp-shadow-xl);
+  width: min(440px, 94vw);
+  max-height: 80vh;
+  overflow: auto;
+  animation: modalIn var(--rp-dur) var(--rp-ease-out);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(16px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#forgot-modal .fm-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--rp-radius-sm);
+  background: var(--rp-slate-100);
+  color: var(--rp-slate-600);
+  font-size: 20px;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--rp-dur-fast);
+}
+
+#forgot-modal .fm-close:hover { background: var(--rp-slate-200); }
+
+#forgot-modal .fm-body { padding: var(--rp-space-6) var(--rp-space-6); }
+
+/* Forgot form içindeki input'lar da aynı stilde */
+#forgot-body input[type="email"],
+#forgot-body input[type="text"] {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-sm);
+  color: var(--rp-slate-900);
+  background: var(--rp-slate-50);
+  border: 1.5px solid var(--rp-slate-200);
+  border-radius: var(--rp-radius);
+  outline: none;
+  margin-bottom: var(--rp-space-4);
+  transition: border-color var(--rp-dur-fast), box-shadow var(--rp-dur-fast);
+}
+
+#forgot-body input:focus {
+  border-color: var(--rp-orange);
+  box-shadow: 0 0 0 3px var(--rp-orange-muted);
+}
+
+#forgot-body button[type="submit"] {
+  width: 100%;
+  height: 44px;
+  background: var(--rp-orange);
+  color: var(--rp-white);
+  border: none;
+  border-radius: var(--rp-radius);
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-sm);
+  font-weight: var(--rp-weight-semi);
+  cursor: pointer;
+  transition: background var(--rp-dur-fast);
+}
+
+#forgot-body button[type="submit"]:hover {
+  background: var(--rp-orange-dark);
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .auth-panel {
+    display: none;
+  }
+  .auth-card {
+    padding: var(--rp-space-8) var(--rp-space-6);
+    background: var(--rp-slate-50);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--rp-space-6) var(--rp-space-4);
+  }
+  .card-inner {
+    gap: var(--rp-space-5);
+  }
+}

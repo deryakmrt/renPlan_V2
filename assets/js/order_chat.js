@@ -1,4 +1,4 @@
-// assets/order_chat.js
+// assets/js/order_chat.js
 (function(){
   const listEl = document.getElementById('chat-list');
   const form = document.getElementById('chat-form');

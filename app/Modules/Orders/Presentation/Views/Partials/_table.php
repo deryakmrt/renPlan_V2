@@ -265,16 +265,16 @@ if (!function_exists('__wpstat_icon_svg')) {
   <table class="orders-table">
     <thead>
       <tr>
-        <th><input type='checkbox' id='checkAll' onclick="document.querySelectorAll('.orderCheck').forEach(cb=>cb.checked=this.checked)"></th>
-        <th>👤Müşteri</th>
-        <th>📂Proje Adı</th>
-        <th>🔖Sipariş Kodu</th>
-        <th>Üretim Durumu</th>
-        <th style="color:#000; font-size:14px; text-align:center">Sipariş Tarihi</th>
-        <th style="color:#000; font-size:14px; text-align:center">Termin Tarihi</th>
-        <th style="color:#000; font-size:14px; text-align:center">Başlangıç Tarihi</th>
-        <th style="color:#000; font-size:14px; text-align:center">Bitiş Tarihi</th>
-        <th style="color:#000; font-size:14px; text-align:center">Teslim Tarihi</th>
+        <th class="th-check"><input type='checkbox' id='checkAll' onclick="document.querySelectorAll('.orderCheck').forEach(cb=>cb.checked=this.checked)"></th>
+        <th>👤 Müşteri</th>
+        <th>📂 Proje Adı</th>
+        <th>🔖 Sipariş Kodu</th>
+        <th class="th-status">Üretim Durumu</th>
+        <th class="th-date">Sipariş Tarihi</th>
+        <th class="th-date">Termin Tarihi</th>
+        <th class="th-date">Başlangıç</th>
+        <th class="th-date">Bitiş</th>
+        <th class="th-date">Teslim</th>
         <?php if ($status === 'fatura_edildi'): ?>
           <th style="color: #7e22ce; font-size:14px; text-align:center">Fatura Tarihi</th>
           <style>

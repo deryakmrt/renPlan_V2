@@ -10,9 +10,22 @@ require_once __DIR__ . '/helpers.php';
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>RenPlan -DEMO</title>
   <base href="<?= BASE_URL ?>/">
-  <link rel="stylesheet" href="/assets/burak_ui.css">
-  <link rel="stylesheet" href="/assets/burak_ui_hamburger2.css?v=3">
-  <link rel="stylesheet" href="/assets/core.css?v=1.0.1">
+  <?php
+    /* CSS sürüm cache-bust: dosya değişince otomatik güncellenir */
+    function _css_v(string $path): string {
+        $full = ($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__)) . $path;
+        return is_file($full) ? '?v=' . filemtime($full) : '?v=1';
+    }
+  ?>
+  <link rel="stylesheet" href="/assets/css/app.css<?= _css_v('/assets/css/app.css') ?>">
+  <link rel="stylesheet" href="/assets/css/layout.css<?= _css_v('/assets/css/layout.css') ?>">
+  <?php
+  // orders.css — sipariş sayfalarında her zaman yükle
+  $__page = basename($_SERVER['PHP_SELF'] ?? '');
+  if (in_array($__page, ['orders.php','order_edit.php','order_add.php','order_view.php'])) {
+    echo '<link rel="stylesheet" href="/assets/css/orders.css?v=' . (is_file(__DIR__.'/../assets/css/orders.css') ? filemtime(__DIR__.'/../assets/css/orders.css') : 1) . '">';
+  }
+  ?>
   <script src="/assets/js/dropdown_fix.js"></script>
   <style>
     /* Workpilot: Ürünler dropdown min-css */
@@ -304,7 +317,7 @@ require_once __DIR__ . '/helpers.php';
           <div class="dropdown">
             <a href="#" class="dropdown-toggle">Siparişler<span class="caret"></span></a>
             <div class="menu">
-              <a href="orders.php">Siparişler</a>
+              <a href="orders.php?restore=1">Siparişler</a>
               <?php if (!has_role('muhasebe')): ?>
                 <a href="projeler.php" class="<?= basename($_SERVER['PHP_SELF']) == 'projeler.php' ? 'active' : '' ?>">
                   <i class="fas fa-project-diagram"></i> Projeler

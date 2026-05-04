@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/audit_log.php';
 
@@ -111,4 +112,6 @@ $__uretim_readonly = ($__role === 'uretim');   // Üretim: sadece status + tarih
 require_once __DIR__ . '/app/Modules/Orders/Presentation/Views/form_view.php';
 ?>
 <script src="/assets/js/order_form.js"></script>
-<?php include __DIR__ . '/includes/footer.php';
+<?php
+include __DIR__ . '/includes/footer.php';
+ob_end_flush();

@@ -23,6 +23,15 @@ spl_autoload_register(function ($class) {
 require_login();
 
 $db = pdo();
+
+// Son kalınan sayfaya dön (Vazgeç veya sidebar'dan gelince)
+if (isset($_GET['restore']) && !empty($_SESSION['last_orders_url'])) {
+    $restore_url = $_SESSION['last_orders_url'];
+    if (strpos($restore_url, 'restore=') === false) {
+        redirect($restore_url);
+    }
+}
+
 $action = $_GET['a'] ?? 'list';
 
 // --- Müşteri Güvenliği ---
@@ -127,7 +136,10 @@ $total_in_scope = $status_counts['total_in_scope'] ?? 0;
 
 // 4. EKRANI BASTIR (TASARIM VE VIEW KATMANI ÇAĞRILIYOR)
 ?>
-<link rel="stylesheet" href="/assets/css/orders.css?= time() ?>">
+<?php
+$_ov = is_file(__DIR__ . '/assets/css/orders.css') ? filemtime(__DIR__ . '/assets/css/orders.css') : 1;
+?>
+<link rel="stylesheet" href="/assets/css/orders.css?v=<?= $_ov ?>">
 <?php
 include __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/app/Modules/Orders/Presentation/Views/list_view.php';
