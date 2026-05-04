@@ -67,7 +67,7 @@
         <div><label>Sipariş Kodu</label><input type="text" name="order_code" class="form-control" value="<?= h($order['order_code'] ?? '') ?>"></div>
         <div><label>Proje Adı <span class="text-danger">*</span></label><input type="text" name="proje_adi" class="form-control" value="<?= h($order['proje_adi'] ?? '') ?>" required></div>
 
-        <div style="grid-row: span 2; display: flex; flex-direction: column;">
+        <div class="musteri-field-wrap">
             <label>Müşteri <span class="text-danger">*</span></label>
             <?php if ($mode === 'new'): ?>
                 <select name="customer_id" class="form-control" required>
@@ -75,17 +75,16 @@
                     <?php foreach ($customers as $c): ?><option value="<?= (int)$c['id'] ?>"><?= h($c['name']) ?></option><?php endforeach; ?>
                 </select>
             <?php else: ?>
-                <?php 
+                <?php
                 $__custName = '';
                 $__custId = (int)($order['customer_id'] ?? 0);
                 if ($__custId) { foreach ($customers as $c) { if ((int)$c['id'] === $__custId) { $__custName = $c['name']; break; } } }
                 ?>
-                <div class="form-control" style="background: #fafafa; pointer-events: none; flex: 1;"><?= h($__custName ?: '—') ?></div>
                 <input type="hidden" name="customer_id" value="<?= $__custId ?>">
-                <div style="margin-top:auto; padding-top:6px;">
-                    <label style="font-size:12px;color:#6b7280">Değiştir:</label>
-                    <select name="customer_id_override" class="form-control">
-                        <option value="">— Değiştir —</option>
+                <div class="musteri-row">
+                    <div class="form-control musteri-display"><?= h($__custName ?: '—') ?></div>
+                    <select name="customer_id_override" class="form-control musteri-override" title="Müşteriyi değiştir">
+                        <option value="">Değiştir…</option>
                         <?php foreach ($customers as $c): ?><option value="<?= (int)$c['id'] ?>"><?= h($c['name']) ?></option><?php endforeach; ?>
                     </select>
                 </div>

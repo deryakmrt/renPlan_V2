@@ -26,8 +26,6 @@ $__form_readonly = $__readonly
 include __DIR__ . '/Partials/_form_header.php'; 
 ?>
 
-<link rel="stylesheet" href="assets/css/orders.css?v=<?= time() ?>">
-
 <form method="post" id="order-main-form">
     <?php csrf_input(); ?>
     

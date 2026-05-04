@@ -1,11 +1,44 @@
 <?php
 /**
  * Sipariş Listeleme Görünümü
+ * 
+ * Editör (Intelephense) uyarılarını gidermek için dışarıdan gelen değişkenleri tanımlıyoruz:
+ * @var string|null $status
+ * @var int $total_in_scope
+ * @var array $status_counts
  */
 ?>
-<div class="table-card">
-    <?php require __DIR__ . '/Partials/_filters.php'; ?>
+<!-- Başlık ve arama barı dışarıda kalıyor -->
+<?php require __DIR__ . '/Partials/_filters.php'; ?>
 
+<!-- 🟢 BEYAZ KUTUMUZ BAŞLIYOR -->
+<div class="table-card" style="background:#fff; border-radius:14px; border:1px solid #dde3ec; box-shadow:0 2px 16px rgba(0,0,0,.08); overflow:hidden; margin-top:0;">
+    
+    <!-- 🟢 1. Adımda kestiğimiz sekmeleri buraya, beyaz kutunun içine yapıştırdık! -->
+    <div style="padding: 16px 24px 12px 24px; background: #fff;">
+        <div class="status-quick-filter">
+          <a href="<?= __orders_status_link('') ?>" class="status-tab <?= ($status === '' || $status === null) ? 'active' : '' ?>">
+            Tümü <span style="opacity:0.7; margin-left:4px;">(<?= $total_in_scope ?>)</span>
+          </a>
+          <?php
+          $status_labels = [
+            'revize' => 'Revize Edilenler', 'tedarik' => 'Tedarik', 'sac lazer' => 'Sac Lazer', 'boru lazer' => 'Boru Lazer', 'kaynak' => 'Kaynak', 'boya' => 'Boya', 'elektrik montaj' => 'Elektrik Montaj', 'test' => 'Test', 'paketleme' => 'Paketleme', 'sevkiyat' => 'Sevkiyat', 'teslim edildi' => 'Teslim Edildi', 'fatura_edildi' => 'Fatura Edildi', 'askiya_alindi' => 'Askıya Alındı'
+          ];
+          foreach ($status_labels as $__k => $__lbl) {
+            if (in_array($__k, ['taslak_gizli'])) continue;
+            $__c = $status_counts[$__k] ?? 0;
+            if ($__c > 0 || $status === $__k) {
+              $__isActive = ($status === $__k) ? 'active' : '';
+              echo '<a href="' . __orders_status_link($__k) . '" class="status-tab ' . $__isActive . '">';
+              echo h($__lbl) . ' <span style="opacity:0.7; font-size:11px; margin-left:4px;">(' . $__c . ')</span>';
+              echo '</a>';
+            }
+          }
+          ?>
+        </div>
+    </div>
+
+    <!-- Tablo sayfalaması ve tablo beyaz kutunun içinde devam ediyor -->
     <?php require __DIR__ . '/Partials/_pagination.php'; ?>
 
     <?php require __DIR__ . '/Partials/_table.php'; ?>

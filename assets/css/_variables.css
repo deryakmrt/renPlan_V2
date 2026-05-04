@@ -1,0 +1,110 @@
+/**
+ * renPlan ERP – Design Tokens
+ * assets/css/_variables.css
+ *
+ * Bu dosya tüm CSS değişkenlerini (token) merkezileştirir.
+ * Diğer CSS dosyaları buradan import eder.
+ * Direkt <link> ile sayfaya eklenmez.
+ */
+
+:root {
+  /* ─── Marka renkleri ─────────────────────────────────── */
+  --rp-orange:        #ee7422;
+  --rp-orange-dark:   #d4621a;
+  --rp-orange-light:  #f9dcc4;
+  --rp-orange-muted:  rgba(238, 116, 34, 0.12);
+
+  /* ─── Nötr palet ─────────────────────────────────────── */
+  --rp-slate-950:     #0c1322;
+  --rp-slate-900:     #0f172a;
+  --rp-slate-800:     #1e293b;
+  --rp-slate-700:     #334155;
+  --rp-slate-600:     #475569;
+  --rp-slate-500:     #64748b;
+  --rp-slate-400:     #94a3b8;
+  --rp-slate-300:     #cbd5e1;
+  --rp-slate-200:     #e2e8f0;
+  --rp-slate-100:     #f1f5f9;
+  --rp-slate-50:      #f8fafc;
+  --rp-white:         #ffffff;
+
+  /* ─── Durum renkleri ─────────────────────────────────── */
+  --rp-success:       #16a34a;
+  --rp-success-bg:    #f0fdf4;
+  --rp-warning:       #d97706;
+  --rp-warning-bg:    #fffbeb;
+  --rp-danger:        #dc2626;
+  --rp-danger-bg:     #fef2f2;
+  --rp-info:          #0284c7;
+  --rp-info-bg:       #f0f9ff;
+
+  /* ─── Tipografi ──────────────────────────────────────── */
+  --rp-font-sans:     'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --rp-font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --rp-font-display:  'DM Sans', var(--rp-font-sans);
+
+  --rp-text-xs:       0.75rem;
+  --rp-text-sm:       0.8125rem;
+  --rp-text-base:     0.9375rem;
+  --rp-text-lg:       1.0625rem;
+  --rp-text-xl:       1.25rem;
+  --rp-text-2xl:      1.5rem;
+  --rp-text-3xl:      1.875rem;
+
+  --rp-weight-normal: 400;
+  --rp-weight-medium: 500;
+  --rp-weight-semi:   600;
+  --rp-weight-bold:   700;
+
+  --rp-leading-tight: 1.25;
+  --rp-leading-snug:  1.4;
+  --rp-leading-base:  1.6;
+
+  /* ─── Spacing / Layout ───────────────────────────────── */
+  --rp-space-1:    0.25rem;
+  --rp-space-2:    0.5rem;
+  --rp-space-3:    0.75rem;
+  --rp-space-4:    1rem;
+  --rp-space-5:    1.25rem;
+  --rp-space-6:    1.5rem;
+  --rp-space-8:    2rem;
+  --rp-space-10:   2.5rem;
+  --rp-space-12:   3rem;
+  --rp-space-16:   4rem;
+
+  --rp-sidebar-w:  260px;
+  --rp-topbar-h:   58px;
+  --rp-content-max: 1440px;
+
+  /* ─── Border / Radius ────────────────────────────────── */
+  --rp-radius-sm:   6px;
+  --rp-radius:      10px;
+  --rp-radius-lg:   14px;
+  --rp-radius-xl:   20px;
+  --rp-radius-full: 9999px;
+
+  --rp-border:      1px solid var(--rp-slate-200);
+  --rp-border-md:   1px solid var(--rp-slate-300);
+  --rp-border-dark: 1px solid var(--rp-slate-700);
+
+  /* ─── Shadow ─────────────────────────────────────────── */
+  --rp-shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.05);
+  --rp-shadow-sm:  0 2px 6px rgba(15, 23, 42, 0.08);
+  --rp-shadow:     0 4px 16px rgba(15, 23, 42, 0.10);
+  --rp-shadow-lg:  0 10px 32px rgba(15, 23, 42, 0.14);
+  --rp-shadow-xl:  0 20px 60px rgba(15, 23, 42, 0.20);
+
+  /* ─── Transition ─────────────────────────────────────── */
+  --rp-ease:      cubic-bezier(0.4, 0, 0.2, 1);
+  --rp-ease-out:  cubic-bezier(0, 0, 0.2, 1);
+  --rp-dur-fast:  150ms;
+  --rp-dur:       220ms;
+  --rp-dur-slow:  350ms;
+
+  /* ─── Z-index katmanları ─────────────────────────────── */
+  --rp-z-base:    1;
+  --rp-z-raised:  10;
+  --rp-z-overlay: 100;
+  --rp-z-modal:   1000;
+  --rp-z-toast:   2000;
+}

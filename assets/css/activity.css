@@ -1,0 +1,166 @@
+/**
+ * renPlan ERP – Activity Panel Styles
+ * assets/css/activity.css
+ *
+ * Sipariş notu ve sohbet bileşenleri için ortak stil.
+ * Eski dosyalar:
+ *   assets/order_chat.css   → SİLİNDİ
+ *   assets/order_notes.css  → SİLİNDİ
+ *
+ * KULLANIM: <link rel="stylesheet" href="/assets/css/activity.css">
+ */
+
+@import '_variables.css';
+
+/* ─── Panel kapsayıcı ────────────────────────────────────── */
+#order-chat,
+#order-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-3);
+}
+
+/* ─── Liste alanı ────────────────────────────────────────── */
+#order-chat .chat-list,
+#order-notes .notes-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: var(--rp-space-2);
+  background: var(--rp-white);
+  border: var(--rp-border);
+  border-radius: var(--rp-radius-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--rp-slate-200) transparent;
+}
+
+#order-chat .chat-list::-webkit-scrollbar,
+#order-notes .notes-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#order-chat .chat-list::-webkit-scrollbar-thumb,
+#order-notes .notes-list::-webkit-scrollbar-thumb {
+  background: var(--rp-slate-200);
+  border-radius: 2px;
+}
+
+/* ─── Satır (her bir mesaj/not) ──────────────────────────── */
+.chat-item,
+.note-item {
+  display: flex;
+  gap: var(--rp-space-2);
+  margin-bottom: var(--rp-space-3);
+}
+
+.chat-item:last-child,
+.note-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Avatar ─────────────────────────────────────────────── */
+.chat-avatar,
+.note-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: var(--rp-orange-muted);
+  color: var(--rp-orange-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--rp-weight-bold);
+  letter-spacing: 0;
+}
+
+/* ─── Balon ──────────────────────────────────────────────── */
+.chat-bubble,
+.note-bubble {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: var(--rp-radius-lg);
+  background: var(--rp-slate-50);
+  border: var(--rp-border);
+}
+
+/* ─── Meta (yazar + tarih satırı) ────────────────────────── */
+.chat-meta,
+.note-meta {
+  font-size: var(--rp-text-xs);
+  color: var(--rp-slate-400);
+  margin-bottom: var(--rp-space-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--rp-space-2);
+}
+
+/* ─── Not metni ──────────────────────────────────────────── */
+.chat-text,
+.note-text {
+  font-size: var(--rp-text-sm);
+  color: var(--rp-slate-700);
+  line-height: var(--rp-leading-base);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ─── Not aksiyonları (sil butonu vs.) ───────────────────── */
+.note-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+  margin-left: var(--rp-space-2);
+  flex-shrink: 0;
+}
+
+.note-delete {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--rp-text-xs);
+  color: var(--rp-slate-400);
+  padding: 2px 4px;
+  border-radius: var(--rp-radius-sm);
+  transition: color var(--rp-dur-fast), background var(--rp-dur-fast);
+}
+
+.note-delete:hover {
+  color: var(--rp-danger);
+  background: var(--rp-danger-bg);
+}
+
+/* ─── Form alanı ─────────────────────────────────────────── */
+.activity-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rp-space-2);
+}
+
+.activity-form textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 9px 12px;
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-text-sm);
+  color: var(--rp-slate-900);
+  background: var(--rp-white);
+  border: 1.5px solid var(--rp-slate-200);
+  border-radius: var(--rp-radius);
+  resize: vertical;
+  outline: none;
+  line-height: var(--rp-leading-base);
+  transition: border-color var(--rp-dur-fast), box-shadow var(--rp-dur-fast);
+}
+
+.activity-form textarea:focus {
+  border-color: var(--rp-orange);
+  box-shadow: 0 0 0 3px var(--rp-orange-muted);
+}
+
+.activity-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,4 +1,4 @@
-// assets/order_notes.js (patched v2)
+// assets/js/order_notes.js
 (function(){
   function formatDate(s){
     try{

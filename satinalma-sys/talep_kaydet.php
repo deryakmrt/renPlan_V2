@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="/assets/burak_ui.css">
 <?php
 require_once __DIR__ . '/../includes/helpers.php';
 $order_code = $_POST['order_code'] ?? generate_next_ren($pdo);

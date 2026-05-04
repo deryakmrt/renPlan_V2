@@ -12,7 +12,7 @@
  */
 ?>
 
-<div class="page-header" style="background: linear-gradient(135deg, var(--slate-50) 0%, #ffffff 100%);">
+<div class="page-header">
 
     <div>
         <div class="page-main-title">
@@ -30,17 +30,38 @@
 
     <?php if ($mode === 'edit' && !empty($order['id'])): ?>
         <div class="page-header-actions">
-            <a class="btn btn-secondary btn-sm" href="order_view.php?id=<?= (int)$order['id'] ?>">Görüntüle</a>
+
+            <a class="btn btn-secondary" href="order_view.php?id=<?= (int)$order['id'] ?>">
+                👁 Görüntüle
+            </a>
 
             <?php if ($__is_admin_like || $__is_muhasebe || $__role === 'musteri'): ?>
-                <a class="btn btn-sm" style="background: var(--color-purple-bg); color: var(--color-purple-text); border: 1px solid var(--color-purple-text);" href="order_pdf.php?id=<?= (int)$order['id'] ?>" target="_blank">📄 STF</a>
+                <a class="btn btn-stf" href="order_pdf.php?id=<?= (int)$order['id'] ?>" target="_blank">
+                    📄 STF
+                </a>
             <?php endif; ?>
 
             <?php if ($__role !== 'musteri'): ?>
-                <a class="btn btn-success btn-sm" href="order_pdf_uretim.php?id=<?= (int)$order['id'] ?>" target="_blank">🏭 Üretim Föyü</a>
+                <a class="btn btn-uretim" href="order_pdf_uretim.php?id=<?= (int)$order['id'] ?>" target="_blank">
+                    🏭 Üretim Föyü
+                </a>
             <?php endif; ?>
 
-            <a class="btn btn-ghost btn-sm" href="orders.php">Vazgeç</a>
+            <a class="btn btn-ghost" href="orders.php?restore=1">Vazgeç</a>
+
+            <?php if (!($__form_readonly ?? false)): ?>
+                <button type="submit" form="order-main-form" class="btn btn-guncelle">
+                    💾 Güncelle
+                </button>
+            <?php endif; ?>
+
+        </div>
+    <?php elseif ($mode === 'new'): ?>
+        <div class="page-header-actions">
+            <a class="btn btn-ghost" href="orders.php?restore=1">Vazgeç</a>
+            <button type="submit" form="order-main-form" class="btn btn-guncelle">
+                💾 Kaydet
+            </button>
         </div>
     <?php endif; ?>
 </div>
