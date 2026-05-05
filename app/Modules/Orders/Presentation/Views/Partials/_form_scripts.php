@@ -638,10 +638,30 @@ document.addEventListener('DOMContentLoaded', function() {
         var input = e.target;
         if (!input || input.tagName !== 'INPUT') return;
         var name = input.getAttribute('name') || '';
+        if (!name.startsWith('urun_ozeti') && !name.startsWith('kullanim_alani')) return;
+
+        // Hangi kalem? row-index'ten al
+        var row = input.closest('tr');
+        var rowNum = '';
+        if (row) {
+            var idx = row.querySelector('.row-index');
+            if (idx && idx.textContent.trim()) {
+                rowNum = ' — Kalem #' + idx.textContent.trim();
+            } else {
+                // row-index yoksa tbody'deki sırasını say
+                var tbody = row.closest('tbody');
+                if (tbody) {
+                    var rows = Array.from(tbody.querySelectorAll('tr'));
+                    var pos  = rows.indexOf(row);
+                    if (pos >= 0) rowNum = ' — Kalem #' + (pos + 1);
+                }
+            }
+        }
+
         if (name.startsWith('urun_ozeti')) {
-            openPopover(input, '📝 Ürün Özeti');
-        } else if (name.startsWith('kullanim_alani')) {
-            openPopover(input, '📍 Kullanım Alanı');
+            openPopover(input, '📝 Ürün Özeti' + rowNum);
+        } else {
+            openPopover(input, '📍 Kullanım Alanı' + rowNum);
         }
     });
 })();
