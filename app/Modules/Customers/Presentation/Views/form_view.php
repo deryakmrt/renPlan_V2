@@ -35,39 +35,44 @@
     <?php csrf_input(); ?>
     <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
 
-    <div style="display:grid; grid-template-columns: 3fr 2fr; gap:16px; align-items:start;">
+    <!-- 1. BÖLÜM: EŞİT KARTLAR (Temel İletişim & Finans) -->
+    <!-- align-items: stretch; ile her iki kutunun boyunun birbirine eşit kalmasını sağlıyoruz -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap:16px; align-items:stretch;">
 
-        <div class="form-section sec-temel">
+        <!-- Temel İletişim Bilgileri (Sol Kutu) -->
+        <div class="form-section sec-temel" style="margin: 0; display: flex; flex-direction: column;">
             <div class="form-section-title">📌 Temel İletişim Bilgileri</div>
-            <div class="g-auto" style="grid-template-columns: 1fr 1fr;">
-                <div class="form-group" style="grid-column: span 2;">
+            <!-- 3 Sütunlu Grid: 1. Satırda İsim (3 birim kaplar), 2. Satırda Tel, Mail, Web -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1;">
+                <div class="form-group" style="grid-column: span 3;">
                     <label class="rp-label">Ad Soyad / Ünvan <span class="req">*</span></label>
                     <input class="rp-input" name="name" value="<?= h($row['name']) ?>" required autofocus placeholder="Firma veya kişi adı">
                 </div>
                 <div class="form-group">
                     <label class="rp-label">Telefon</label>
                     <input class="rp-input" id="phoneInput" name="phone" value="<?= h($row['phone']) ?>" placeholder="0xxx 123 4567" maxlength="14" autocomplete="tel">
-                    <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Otomatik: 0xxx 123 4567</div>
                 </div>
                 <div class="form-group">
                     <label class="rp-label">E-posta</label>
                     <input class="rp-input" type="email" name="email" value="<?= h($row['email']) ?>" placeholder="ornek@firma.com">
                 </div>
-                <div class="form-group" style="grid-column: span 2;">
+                <div class="form-group">
                     <label class="rp-label">Web Sitesi</label>
                     <input class="rp-input" name="website" value="<?= h($row['website']) ?>" placeholder="https://...">
                 </div>
             </div>
         </div>
 
-        <div class="form-section sec-finans">
+        <!-- Vergi ve Finans Bilgileri (Sağ Kutu) -->
+        <div class="form-section sec-finans" style="margin: 0; display: flex; flex-direction: column;">
             <div class="form-section-title">💰 Vergi ve Finans Bilgileri</div>
-            <div class="g-auto" style="grid-template-columns: 1fr;">
+            <!-- Tek sütunlu Grid: 2 satıra eşit yayılır -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 16px; flex: 1;">
                 <div class="form-group">
                     <label class="rp-label">Vergi Dairesi</label>
                     <input class="rp-input" name="vergi_dairesi" value="<?= h($row['vergi_dairesi']) ?>" placeholder="Örn: Meram V.D.">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
                     <label class="rp-label">Vergi No / T.C. Kimlik</label>
                     <input class="rp-input" name="vergi_no" value="<?= h($row['vergi_no']) ?>" placeholder="10 veya 11 haneli">
                 </div>
@@ -76,41 +81,48 @@
 
     </div>
 
+    <!-- 2. BÖLÜM: KONUM BİLGİLERİ -->
     <div class="form-section sec-kisiler mt">
         <div class="form-section-title">🌍 Konum Bilgileri</div>
-        <div class="g-auto" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="form-group">
-                <label class="rp-label">Ülke</label>
-                <select class="rp-select" id="ulkeSelect" name="ulke" data-selected="<?= h($row['ulke'] ?: 'Türkiye') ?>">
-                    <option value="">Yükleniyor...</option>
-                </select>
+        <!-- Sol taraf seçim kutuları (1fr), Sağ taraf adres alanları (1fr) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+            
+            <!-- Konum Sol Taraf: Ülke, İl, İlçe -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group">
+                    <label class="rp-label">Ülke</label>
+                    <select class="rp-select" id="ulkeSelect" name="ulke" data-selected="<?= h($row['ulke'] ?: 'Türkiye') ?>">
+                        <option value="">Yükleniyor...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="rp-label">İl</label>
+                    <select class="rp-select" id="ilSelect" name="il" data-selected="<?= h($row['il'] ?: 'Konya') ?>">
+                        <option value="">Önce Ülke Seçin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="rp-label">İlçe</label>
+                    <select class="rp-select" id="ilceSelect" name="ilce" data-selected="<?= h($row['ilce']) ?>">
+                        <option value="">Önce İl Seçin</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="rp-label">İl</label>
-                <select class="rp-select" id="ilSelect" name="il" data-selected="<?= h($row['il']) ?>">
-                    <option value="">Önce Ülke Seçin</option>
-                </select>
+
+            <!-- Konum Sağ Taraf: Fatura ve Sevk Adresleri -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                    <label class="rp-label">Fatura Adresi</label>
+                    <textarea class="rp-textarea" name="billing_address" placeholder="Mahalle, cadde, sokak..." style="flex: 1; resize: none; min-height: 80px;"><?= h($row['billing_address']) ?></textarea>
+                </div>
+                <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                    <label class="rp-label">Sevk Adresi</label>
+                    <textarea class="rp-textarea" name="shipping_address" placeholder="Farklıysa doldurun" style="flex: 1; resize: none; min-height: 80px;"><?= h($row['shipping_address']) ?></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="rp-label">İlçe</label>
-                <select class="rp-select" id="ilceSelect" name="ilce" data-selected="<?= h($row['ilce']) ?>">
-                    <option value="">Önce İl Seçin</option>
-                </select>
-            </div>
-        </div>
-        <div class="g-auto mt" style="grid-template-columns: 1fr 1fr;">
-            <div class="form-group">
-                <label class="rp-label">Fatura Adresi</label>
-                <textarea class="rp-textarea" name="billing_address" rows="3" placeholder="Mahalle, cadde, sokak..."><?= h($row['billing_address']) ?></textarea>
-            </div>
-            <div class="form-group">
-                <label class="rp-label">Sevk Adresi</label>
-                <textarea class="rp-textarea" name="shipping_address" rows="3" placeholder="Farklıysa doldurun"><?= h($row['shipping_address']) ?></textarea>
-            </div>
+
         </div>
     </div>
-
-
 
     <div style="margin-top:20px;margin-bottom:40px;display:flex;justify-content:flex-end;gap:10px;">
         <a class="btn btn-ghost" href="customers.php">Vazgeç</a>
@@ -124,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const ilSelect   = document.getElementById('ilSelect');
     const ilceSelect = document.getElementById('ilceSelect');
     const selUlke    = ulkeSelect.dataset.selected || 'Türkiye';
-    const selIl      = ilSelect.dataset.selected   || '';
+    const selIl      = ilSelect.dataset.selected   || 'Konya';
     const selIlce    = ilceSelect.dataset.selected || '';
 
     try {
