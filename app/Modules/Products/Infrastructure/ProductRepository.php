@@ -24,11 +24,14 @@ class ProductRepository
                     par.sku  AS master_sku,
                     pc.name  AS category_name,
                     pb.name  AS brand_name,
-                    COALESCE(p.image, par.image) AS resolved_image
+                    COALESCE(p.image, par.image) AS resolved_image,
+                    COALESCE(p.unit, par.unit) AS unit,
+                    (SELECT COUNT(*) FROM products v WHERE v.parent_id = p.id) AS variant_count
                 FROM products p
                 LEFT JOIN products par ON par.id = p.parent_id
-                LEFT JOIN product_categories pc ON pc.id = p.category_id
-                LEFT JOIN product_brands pb     ON pb.id  = p.brand_id
+                LEFT JOIN product_categories pc     ON pc.id = COALESCE(p.category_id, par.category_id)
+                LEFT JOIN product_categories par_cat ON par_cat.id = pc.parent_id
+                LEFT JOIN product_brands pb           ON pb.id = COALESCE(p.brand_id, par.brand_id)
                 WHERE $where
                 ORDER BY $orderBy
                 LIMIT $perPage OFFSET $offset";
@@ -48,11 +51,15 @@ class ProductRepository
             "SELECT p.*,
                     par.name AS master_name,
                     pc.name  AS category_name,
-                    pb.name  AS brand_name
+                    pb.name  AS brand_name,
+                    COALESCE(p.image, par.image) AS resolved_image,
+                    COALESCE(p.unit, par.unit) AS unit,
+                    COALESCE(p.category_id, par.category_id) AS category_id,
+                    COALESCE(p.brand_id, par.brand_id) AS brand_id
              FROM products p
              LEFT JOIN products par ON par.id = p.parent_id
-             LEFT JOIN product_categories pc ON pc.id = p.category_id
-             LEFT JOIN product_brands pb     ON pb.id  = p.brand_id
+             LEFT JOIN product_categories pc ON pc.id = COALESCE(p.category_id, par.category_id)
+             LEFT JOIN product_brands pb     ON pb.id  = COALESCE(p.brand_id, par.brand_id)
              WHERE p.id = ?"
         );
         $stmt->execute([$id]);
@@ -63,7 +70,11 @@ class ProductRepository
     public function getVariants(int $parentId): array
     {
         $stmt = $this->db->prepare(
-            "SELECT v.*, COALESCE(v.image, p.image) AS resolved_image
+            "SELECT v.*, 
+                    COALESCE(v.image, p.image) AS resolved_image,
+                    COALESCE(v.unit, p.unit) AS unit,
+                    COALESCE(v.category_id, p.category_id) AS category_id,
+                    COALESCE(v.brand_id, p.brand_id) AS brand_id
              FROM products v
              LEFT JOIN products p ON p.id = v.parent_id
              WHERE v.parent_id = ?
@@ -180,11 +191,9 @@ class ProductRepository
         foreach ($childIds as $cid) {
             if ((int)$cid !== $parentId) $stmt->execute([$parentId, (int)$cid]);
         }
-        // Kategori/marka senkronizasyonu
+        // Kategori, marka ve birim senkronizasyonu (Miras mantığı: NULL bırakılarak SQL ile ebeveynden okunur)
         $this->db->prepare(
-            "UPDATE products c JOIN products p ON c.parent_id=p.id
-             SET c.category_id=p.category_id, c.brand_id=p.brand_id
-             WHERE p.id=?"
+            "UPDATE products SET category_id = NULL, brand_id = NULL, unit = NULL WHERE parent_id = ?"
         )->execute([$parentId]);
     }
 
@@ -227,17 +236,43 @@ class ProductRepository
             $like     = '%' . $f['q'] . '%';
             $params[] = $like; $params[] = $like;
         }
-        if (!empty($f['macro'])) {
-            $conds[]  = 'pc.macro_category = ?';
+        // cat seçilince macro filtresine gerek yok
+        if (!empty($f['cat'])) {
+            if (!empty($f['cat_all'])) {
+                // Tümü: bu kategori VEYA altındaki herhangi bir kategori
+                $conds[]  = '(COALESCE(p.category_id, par.category_id) = ? OR pc.parent_id = ?)';
+                $params[] = (int)$f['cat'];
+                $params[] = (int)$f['cat'];
+            } elseif (!empty($f['cat_other'])) {
+                // Diğer: bu kategoriye atanmış ama hiçbir alt kategoriye atanmamış
+                $conds[]  = 'COALESCE(p.category_id, par.category_id) = ?';
+                $params[] = (int)$f['cat'];
+            } else {
+                // Belirli alt kategori
+                $conds[]  = 'COALESCE(p.category_id, par.category_id) = ?';
+                $params[] = (int)$f['cat'];
+            }
+        } elseif (!empty($f['macro'])) {
+            // macro filtresi: ana kategorinin macro_category'si VEYA
+            // üst kategorinin macro_category'si (alt kategoriler için)
+            $conds[]  = '(pc.macro_category = ? OR par_cat.macro_category = ?)';
+            $params[] = $f['macro'];
             $params[] = $f['macro'];
         }
-        if (!empty($f['cat'])) {
-            $conds[]  = 'p.category_id = ?';
-            $params[] = (int)$f['cat'];
-        }
         if (!empty($f['nocat'])) {
-            $conds[] = 'p.category_id IS NULL';
+            $conds[] = 'COALESCE(p.category_id, par.category_id) IS NULL';
         }
+        
+        // --- Yeni Eklenen SKU Alt Filtresi ---
+        if (!empty($f['sku_filter'])) {
+            if ($f['sku_filter'] === 'empty') {
+                $conds[] = "(p.sku IS NULL OR p.sku = '')";
+            } elseif ($f['sku_filter'] === 'filled') {
+                $conds[] = "(p.sku IS NOT NULL AND p.sku != '')";
+            }
+        }
+        // ------------------------------------
+
         if (!empty($f['parent_only'])) {
             $conds[] = 'p.parent_id IS NULL';
         }

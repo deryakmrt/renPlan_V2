@@ -303,14 +303,8 @@ require_once __DIR__ . '/helpers.php';
               <a href="#" class="dropdown-toggle">Ürünler<span class="caret"></span></a>
               <div class="menu">
                 <a href="products.php">Ürünler</a>
-                <a href="products.php?a=new">Ürün Ekle</a>
-                <a href="taxonomies.php?t=brands">Markalar</a>
-                <a href="taxonomies.php?t=categories">Kategoriler</a>
-                <a href="attributes.php">Öznitelikler</a>
-                <?php if (has_role('admin')): ?>
-                  <a href="import_products.php">Ürünleri İçe Aktar</a>
-                  <a href="export_products.php">Ürünleri Dışa Aktar</a>
-                <?php endif; ?>
+                <a href="products.php?a=categories">Kategoriler</a>
+                <a href="products.php?a=brands">Markalar</a>
               </div>
             </div>
           <?php endif; ?>
@@ -346,10 +340,6 @@ require_once __DIR__ . '/helpers.php';
             <a href="#" class="dropdown-toggle">Müşteriler<span class="caret"></span></a>
             <div class="menu">
               <a href="customers.php">Müşteriler</a>
-              <?php if (has_role('admin')): ?>
-                <a href="customers_import.php">Müşterileri İçe Aktar</a>
-                <a href="customers_export.php">Müşterileri Dışarı Aktar</a>
-              <?php endif; ?>
             </div>
           </div>
           <?php if (!has_role('muhasebe')): ?>

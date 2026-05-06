@@ -89,7 +89,11 @@ $paginationHtml = ob_get_clean();
         </form>
     </div>
 
-    <div class="orders-header-right">
+    <div class="orders-header-right" style="display:flex; gap:8px;">
+        <?php if (in_array(current_user()['role'] ?? '', ['admin', 'sistem_yoneticisi'])): ?>
+            <a class="btn btn-secondary" href="products.php?a=export">⬇ Export</a>
+            <a class="btn btn-secondary" href="products.php?a=import">⬆ Import</a>
+        <?php endif; ?>
         <a class="btn btn-secondary" href="products.php?a=group">🧩 Grupla</a>
     </div>
 </div>
@@ -199,34 +203,6 @@ $paginationHtml = ob_get_clean();
         <?php endforeach; ?>
 
         <?php endif; ?>
-
-        <!-- KATEGORİSİZ ALT FİLTRELERİ (Sadece Kategorisiz seçildiğinde görünür) -->
-        <?php if ($nocat_filter): 
-            $__skuFilter = $_GET['sku_filter'] ?? '';
-        ?>
-        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;">
-            
-            <a href="products.php?nocat=1"
-               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
-                      <?= $__skuFilter === '' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
-                Hepsi
-            </a>
-
-            <a href="products.php?nocat=1&sku_filter=empty"
-               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
-                      <?= $__skuFilter === 'empty' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
-                SKU'su Eksik Olanlar
-            </a>
-            
-            <a href="products.php?nocat=1&sku_filter=filled"
-               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
-                      <?= $__skuFilter === 'filled' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
-                SKU'su Olanlar
-            </a>
-            
-        </div>
-        <?php endif; ?>
-
     </div>
 
 <script>
@@ -324,10 +300,10 @@ function toggleCat(id) {
                         <!-- İşlem -->
                         <td style="text-align:center;" onclick="event.stopPropagation()">
                             <a href="products.php?a=edit&id=<?= (int)$p['id'] ?>" style="color:#ee7422; font-size:16px; text-decoration:none; margin-right:8px;" title="Düzenle">✏️</a>
-                            <form method="post" style="display:inline;" onsubmit="return confirm('Ürünü silmek istediğinize emin misiniz?')">
+                            <form method="post" action="products.php?a=delete" style="display:inline;" onsubmit="return confirm('Ürünü silmek istediğinize emin misiniz?')">
                                 <?php csrf_input(); ?>
                                 <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
-                                <button type="submit" name="action" value="delete" style="background:none; border:none; cursor:pointer; font-size:16px; padding:0;" title="Sil">🗑️</button>
+                                <button type="submit" style="background:none; border:none; cursor:pointer; font-size:16px; padding:0;" title="Sil">🗑️</button>
                             </form>
                         </td>
 

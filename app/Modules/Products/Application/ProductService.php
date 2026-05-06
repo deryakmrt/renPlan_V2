@@ -17,6 +17,7 @@ class ProductService
         $unit = trim($post['unit'] ?? 'Adet');
 
         if ($name === '') throw new \InvalidArgumentException('Ürün adı zorunludur.');
+        if (empty($sku)) throw new \InvalidArgumentException('SKU Kodu zorunludur.');
         if ($unit === '') throw new \InvalidArgumentException('Birim zorunludur.');
 
         // SKU benzersizlik
@@ -108,12 +109,12 @@ class ProductService
                     'id'             => $vid,
                     'name'           => trim($vName),
                     'sku'            => trim($post['v_sku'][$vid] ?? '') ?: null,
-                    'unit'           => $unit,
+                    'unit'           => null, // Miras alması için NULL bırakıyoruz
                     'price'          => $vPrice ?: $defaultPrice,
                     'urun_ozeti'     => $post['v_ozet'][$vid] ?? '',
                     'kullanim_alani' => $post['v_alan'][$vid] ?? '',
-                    'category_id'    => $catId,
-                    'brand_id'       => $brandId,
+                    'category_id'    => null, // Miras alması için NULL bırakıyoruz
+                    'brand_id'       => null, // Miras alması için NULL bırakıyoruz
                     'parent_id'      => $parentId,
                     'sku_config'     => null,
                 ]);
@@ -129,12 +130,12 @@ class ProductService
                     'id'             => 0,
                     'name'           => trim($nName),
                     'sku'            => trim($post['new_v_sku'][$idx] ?? '') ?: null,
-                    'unit'           => $unit,
+                    'unit'           => null, // Miras alması için NULL bırakıyoruz
                     'price'          => $nPrice ?: $defaultPrice,
                     'urun_ozeti'     => $post['new_v_ozet'][$idx] ?? '',
                     'kullanim_alani' => $post['new_v_alan'][$idx] ?? '',
-                    'category_id'    => $catId,
-                    'brand_id'       => $brandId,
+                    'category_id'    => null, // Miras alması için NULL bırakıyoruz
+                    'brand_id'       => null, // Miras alması için NULL bırakıyoruz
                     'parent_id'      => $parentId,
                     'sku_config'     => null,
                 ]);

@@ -47,14 +47,14 @@
         <input type="hidden" name="selected_parent_id" id="finalParentId">
 
         <div style="max-height:600px; overflow-y:auto;">
-            <table class="orders-table" style="width:100%;">
+            <table class="orders-table" style="width:100%; min-width:800px;">
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;"><input type="checkbox" onclick="toggleAll(this)"></th>
-                        <th style="width:56px; text-align:center;">Görsel</th>
-                        <th>Ürün Adı</th>
-                        <th style="width:140px;">SKU</th>
-                        <th style="width:90px; text-align:right;">Fiyat</th>
+                        <th style="width:60px; text-align:center;">Görsel</th>
+                        <th style="width:300px; text-align:left; padding-left:20px;">SKU</th>
+                        <th style="text-align:left;">Ürün Adı</th>
+                        <th style="width:100px; text-align:right;">Fiyat</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,17 +66,21 @@
                         <?php foreach ($gRows as $r): ?>
                         <tr>
                             <td style="text-align:center;"><input type="checkbox" name="ids[]" value="<?= (int)$r['id'] ?>" class="p-check" onchange="updateBar()"></td>
-                            <td style="text-align:center; padding:6px;">
+                            <td style="text-align:center; padding:6px; vertical-align:middle;">
                                 <?php $img = $r['resolved_image'] ?? $r['image'] ?? ''; ?>
                                 <?php if ($img): ?>
-                                    <img src="/<?= h(ltrim($img,'/')) ?>" style="width:36px; height:36px; object-fit:contain; border-radius:4px; border:1px solid #e2e8f0;">
+                                    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+                                        <img src="/<?= h(ltrim($img,'/')) ?>" style="width:36px; height:36px; object-fit:contain; border-radius:4px; border:1px solid #e2e8f0; background:#fff;">
+                                    </div>
                                 <?php else: ?>
-                                    <span style="font-size:20px; color:#cbd5e1;">📦</span>
+                                    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+                                        <span style="font-size:20px; color:#cbd5e1;">📦</span>
+                                    </div>
                                 <?php endif; ?>
                             </td>
-                            <td style="font-weight:600; color:#1e293b;" class="p-name"><?= h($r['name']) ?></td>
-                            <td style="font-family:monospace; font-size:12px; color:#64748b;" class="p-sku"><?= h($r['sku'] ?? '—') ?></td>
-                            <td style="text-align:right; font-size:13px;"><?= $r['price'] > 0 ? number_format((float)$r['price'], 2, ',', '.') : '—' ?></td>
+                            <td style="text-align:left; font-family:monospace; font-size:12px; color:#64748b; padding-left:20px;" class="p-sku"><?= h($r['sku'] ?? '—') ?></td>
+                            <td style="text-align:left; font-weight:600; color:#1e293b;" class="p-name"><?= h($r['name']) ?></td>
+                            <td style="text-align:right; font-size:13px; font-weight:600; color:#1e293b;"><?= $r['price'] > 0 ? number_format((float)$r['price'], 2, ',', '.') : '—' ?></td>
                         </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
