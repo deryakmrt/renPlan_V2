@@ -308,7 +308,7 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
         <div class="tile tile-purple">
             <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'muhasebe'])): ?>
-                <a href="/reports/sales_reps.php" class="stretch"></a>
+                <a href="/sales_reps.php" class="stretch"></a>
             <?php else: ?>
                 <a href="#" onclick="alert('⚠️ Bu sayfaya erişim için admin/muhasebe yetkisi gereklidir.'); return false;" class="stretch"></a>
             <?php endif; ?>
