@@ -98,6 +98,8 @@ $paginationHtml = ob_get_clean();
 
     <!-- Kategori filtreleri -->
     <div style="padding:12px 20px; border-bottom:1px solid #f1f5f9;">
+
+        <!-- Makro sekmeler -->
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
             <a href="products.php" style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; <?= ($macro_filter==='' && !$nocat_filter) ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">TÜMÜ (<?= $total ?>)</a>
             <a href="products.php?macro=ic"    style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; <?= $macro_filter==='ic'    ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">İÇ AYDINLATMA</a>
@@ -106,15 +108,138 @@ $paginationHtml = ob_get_clean();
             <a href="products.php?nocat=1"     style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; <?= $nocat_filter ? 'background:#f97316; color:#fff;' : 'background:#fff7ed; color:#c2410c;' ?>">❓ KATEGORİSİZ</a>
         </div>
 
+        <!-- Ana kategoriler — tıklayınca alt kategoriler açılır -->
         <?php if ($macro_filter !== '' && !empty($macro_groups[$macro_filter])): ?>
-        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
-            <a href="products.php?macro=<?= h($macro_filter) ?>" style="padding:3px 10px; font-size:12px; border-radius:12px; text-decoration:none; <?= $cat_filter===0 ? 'background:#ee7422; color:#fff;' : 'background:#f8fafc; color:#475569; border:1px solid #e2e8f0;' ?>">Hepsi</a>
-            <?php foreach ($macro_groups[$macro_filter] as $cat): ?>
-                <a href="products.php?macro=<?= h($macro_filter) ?>&cat=<?= (int)$cat['id'] ?>" style="padding:3px 10px; font-size:12px; border-radius:12px; text-decoration:none; <?= $cat_filter===$cat['id'] ? 'background:#ee7422; color:#fff;' : 'background:#f8fafc; color:#475569; border:1px solid #e2e8f0;' ?>"><?= h($cat['name']) ?></a>
+        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;">
+            <!-- Hepsi pill -->
+            <a href="products.php?macro=<?= h($macro_filter) ?>"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none; <?= $cat_filter===0 ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                Hepsi
+            </a>
+
+            <?php foreach ($macro_groups[$macro_filter] as $cat):
+                $cid      = (int)$cat['id'];
+                $children = $cat_children[$cid] ?? [];
+                $hasKids  = !empty($children);
+                $isActive = $cat_filter === $cid;
+                // Aktif alt kategori bu ana kategoriye mi ait?
+                $childActive = false;
+                foreach ($children as $ch) {
+                    if ($cat_filter === (int)$ch['id']) { $childActive = true; break; }
+                }
+                $highlighted = $isActive || $childActive;
+            ?>
+
+            <div style="position:relative; display:inline-block;">
+                <!-- Alt kategorisi varsa toggle, yoksa direkt link -->
+                <?php if ($hasKids): ?>
+                <button type="button"
+                    onclick="toggleCat(<?= $cid ?>)"
+                    style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; border:none;
+                           <?= $highlighted ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                    <?= h($cat['name']) ?> ▾
+                </button>
+                <?php else: ?>
+                <a href="products.php?macro=<?= h($macro_filter) ?>&cat=<?= $cid ?>"
+                   style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                          <?= $highlighted ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                    <?= h($cat['name']) ?>
+                </a>
+                <?php endif; ?>
+            </div>
+
             <?php endforeach; ?>
         </div>
+
+        <!-- Alt kategori şeridi — JS ile açılır/kapanır -->
+        <?php foreach ($macro_groups[$macro_filter] as $cat):
+            $cid      = (int)$cat['id'];
+            $children = $cat_children[$cid] ?? [];
+            if (empty($children)) continue;
+            $childActive = false;
+            foreach ($children as $ch) {
+                if ($cat_filter === (int)$ch['id']) { $childActive = true; break; }
+            }
+        ?>
+        <?php
+        $__catMode   = $_GET['cat_mode'] ?? '';
+        $__catFilter = (int)($_GET['cat'] ?? 0);
+        $__allActive   = $__catFilter === $cid && $__catMode === 'all';
+        $__otherActive = $__catFilter === $cid && $__catMode === 'other';
+        ?>
+        <div id="subcat-<?= $cid ?>"
+             style="margin-top:8px; padding:8px 12px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; display:<?= ($childActive || $__allActive || $__otherActive) ? 'flex' : 'none' ?>; flex-wrap:wrap; gap:6px; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-right:4px;">↳ <?= h($cat['name']) ?>:</span>
+
+            <!-- Tümü: bu kategori + tüm alt kategoriler -->
+            <a href="products.php?macro=<?= h($macro_filter) ?>&cat=<?= $cid ?>&cat_mode=all"
+               style="padding:3px 10px; border-radius:12px; font-size:12px; text-decoration:none; font-weight:600;
+                      <?= $__allActive ? 'background:#ee7422; color:#fff;' : 'background:#fff; color:#475569; border:1px solid #e2e8f0;' ?>">
+                Tümü
+            </a>
+
+            <!-- Her alt kategori -->
+            <?php foreach ($children as $ch): ?>
+            <a href="products.php?macro=<?= h($macro_filter) ?>&cat=<?= (int)$ch['id'] ?>"
+               style="padding:3px 10px; border-radius:12px; font-size:12px; text-decoration:none; font-weight:600;
+                      <?= ($__catFilter===(int)$ch['id'] && $__catMode==='') ? 'background:#ee7422; color:#fff;' : 'background:#fff; color:#475569; border:1px solid #e2e8f0;' ?>">
+                <?= h($ch['name']) ?>
+            </a>
+            <?php endforeach; ?>
+
+            <!-- Diğer: doğrudan ana kategoriye atanmış, alt kategorisiz -->
+            <a href="products.php?macro=<?= h($macro_filter) ?>&cat=<?= $cid ?>&cat_mode=other"
+               style="padding:3px 10px; border-radius:12px; font-size:12px; text-decoration:none; font-weight:600;
+                      <?= $__otherActive ? 'background:#64748b; color:#fff;' : 'background:#fff; color:#64748b; border:1px solid #e2e8f0;' ?>">
+                Diğer
+            </a>
+
+            <button type="button" onclick="toggleCat(<?= $cid ?>)" style="margin-left:auto; background:none; border:none; font-size:16px; color:#94a3b8; cursor:pointer;" title="Kapat">✕</button>
+        </div>
+        <?php endforeach; ?>
+
         <?php endif; ?>
+
+        <!-- KATEGORİSİZ ALT FİLTRELERİ (Sadece Kategorisiz seçildiğinde görünür) -->
+        <?php if ($nocat_filter): 
+            $__skuFilter = $_GET['sku_filter'] ?? '';
+        ?>
+        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;">
+            
+            <a href="products.php?nocat=1"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === '' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                Hepsi
+            </a>
+
+            <a href="products.php?nocat=1&sku_filter=empty"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === 'empty' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                SKU'su Eksik Olanlar
+            </a>
+            
+            <a href="products.php?nocat=1&sku_filter=filled"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === 'filled' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                SKU'su Olanlar
+            </a>
+            
+        </div>
+        <?php endif; ?>
+
     </div>
+
+<script>
+function toggleCat(id) {
+    // Önce tüm açık alt kategorileri kapat
+    document.querySelectorAll('[id^="subcat-"]').forEach(function(el) {
+        if (el.id !== 'subcat-' + id) el.style.display = 'none';
+    });
+    var el = document.getElementById('subcat-' + id);
+    if (!el) return;
+    el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+}
+</script>
 
     <!-- ÜST SAYFALAMA -->
     <?= $paginationHtml ?>
@@ -125,11 +250,11 @@ $paginationHtml = ob_get_clean();
             <thead>
                 <tr>
                     <th style="width:60px; text-align:center;">ID</th>
-                    <th style="width:60px; text-align:center;">Görsel</th>
-                    <th style="width:150px;">SKU</th>
+                    <th style="width:60px; text-align:left;">Görsel</th>
+                    <th style="width:300px; text-align:left !important; padding-left:50px !important;">SKU</th>
                     <th style="text-align:left;">Ürün Adı</th>
                     <th style="width:140px;">Kategori</th>
-                    <th style="width:90px; text-align:right;">Fiyat</th>
+                    <th style="width:90px; text-align:center;">Fiyat</th>
                     <th style="width:80px; text-align:center;">Birim</th>
                     <th style="width:90px; text-align:center;">İşlem</th>
                 </tr>
@@ -159,15 +284,25 @@ $paginationHtml = ob_get_clean();
                         </td>
 
                         <!-- SKU -->
-                        <td style="font-family:monospace; font-size:13px; color:#475569; font-weight:600;">
+                        <td style="font-family:monospace; font-size:13px; color:#475569; font-weight:600; padding-left:50px !important; text-align:left !important;">
                             <?= h($p['sku'] ?? '—') ?>
                         </td>
 
                         <!-- Ürün Adı (Sola Yaslı) -->
                         <td style="text-align:left;">
-                            <div style="font-weight:700; color:#1e293b; font-size:14px;"><?= h($p['name']) ?></div>
+                            <div style="font-weight:700; color:#1e293b; font-size:14px; display:flex; align-items:center; gap:6px;">
+                                <?= h($p['name']) ?>
+                                <?php if ((int)($p['variant_count'] ?? 0) > 0): ?>
+                                    <span title="<?= (int)$p['variant_count'] ?> varyasyon"
+                                          style="display:inline-flex; align-items:center; gap:3px; background:#ede9fe; color:#6d28d9; border-radius:20px; padding:1px 8px; font-size:11px; font-weight:700; flex-shrink:0;">
+                                        🧬 <?= (int)$p['variant_count'] ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                             <?php if (!empty($p['master_name'])): ?>
-                                <div style="font-size:11px; color:#64748b; margin-top:3px;">↳ Ana Ürün: <?= h($p['master_name']) ?></div>
+                                <div style="font-size:11px; color:#94a3b8; margin-top:2px;">
+                                    📎 <?= h($p['master_name']) ?>
+                                </div>
                             <?php endif; ?>
                         </td>
 
