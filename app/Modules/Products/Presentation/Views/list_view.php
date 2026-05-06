@@ -203,6 +203,34 @@ $paginationHtml = ob_get_clean();
         <?php endforeach; ?>
 
         <?php endif; ?>
+
+        <!-- KATEGORİSİZ ALT FİLTRELERİ (Sadece Kategorisiz seçildiğinde görünür) -->
+        <?php if ($nocat_filter): 
+            $__skuFilter = $_GET['sku_filter'] ?? '';
+        ?>
+        <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;">
+            
+            <a href="products.php?nocat=1"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === '' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                Hepsi
+            </a>
+
+            <a href="products.php?nocat=1&sku_filter=empty"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === 'empty' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                SKU'su Eksik Olanlar
+            </a>
+            
+            <a href="products.php?nocat=1&sku_filter=filled"
+               style="padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; text-decoration:none;
+                      <?= $__skuFilter === 'filled' ? 'background:#ee7422; color:#fff;' : 'background:#f1f5f9; color:#64748b;' ?>">
+                SKU'su Olanlar
+            </a>
+            
+        </div>
+        <?php endif; ?>
+
     </div>
 
 <script>
