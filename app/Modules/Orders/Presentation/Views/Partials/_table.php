@@ -235,7 +235,7 @@ if (!function_exists('__wpstat_icon_svg')) {
 
         <?php // ── HÜCRE 5: Sil ?>
         <?php if ($show_delete && $role !== 'musteri'): ?>
-          <form method="post" action="order_delete.php" class="inline-delete-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
+          <form method="post" action="orders.php?a=delete" class="inline-delete-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
             <input type="hidden" name="csrf" value="<?= h($csrf_token) ?>">
             <input type="hidden" name="id" value="<?= $o->id ?>">
             <?php if ($is_admin): ?>
