@@ -82,7 +82,7 @@
     // Satırın ID'sini al ve ışınlan!
     const orderId = tr.getAttribute('data-order-id');
     if (orderId) {
-      window.location.href = 'order_edit.php?id=' + orderId;
+      window.location.href = 'orders.php?a=edit&id=' + orderId;
     }
   });
 </script>

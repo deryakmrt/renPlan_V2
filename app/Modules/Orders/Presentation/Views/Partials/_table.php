@@ -218,19 +218,19 @@ if (!function_exists('__wpstat_icon_svg')) {
       <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:26px 26px 26px; gap:4px; width:100%;">
         
         <?php // ── HÜCRE 1: Düzenle ?>
-        <a href="order_edit.php?id=<?= $o->id ?>" title="Düzenle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">✏️</span></a>
+        <a href="orders.php?a=edit&id=<?= $o->id ?>" title="Düzenle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">✏️</span></a>
 
         <?php // ── HÜCRE 2: Görüntüle ?>
-        <a href="order_view.php?id=<?= $o->id ?>" title="Görüntüle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">👁️</span></a>
+        <a href="orders.php?a=view&id=<?= $o->id ?>" title="Görüntüle" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#333; text-decoration:none;"><span style="font-size:13px;">👁️</span></a>
 
         <?php // ── HÜCRE 3: STF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'muhasebe', 'musteri'], true)): ?>
-          <a href="order_pdf.php?id=<?= $o->id ?>" target="_blank" title="STF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:11px; font-weight:800; text-decoration:none;">STF</a>
+          <a href="orders.php?a=pdf&id=<?= $o->id ?>" target="_blank" title="STF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:11px; font-weight:800; text-decoration:none;">STF</a>
         <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
         <?php // ── HÜCRE 4: ÜSTF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'uretim'], true)): ?>
-          <a href="order_pdf_uretim.php?id=<?= $o->id ?>" target="_blank" title="ÜSTF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; font-weight:800; text-decoration:none;">ÜSTF</a>
+          <a href="orders.php?a=pdf_uretim&id=<?= $o->id ?>" target="_blank" title="ÜSTF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; font-weight:800; text-decoration:none;">ÜSTF</a>
         <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
         <?php // ── HÜCRE 5: Sil ?>

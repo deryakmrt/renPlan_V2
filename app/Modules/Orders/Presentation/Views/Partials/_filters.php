@@ -43,7 +43,7 @@ $total_in_scope = array_sum(array_diff_key($status_counts, ['revize' => 1]));
   <!-- Sol: Yeni Sipariş butonu -->
   <div class="orders-header-left">
     <?php if (in_array(current_user()['role'] ?? '', ['admin', 'sistem_yoneticisi'])): ?>
-      <a class="btn-new-page" href="order_add.php">
+      <a class="btn-new-page" href="orders.php?a=new">
         ➕ Yeni Sipariş
       </a>
     <?php endif; ?>

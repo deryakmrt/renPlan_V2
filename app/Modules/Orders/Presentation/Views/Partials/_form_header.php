@@ -31,18 +31,18 @@
     <?php if ($mode === 'edit' && !empty($order['id'])): ?>
         <div class="page-header-actions">
 
-            <a class="btn btn-secondary" href="order_view.php?id=<?= (int)$order['id'] ?>">
+            <a class="btn btn-secondary" href="orders.php?a=view&id=<?= (int)$order['id'] ?>">
                 👁 Görüntüle
             </a>
 
             <?php if ($__is_admin_like || $__is_muhasebe || $__role === 'musteri'): ?>
-                <a class="btn btn-stf" href="order_pdf.php?id=<?= (int)$order['id'] ?>" target="_blank">
+                <a class="btn btn-stf" href="orders.php?a=pdf&id=<?= (int)$order['id'] ?>" target="_blank">
                     📄 STF
                 </a>
             <?php endif; ?>
 
             <?php if ($__role !== 'musteri'): ?>
-                <a class="btn btn-uretim" href="order_pdf_uretim.php?id=<?= (int)$order['id'] ?>" target="_blank">
+                <a class="btn btn-uretim" href="orders.php?a=pdf_uretim&id=<?= (int)$order['id'] ?>" target="_blank">
                     🏭 Üretim Föyü
                 </a>
             <?php endif; ?>
