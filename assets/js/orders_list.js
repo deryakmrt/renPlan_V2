@@ -22,7 +22,7 @@ function addRow() {
         <td><input name="price[]" type="number" step="0.01" value="0"></td>
         <td><input name="urun_ozeti[]"></td>
         <td><input name="kullanim_alani[]"></td>
-        <td class="right"><button type="button" class="btn" onclick="delRow(this)">Sil</button>  <a class="btn btn-ustf" href="order_pdf_uretim.php?id=<?= (int)$order['id'] ?>" title="ÜSTF PDF" aria-label="ÜSTF PDF" target="_blank" rel="noopener noreferrer">ÜSTF</a>
+        <td class="right"><button type="button" class="btn" onclick="delRow(this)">Sil</button>  <a class="btn btn-ustf" href="orders.php?a=pdf_uretim&id=<?= (int)$order['id'] ?>" title="ÜSTF PDF" aria-label="ÜSTF PDF" target="_blank" rel="noopener noreferrer">ÜSTF</a>
       </td>
       `;
     document.querySelector('#itemsTable').appendChild(tr);
@@ -52,7 +52,7 @@ function onPickProduct(sel) {
                 if (e.target.closest('a,button,input,select,label,textarea,.btn,.orderCheck,svg,path')) return;
                 var id = tr.dataset.orderId;
                 if (id) {
-                    window.location.href = 'order_edit.php?id=' + id;
+                    window.location.href = 'orders.php?a=edit&id=' + id;
                 }
             });
         });

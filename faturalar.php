@@ -138,17 +138,17 @@ include __DIR__ . '/includes/header.php';
             </td>
             <td class="right" style="vertical-align:middle; width:74px; padding:2px;">
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px;">
-                <a class="btn" href="order_edit.php?id=<?= (int)$o['id'] ?>" title="Düzenle"
+                <a class="btn" href="orders.php?a=edit&id=<?= (int)$o['id'] ?>" title="Düzenle"
                    style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#333;">
                   <span style="font-size:15px;">✏️</span>
                 </a>
-                <a class="btn" href="order_view.php?id=<?= (int)$o['id'] ?>" title="Görüntüle"
+                <a class="btn" href="orders.php?a=view&id=<?= (int)$o['id'] ?>" title="Görüntüle"
                    style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#fff; border:1px solid #e1e5ea; color:#333;">
                   <span style="font-size:15px;">👁️</span>
                 </a>
-                <a class="btn" href="order_pdf.php?id=<?= (int)$o['id'] ?>" target="_blank" title="STF"
+                <a class="btn" href="orders.php?a=pdf&id=<?= (int)$o['id'] ?>" target="_blank" title="STF"
                    style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:13px; font-weight:800;">STF</a>
-                <a class="btn" href="order_pdf_uretim.php?id=<?= (int)$o['id'] ?>" target="_blank" title="ÜSTF"
+                <a class="btn" href="orders.php?a=pdf_uretim&id=<?= (int)$o['id'] ?>" target="_blank" title="ÜSTF"
                    style="width:100%; height:30px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:15px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:13px; font-weight:800;">ÜSTF</a>
               </div>
             </td>

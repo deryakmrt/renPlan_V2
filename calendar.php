@@ -197,7 +197,7 @@ if ((defined('CAL_EMBED_STYLES') && CAL_EMBED_STYLES) || (!defined('CAL_EMBED') 
         <?php if ($isHoliday): ?><div class="cal-holiday-name"><?= h($holidayName) ?></div><?php endif; ?>
         <div class="cal-items">
           <?php foreach ($items as $o): ?>
-            <a class="cal-item" href="order_edit.php?id=<?= (int)$o['id'] ?>">
+            <a class="cal-item" href="orders.php?a=edit&id=<?= (int)$o['id'] ?>">
               <span class="cal-item-code">#<?= $o['order_code'] ?? $o['id'] ?></span>
               <span class="cal-item-name"><?= htmlspecialchars($o['customer_name'] ?: ('Müşteri #' . (int)$o['customer_id'])) ?></span>
             </a>

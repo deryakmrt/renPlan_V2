@@ -22,7 +22,7 @@ require_once __DIR__ . '/helpers.php';
   <?php
   // orders.css — sipariş sayfalarında her zaman yükle
   $__page = basename($_SERVER['PHP_SELF'] ?? '');
-  if (in_array($__page, ['orders.php','order_edit.php','order_add.php','order_view.php'])) {
+  if (strpos($__page, 'orders.php') !== false) {
     echo '<link rel="stylesheet" href="/assets/css/orders.css?v=' . (is_file(__DIR__.'/../assets/css/orders.css') ? filemtime(__DIR__.'/../assets/css/orders.css') : 1) . '">';
   }
   ?>
@@ -407,7 +407,7 @@ require_once __DIR__ . '/helpers.php';
             <div class="user-name"><?= h($_SESSION['uname'] ?? '') ?></div>
             <div class="user-role"><?= h(role_label(current_role())) ?></div>
           </div>
-          <a href="users.php">Şifre Değiştir</a>
+          <a href="users.php">Şifre ve Güvenlik</a>
           <a href="logout.php">Çıkış Yap</a>
         </div>
       </div>

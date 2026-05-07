@@ -199,7 +199,7 @@ try {
             elseif ($ts >= $yesterdayStart) $badge = 'Dün ' . date('H:i', $ts);
             else $badge = date('d.m.Y', $ts);
         }
-        $tasks[] = ['prefix' => $prefix, 'summary' => $summary, 'badge' => $badge, 'url' => 'order_edit.php?id=' . (int)$r['id'], 'userName' => $userName, 'orderCode' => ($r['order_code'] ?: '#' . (int)$r['id'])];
+        $tasks[] = ['prefix' => $prefix, 'summary' => $summary, 'badge' => $badge, 'url' => 'orders.php?a=edit&id=' . (int)$r['id'], 'userName' => $userName, 'orderCode' => ($r['order_code'] ?: '#' . (int)$r['id'])];
     }
 } catch (Throwable $e) {
     $tasks = [['prefix' => '', 'summary' => 'Notlar okunamadı', 'badge' => '', 'url' => '#']];
@@ -237,7 +237,7 @@ include __DIR__ . '/includes/header.php';
         <span class="welcome-badge"><?= h($role_label) ?></span>
         <?php if (!in_array($role, ['muhasebe', 'musteri'])): ?>
             <div class="welcome-qa">
-                <a href="order_add.php" class="wqa-btn wqa-primary">➕ Yeni Sipariş</a>
+                <a href="orders.php?a=new" class="wqa-btn wqa-primary">➕ Yeni Sipariş</a>
                 <a href="products.php?a=new" class="wqa-btn wqa-secondary">📦 Ürün</a>
                 <a href="customers.php?a=new" class="wqa-btn wqa-secondary">👤 Müşteri</a>
                 <a href="satinalma-sys/talep_olustur.php" class="wqa-btn wqa-secondary">🛒 Talep</a>
@@ -334,7 +334,7 @@ include __DIR__ . '/includes/header.php';
                         : (in_array($s, ['askiya_alindi']) ? 'badge-danger' : 'badge-blue');
                 ?>
                     <li data-page-item>
-                        <a href="order_edit.php?id=<?= (int)$o['id'] ?>" style="flex:1;min-width:0;text-decoration:none;">
+                        <a href="orders.php?a=edit&id=<?= (int)$o['id'] ?>" style="flex:1;min-width:0;text-decoration:none;">
                             <div class="wl-main">
                                 <div class="wl-prefix"><?= h($o['customer_name'] ?: 'Müşteri #' . (int)$o['customer_id']) ?></div>
                                 <div class="wl-text">
@@ -452,7 +452,7 @@ include __DIR__ . '/includes/header.php';
                             </div>
                             <div style="display:flex;gap:4px;align-items:center;">
                                 <span class="badge <?= $bc ?>"><?= $label ?></span>
-                                <a class="badge badge-open" href="order_edit.php?id=<?= (int)$u['id'] ?>">Aç</a>
+                                <a class="badge badge-open" href="orders.php?a=edit&id=<?= (int)$u['id'] ?>">Aç</a>
                             </div>
                         </li>
                     <?php endforeach; ?>
@@ -528,7 +528,7 @@ include __DIR__ . '/includes/header.php';
                                 <span class="status-pill"><?= h(str_replace('_', ' ', $ro['status'])) ?></span>
                             </td>
                             <td style="text-align:right;">
-                                <a href="order_view.php?id=<?= $ro['id'] ?>" class="view-btn">Görüntüle ↗</a>
+                                <a href="orders.php?a=view&id=<?= $ro['id'] ?>" class="view-btn">Görüntüle ↗</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

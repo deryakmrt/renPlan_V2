@@ -5,3 +5,6 @@
 /vendor/composer
 /vendor/composer
 /vendor/composer
+upload_drive.php
+upload_drive.php
+delete_file.php
