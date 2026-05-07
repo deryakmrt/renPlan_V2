@@ -29,6 +29,88 @@ if (current_user()) {
 
 $error = '';
 
+// ─── 2FA Adımı ───────────────────────────────────────────────────────────────
+if (($_GET['step'] ?? '') === '2fa') {
+    require_once __DIR__ . '/includes/totp.php';
+    if (empty($_SESSION['2fa_pending_uid'])) redirect('gir.php');
+
+    if (method('POST')) {
+        csrf_check();
+        $code = trim($_POST['totp_code'] ?? '');
+        $uid  = (int)$_SESSION['2fa_pending_uid'];
+        $stmt = pdo()->prepare('SELECT twofa_secret, twofa_backup_codes FROM users WHERE id=?');
+        $stmt->execute([$uid]);
+        $u2fa = $stmt->fetch();
+        $verified = TOTP::verify($u2fa['twofa_secret'], $code);
+
+        if (!$verified && !empty($u2fa['twofa_backup_codes'])) {
+            $backups = json_decode($u2fa['twofa_backup_codes'], true) ?: [];
+            $idx = TOTP::verifyBackupCode($code, $backups);
+            if ($idx >= 0) {
+                array_splice($backups, $idx, 1);
+                pdo()->prepare("UPDATE users SET twofa_backup_codes=? WHERE id=?")->execute([json_encode($backups), $uid]);
+                $verified = true;
+            }
+        }
+
+        if ($verified) {
+            $_SESSION['uid']              = $uid;
+            $_SESSION['uname']            = $_SESSION['2fa_pending_uname'];
+            $_SESSION['urole']            = $_SESSION['2fa_pending_role'] ?? 'musteri';
+            $_SESSION['ulinked_customer'] = $_SESSION['2fa_pending_linked'];
+            unset($_SESSION['2fa_pending_uid'], $_SESSION['2fa_pending_uname'],
+                  $_SESSION['2fa_pending_role'], $_SESSION['2fa_pending_linked']);
+            audit_log_action('login', 'auth', null, null, null, ['result' => 'success_2fa']);
+            redirect('index.php');
+        } else {
+            $error = 'Hatalı doğrulama kodu.';
+        }
+    }
+    ?>
+    <!DOCTYPE html><html lang="tr"><head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>renPlan – 2FA Doğrulama</title>
+    <link rel="stylesheet" href="/assets/css/auth.css?v=<?= filemtime(__DIR__ . '/assets/css/auth.css') ?>">
+    </head><body class="auth-only">
+    <div class="auth-shell">
+      <aside class="auth-panel">
+        <div class="auth-panel-bg" aria-hidden="true"></div>
+        <div class="auth-brand"><img src="/assets/logo-tr.png" alt="renPlan"></div>
+        <div class="auth-panel-body"><div class="auth-panel-headline">
+          <h2>İki Faktörlü<br>Doğrulama</h2>
+          <p>Güvenliğiniz için ek doğrulama gerekiyor.</p>
+        </div></div>
+        <div class="auth-panel-footer">Renled — bir <strong>ditetra</strong> markasıdır &nbsp;·&nbsp; renPlan V2</div>
+      </aside>
+      <main class="auth-card"><div class="card-inner">
+        <div class="auth-heading"><h1>🔐 Doğrulama Kodu</h1>
+          <p>Google Authenticator uygulamasındaki 6 haneli kodu girin.</p></div>
+        <?php if ($error): ?><div class="alert" role="alert"><?= h($error) ?></div><?php endif; ?>
+        <form method="post" class="auth-form" autocomplete="off">
+          <?php csrf_input(); ?>
+          <div class="auth-field">
+            <label for="totp_code">Doğrulama Kodu</label>
+            <div class="auth-field-wrap">
+              <span class="field-icon">🔑</span>
+              <input id="totp_code" type="text" name="totp_code" inputmode="numeric"
+                     maxlength="8" required autofocus placeholder="123456"
+                     autocomplete="one-time-code"
+                     style="letter-spacing:8px;font-size:22px;font-weight:700;text-align:center;">
+            </div>
+            <small style="color:#64748b;font-size:12px;margin-top:6px;display:block;">Yedek kodunuz varsa onu da girebilirsiniz.</small>
+          </div>
+          <div class="auth-captcha-row" style="justify-content:flex-end;">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <a href="gir.php" style="color:#64748b;font-size:13px;text-decoration:none;">← Geri</a>
+              <button class="btn primary" type="submit">Doğrula</button>
+            </div>
+          </div>
+        </form>
+      </div></main>
+    </div></body></html>
+    <?php exit;
+}
+
 if (method('POST')) {
 
     /* ── Turnstile doğrulama ── */
@@ -67,9 +149,17 @@ if (method('POST')) {
                 $error = '⛔ Hesabınız sistem yöneticisi tarafından askıya alınmıştır.';
                 audit_log_action('login_failed', 'auth', null, null, null,
                     ['reason' => 'account_suspended', 'username' => $u]);
+            } elseif ((int)($user['twofa_enabled'] ?? 0) === 1 && !empty($user['twofa_secret'])) {
+                $_SESSION['2fa_pending_uid']    = (int)$user['id'];
+                $_SESSION['2fa_pending_uname']  = $user['username'];
+                $_SESSION['2fa_pending_role']   = $user['role'] ?? 'musteri';
+                $_SESSION['2fa_pending_linked'] = $user['linked_customer'] ?? '';
+                audit_log_action('login', 'auth', null, null, null, ['result' => '2fa_required']);
+                redirect('gir.php?step=2fa');
             } else {
                 $_SESSION['uid']              = (int)$user['id'];
                 $_SESSION['uname']            = $user['username'];
+                $_SESSION['urole']            = $user['role'] ?? 'musteri';
                 $_SESSION['ulinked_customer'] = $user['linked_customer'] ?? '';
                 audit_log_action('login', 'auth', null, null, null, ['result' => 'success']);
                 redirect('index.php');

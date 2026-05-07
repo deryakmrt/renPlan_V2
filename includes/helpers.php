@@ -262,12 +262,49 @@ function flash() {
     }
 }
 
+// --- 🔒 ROW LEVEL GÜVENLİK FONKSİYONLARI ---
+function can_access_order(int $orderId): bool {
+    $cu = current_user();
+    if (!$cu) return false;
+    // Admin ve sistem yöneticisi her siparişe erişebilir
+    if (in_array($cu['role'] ?? '', ['admin', 'sistem_yoneticisi', 'muhasebe', 'uretim', 'plasiyer'])) return true;
+    // Müşteri sadece kendi müşteri adıyla eşleşen siparişlere erişebilir
+    if (($cu['role'] ?? '') === 'musteri') {
+        $linked = $cu['linked_customer'] ?? '';
+        if (!$linked) return false;
+        $stmt = pdo()->prepare("SELECT id FROM orders WHERE id=? AND customer_name=?");
+        $stmt->execute([$orderId, $linked]);
+        return (bool)$stmt->fetchColumn();
+    }
+    return false;
+}
+
+function can_access_customer(int $customerId): bool {
+    $cu = current_user();
+    if (!$cu) return false;
+    if (in_array($cu['role'] ?? '', ['admin', 'sistem_yoneticisi', 'plasiyer'])) return true;
+    // Müşteri rolü customer sayfasına hiç erişemez
+    return false;
+}
+
+function require_order_access(int $orderId): void {
+    if (!can_access_order($orderId)) {
+        http_response_code(403);
+        die('<div style="padding:40px;text-align:center;font-family:sans-serif;">
+            <h3>⛔ Yetkisiz Erişim</h3>
+            <p>Bu siparişi görüntüleme yetkiniz yok.</p>
+            <a href="orders.php" style="color:#ea580c;font-weight:bold;">⬅ Siparişlere Dön</a>
+        </div>');
+    }
+}
+
 // --- 🔒 MÜŞTERİ GÜVENLİK DUVARI ---
 if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['uid'])) {
     $cu_role = $_SESSION['urole'] ?? '';
     if ($cu_role === 'musteri') {
         // Müşterinin URL'den girebileceği izinli sayfalar:
-        $allowed_pages = ['index.php', 'orders.php', 'order_view.php', 'logout.php', 'gir.php', 'order_edit.php', 'order_pdf.php'];
+        // Müşteri artık sadece orders.php üzerinden erişiyor (tek giriş noktası)
+        $allowed_pages = ['index.php', 'orders.php', 'logout.php', 'gir.php', 'users.php'];
         $current_file = basename($_SERVER['SCRIPT_NAME']);
         
         if (!in_array($current_file, $allowed_pages)) {

@@ -8,6 +8,10 @@
     # app/ klasörüne doğrudan tarayıcı erişimini engelle
     RewriteCond %{THE_REQUEST} \s/app/ [NC]
     RewriteRule ^app/ - [F,L]
+
+    # includes/ klasörüne doğrudan tarayıcı erişimini engelle
+    RewriteCond %{THE_REQUEST} \s/includes/ [NC]
+    RewriteRule ^includes/ - [F,L]
 </IfModule>
 
 <IfModule mod_headers.c>
