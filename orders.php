@@ -32,6 +32,88 @@ if (isset($_GET['restore']) && !empty($_SESSION['last_orders_url'])) {
     if (strpos($restore_url, 'restore=') === false) redirect($restore_url);
 }
 
+// ─── DRIVE: DOSYA SİL ────────────────────────────────────────────────────────
+if ($action === 'delete_file' && method('GET')) {
+    require_once __DIR__ . '/google_lib/vendor/autoload.php';
+    $role = $__role;
+    if (!in_array($role, ['admin', 'sistem_yoneticisi'], true)) {
+        http_response_code(403); die('Bu işlem için yetkiniz yok.');
+    }
+    $file_id  = (int)($_GET['file_id']  ?? 0);
+    $order_id = (int)($_GET['order_id'] ?? 0);
+    if (!$file_id || !$order_id) redirect("orders.php?a=edit&id=$order_id");
+
+    $stmt = $db->prepare("SELECT id, drive_file_id, file_name FROM order_files WHERE id=? AND order_id=?");
+    $stmt->execute([$file_id, $order_id]);
+    $file_row = $stmt->fetch();
+    if (!$file_row) redirect("orders.php?a=edit&id=$order_id");
+
+    try {
+        $drive = new \App\Services\Drive\DriveService();
+        if (!empty($file_row['drive_file_id'])) $drive->deleteFile($file_row['drive_file_id']);
+    } catch (\Exception $e) {
+        $_SESSION['flash_error'] = "Drive'dan silinemedi: " . h($e->getMessage());
+    }
+
+    $db->prepare("DELETE FROM order_files WHERE id=? AND order_id=?")->execute([$file_id, $order_id]);
+    $_SESSION['flash_success'] = '"' . h($file_row['file_name']) . '" silindi.';
+    redirect("orders.php?a=edit&id=$order_id");
+}
+
+// ─── DRIVE: DOSYA YÜKLE ──────────────────────────────────────────────────────
+if ($action === 'upload_file' && method('POST')) {
+    require_once __DIR__ . '/google_lib/vendor/autoload.php';
+    $is_admin_like = in_array($__role, ['admin', 'sistem_yoneticisi'], true);
+    $is_uretim     = ($__role === 'uretim');
+    $is_muhasebe   = ($__role === 'muhasebe');
+
+    if (!$is_admin_like && !$is_uretim && !$is_muhasebe) {
+        http_response_code(403); die('Bu işlem için yetkiniz yok.');
+    }
+
+    $order_id    = (int)($_POST['order_id']   ?? 0);
+    $folder_type = trim($_POST['folder_type'] ?? '');
+
+    if (!$order_id || empty($_FILES['file_upload']['tmp_name'])) {
+        redirect("orders.php?a=edit&id=$order_id&msg=error");
+    }
+
+    // Rol bazlı klasör zorlaması
+    if ($is_uretim)       $folder_type = 'cizim';
+    elseif ($is_muhasebe) $folder_type = 'fatura';
+    elseif ($is_admin_like && !in_array($folder_type, ['cizim','fatura'], true)) $folder_type = 'cizim';
+
+    if ($is_muhasebe && $folder_type !== 'fatura') { http_response_code(403); die('Yalnızca Faturalar klasörüne yükleyebilirsiniz.'); }
+    if ($is_uretim   && $folder_type !== 'cizim')  { http_response_code(403); die('Yalnızca Çizimler klasörüne yükleyebilirsiniz.'); }
+
+    try {
+        $drive   = new \App\Services\Drive\DriveService();
+        $folders = $drive->prepareOrderFolders($db, $order_id);
+        $targetId   = ($folder_type === 'fatura') ? $folders['fatura'] : $folders['cizim'];
+        $targetName = ($folder_type === 'fatura') ? 'Faturalar' : 'Çizimler';
+
+        $result = $drive->uploadFile(
+            $_FILES['file_upload']['tmp_name'],
+            $_FILES['file_upload']['name'],
+            $_FILES['file_upload']['type'] ?: 'application/octet-stream',
+            $targetId
+        );
+
+        $db->prepare("INSERT INTO order_files (order_id,file_name,drive_file_id,web_view_link,uploaded_by,folder_type,parent_folder_id) VALUES (?,?,?,?,?,?,?)")
+           ->execute([$order_id, $_FILES['file_upload']['name'], $result['drive_file_id'], $result['web_view_link'], $_SESSION['uname'] ?? 'Bilinmeyen', $folder_type, $targetId]);
+
+        $_SESSION['flash_success'] = '"' . h($_FILES['file_upload']['name']) . '" ' . $targetName . ' klasörüne yüklendi.';
+        redirect("orders.php?a=edit&id=$order_id&msg=uploaded");
+    } catch (\Exception $e) {
+        include __DIR__ . '/includes/header.php';
+        echo '<div class="alert-error" style="margin:20px;">⚠️ ' . h($e->getMessage()) . '</div>';
+        echo '<p style="margin:0 20px;"><a href="orders.php?a=edit&id=' . $order_id . '">← Geri Dön</a></p>';
+        include __DIR__ . '/includes/footer.php';
+        ob_end_flush();
+        exit;
+    }
+}
+
 // ─── PDF (header öncesi çalışması gerekiyor) ─────────────────────────────────
 if (in_array($action, ['pdf', 'pdf_uretim'])) {
     require_once __DIR__ . '/includes/pdf_helpers.php';

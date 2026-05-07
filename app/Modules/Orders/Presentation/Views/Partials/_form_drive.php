@@ -38,7 +38,7 @@ function renderFileTable(array $files, bool $canDelete, int $order_id): void {
         echo '<td>'.date('d.m.Y H:i', strtotime($file['created_at'])).'</td>';
         echo '<td class="right">';
         if ($canDelete) {
-            echo '<a href="delete_file.php?id='.(int)$file['id'].'&order_id='.(int)$order_id.'" onclick="return confirm(\'Dosya tamamen silinecek!\');" class="btn btn-sm" style="color:#ef4444; border-color:#fecaca; background:#fef2f2;">Sil 🗑️</a>';
+            echo '<a href="orders.php?a=delete_file&file_id='.(int)$file['id'].'&order_id='.(int)$order_id.'" onclick="return confirm(\'Dosya tamamen silinecek!\');" class="btn btn-sm" style="color:#ef4444; border-color:#fecaca; background:#fef2f2;">Sil 🗑️</a>';
         } else {
             echo '—';
         }
@@ -80,7 +80,7 @@ function renderFileTable(array $files, bool $canDelete, int $order_id): void {
     <?php endif; ?>
 
     <div style="background:#f0f9ff; padding:16px; border-radius:8px; border:1px solid #bae6fd; margin-top:20px;">
-        <form action="upload_drive.php" method="POST" enctype="multipart/form-data" style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
+        <form action="orders.php?a=upload_file" method="POST" enctype="multipart/form-data" style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
             <input type="hidden" name="order_id" value="<?= (int)$order['id'] ?>">
             
             <?php if ($__upload_type_fixed): ?>
