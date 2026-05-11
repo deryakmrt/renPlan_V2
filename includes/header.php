@@ -316,7 +316,7 @@ require_once __DIR__ . '/helpers.php';
                 <a href="projeler.php" class="<?= basename($_SERVER['PHP_SELF']) == 'projeler.php' ? 'active' : '' ?>">
                   <i class="fas fa-project-diagram"></i> Projeler
                 </a>
-                <a href="lazer_kesim.php">Lazer Kesim</a>
+                <a href="lazer.php">Lazer Kesim</a>
                 <a href="calendar.php?a=new">Sipariş Takvimi</a>
               <?php endif; ?>
               <?php if (has_role('admin')): ?>
@@ -384,7 +384,7 @@ require_once __DIR__ . '/helpers.php';
             <a href="#" class="dropdown-toggle">Sipariş Yönetimi<span class="caret"></span></a>
             <div class="menu">
               <a href="orders.php">Siparişler</a>
-              <a href="lazer_kesim.php">Lazer Kesim</a> <a href="calendar.php?a=new">Sipariş Takvimi</a>
+              <a href="lazer.php">Lazer Kesim</a> <a href="calendar.php?a=new">Sipariş Takvimi</a>
             </div>
           </div>
           <div class="dropdown">
