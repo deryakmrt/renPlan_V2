@@ -94,25 +94,75 @@ if ($action === 'delete' && method('GET')) {
 if ($action === 'new') {
     if (!$can_manage) { http_response_code(403); die('Yetkisiz.'); }
 
-    if (method('POST')) {
-        $order_date    = !empty($_POST['order_date'])    ? $_POST['order_date']    : null;
-        $deadline_date = !empty($_POST['deadline_date']) ? $_POST['deadline_date'] : null;
-        $db->prepare("INSERT INTO lazer_orders (customer_id,project_name,order_code,status,order_date,deadline_date) VALUES (?,?,?,'taslak',?,?)")
-           ->execute([$_POST['customer_id'], $_POST['project_name'], $_POST['order_code'], $order_date, $deadline_date]);
-        redirect('lazer.php');
-    }
-
     // Otomatik sipariş kodu
     $yearPrefix = date('Y');
     $stmt = $db->prepare("SELECT MAX(CAST(order_code AS UNSIGNED)) FROM lazer_orders WHERE order_code LIKE ?");
     $stmt->execute([$yearPrefix . '%']);
     $max_code  = $stmt->fetchColumn();
-    $next_code = $max_code ? $max_code + 1 : $yearPrefix . '001';
+    $next_code = $max_code ? (string)($max_code + 1) : $yearPrefix . '001';
 
-    $customers = $db->query("SELECT * FROM customers ORDER BY name")->fetchAll();
+    // POST: form gönderildi
+    if (method('POST')) {
+        $order_date    = !empty($_POST['order_date'])    ? $_POST['order_date']    : null;
+        $deadline_date = !empty($_POST['deadline_date']) ? $_POST['deadline_date'] : null;
+        $db->prepare("INSERT INTO lazer_orders (customer_id,project_name,order_code,status,order_date,deadline_date) VALUES (?,?,?,'taslak',?,?)")
+           ->execute([$_POST['customer_id'], $_POST['project_name'], $_POST['order_code'], $order_date, $deadline_date]);
+        $newId = (int)$db->lastInsertId();
+
+        // Kalemler varsa birlikte kaydet
+        $names = $_POST['product_name'] ?? [];
+        if (!empty($names)) {
+            $ins = $db->prepare("INSERT INTO lazer_order_items (order_id,product_name,material_id,thickness,weight,qty,gas_id,time_hours,time_minutes,calculated_cost,image_path) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+            foreach (array_keys($names) as $i) {
+                $pname = trim($names[$i] ?? '');
+                if ($pname === '') continue;
+                $img_path = null;
+                if (!empty($_FILES['item_image']['name'][$i])) {
+                    $upload_dir = __DIR__ . '/uploads/lazer_items/';
+                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                    $ext = pathinfo($_FILES['item_image']['name'][$i], PATHINFO_EXTENSION);
+                    $fname = uniqid() . '.' . strtolower($ext);
+                    if (move_uploaded_file($_FILES['item_image']['tmp_name'][$i], $upload_dir . $fname)) {
+                        $img_path = 'uploads/lazer_items/' . $fname;
+                    }
+                }
+                $ins->execute([
+                    $newId, $pname,
+                    $_POST['material_id'][$i] ?? null,
+                    $_POST['thickness'][$i]   ?? 0,
+                    $_POST['weight'][$i]      ?? 0,
+                    $_POST['qty'][$i]         ?? 1,
+                    $_POST['gas_id'][$i]      ?? null,
+                    $_POST['time_hours'][$i]  ?? 0,
+                    $_POST['time_minutes'][$i]?? 0,
+                    $_POST['calculated_cost'][$i] ?? 0,
+                    $img_path,
+                ]);
+            }
+        }
+
+        $_SESSION['flash_success'] = '✅ Sipariş oluşturuldu.';
+        redirect('lazer.php?a=edit&id=' . $newId);
+    }
+
+    // GET: Boş formu edit view üzerinden göster
+    $id    = 0;
+    $order = [
+        'id' => 0, 'order_code' => $next_code, 'customer_id' => null,
+        'status' => 'taslak', 'project_name' => '', 'notes' => '',
+        'order_date' => date('Y-m-d'), 'deadline_date' => null,
+        'start_date' => null, 'end_date' => null, 'delivery_date' => null,
+    ];
+    $items          = [];
+    $materials      = $db->query("SELECT * FROM lazer_settings_materials ORDER BY name")->fetchAll();
+    $gases          = $db->query("SELECT * FROM lazer_settings_gases ORDER BY name")->fetchAll();
+    $customers      = $db->query("SELECT * FROM customers ORDER BY name")->fetchAll();
+    $can_see_drafts = $can_manage;
 
     include __DIR__ . '/includes/header.php';
-    require __DIR__ . '/app/Modules/Lazer/Presentation/Views/form_new_view.php';
+    $v = is_file(__DIR__.'/assets/css/orders.css') ? filemtime(__DIR__.'/assets/css/orders.css') : 1;
+    echo '<link rel="stylesheet" href="/assets/css/orders.css?v=' . $v . '">';
+    require __DIR__ . '/app/Modules/Lazer/Presentation/Views/form_edit_view.php';
     include __DIR__ . '/includes/footer.php';
     ob_end_flush();
     exit;
@@ -163,11 +213,24 @@ if ($action === 'edit') {
             if ($old_img && file_exists(__DIR__ . '/' . $old_img)) unlink(__DIR__ . '/' . $old_img);
             $db->prepare("DELETE FROM lazer_order_items WHERE id=?")->execute([$item_id]);
 
+        } elseif (isset($_POST['create_order'])) {
+            // Yeni sipariş form'undan POST — new view'dan geliyor
+            $order_date    = !empty($_POST['order_date'])    ? $_POST['order_date']    : null;
+            $deadline_date = !empty($_POST['deadline_date']) ? $_POST['deadline_date'] : null;
+            $db->prepare("INSERT INTO lazer_orders (customer_id,project_name,order_code,status,order_date,deadline_date) VALUES (?,?,?,'taslak',?,?)")
+               ->execute([$_POST['customer_id'], $_POST['project_name'], $_POST['order_code'], $order_date, $deadline_date]);
+            $newId = (int)$db->lastInsertId();
+            $_SESSION['flash_success'] = '✅ Sipariş oluşturuldu. Kalem ekleyebilirsiniz.';
+            redirect('lazer.php?a=edit&id=' . $newId);
+
         } elseif (isset($_POST['update_order'])) {
             if ($can_manage) {
                 $db->prepare("UPDATE lazer_orders SET customer_id=?,project_name=?,order_code=?,status=?,order_date=?,deadline_date=?,start_date=?,delivery_date=?,notes=? WHERE id=?")
                    ->execute([$_POST['customer_id'], $_POST['project_name'], $_POST['order_code'], $_POST['status'], $_POST['order_date'] ?: null, $_POST['deadline_date'] ?: null, $_POST['start_date'] ?: null, $_POST['delivery_date'] ?: null, $_POST['notes'] ?? '', $id]);
+                $_SESSION['flash_success'] = '✅ Sipariş güncellendi.';
             }
+        } else {
+            $_SESSION['flash_success'] = '✅ Kalem güncellendi.';
         }
 
         redirect("lazer.php?a=edit&id=$id");
@@ -190,6 +253,8 @@ if ($action === 'edit') {
     $can_see_drafts = $can_manage;
 
     include __DIR__ . '/includes/header.php';
+    $v = is_file(__DIR__.'/assets/css/orders.css') ? filemtime(__DIR__.'/assets/css/orders.css') : 1;
+    echo '<link rel="stylesheet" href="/assets/css/orders.css?v=' . $v . '">';
     require __DIR__ . '/app/Modules/Lazer/Presentation/Views/form_edit_view.php';
     include __DIR__ . '/includes/footer.php';
     ob_end_flush();
@@ -206,6 +271,8 @@ $limit          = 20;
 $offset         = ($page - 1) * $limit;
 
 include __DIR__ . '/includes/header.php';
+$v = is_file(__DIR__.'/assets/css/orders.css') ? filemtime(__DIR__.'/assets/css/orders.css') : 1;
+echo '<link rel="stylesheet" href="/assets/css/orders.css?v=' . $v . '">';
 require __DIR__ . '/app/Modules/Lazer/Presentation/Views/list_view.php';
 include __DIR__ . '/includes/footer.php';
 ob_end_flush();

@@ -2,364 +2,312 @@
 /**
  * @var PDO    $db
  * @var array  $order
- * @var array  $items         Sipariş kalemleri ($order_items da aynı)
- * @var array  $materials     ($materials_list de aynı)
- * @var array  $gases         ($gases_list de aynı)
+ * @var array  $items
+ * @var array  $materials
+ * @var array  $gases
  * @var array  $customers
  * @var string $role
  * @var bool   $can_see_drafts
  * @var int    $id
- * @var string $can_manage
  */
-// Değişken uyumluluk aliasları (orijinal dosyadan farklı isim kullanılmışsa)
-$order_items    = $order_items    ?? $items     ?? [];
-$materials_list = $materials_list ?? $materials ?? [];
-$gases_list     = $gases_list     ?? $gases     ?? [];
-
-$stmt = $db->prepare("SELECT * FROM lazer_orders WHERE id = ?");
-$stmt->execute([$id]);
-$order = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$order) { echo "Sipariş bulunamadı."; require_once __DIR__ . '/includes/footer.php'; exit; }
-
-$customers = $db->query("SELECT * FROM customers ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
-$materials_list = $db->query("SELECT * FROM lazer_settings_materials")->fetchAll(PDO::FETCH_ASSOC);
-$gases_list = $db->query("SELECT * FROM lazer_settings_gases")->fetchAll(PDO::FETCH_ASSOC);
-
-$items = $db->prepare("SELECT i.*, m.name as mat_name, g.name as gas_name FROM lazer_order_items i LEFT JOIN lazer_settings_materials m ON i.material_id=m.id LEFT JOIN lazer_settings_gases g ON i.gas_id=g.id WHERE order_id=? ORDER BY i.id ASC");
-$items->execute([$id]);
-$order_items = $items->fetchAll(PDO::FETCH_ASSOC);
-
-function safe_date(?string $d): string { return ($d && $d !== '0000-00-00') ? $d : ''; }
+$order_items    = $items     ?? [];
+$materials_list = $materials ?? [];
+$gases_list     = $gases     ?? [];
+if (!function_exists('safe_date')) {
+    function safe_date(?string $d): string { return ($d && $d !== '0000-00-00') ? $d : ''; }
+}
 ?>
 
-<div class="card" style="max-width:1100px; margin:20px auto; padding:0; overflow:hidden;">
-    
-    <form method="post">
-    <input type="hidden" name="update_main_order" value="1">
-    
-    <div style="background:#f8fafc; padding:20px; border-bottom:1px solid #e2e8f0;">
-        <h2 style="margin-top:0; color:#334155; display:flex; justify-content:space-between; align-items:center;">
-            <span>Sipariş Düzenle (#<?= $id ?>)</span>
-            <a href="lazer.php" class="btn btn-sm" style="font-weight:normal; font-size:14px;">« Listeye Dön</a>
-        </h2>
-        
-        <div class="grid g2" style="gap:20px;">
-            <div style="display:grid; gap:15px;">
-                <div>
-                    <label>Müşteri</label>
-                    <select name="customer_id" required style="width:100%">
-                        <?php foreach ($customers as $c): ?>
-                            <option value="<?= $c['id'] ?>" <?= $order['customer_id'] == $c['id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['name']) ?></option>
+<div class="page-header">
+    <div>
+        <div class="page-main-title">⚡ <?= $id ? 'SİPARİŞ DÜZENLE' : 'YENİ SİPARİŞ' ?></div>
+        <div class="page-header-sub">Sipariş Kodu: <strong><?= h($order['order_code'] ?? '') ?></strong></div>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-ghost" href="lazer.php">⬅ Vazgeç</a>
+        <?php if ($id): ?>
+        <a class="btn btn-stf" href="lazer.php?a=pdf&id=<?= (int)$id ?>" target="_blank">📄 STF</a>
+        <a class="btn btn-uretim" href="lazer.php?a=pdf_uretim&id=<?= (int)$id ?>" target="_blank">🏭 ÜSTF</a>
+        <?php endif; ?>
+        <?php if ($can_see_drafts): ?>
+        <button type="submit" form="lazer-main-form" name="<?= $id ? 'update_order' : 'create_order' ?>" value="1" class="btn btn-guncelle">
+            <?= $id ? '💾 Güncelle' : '💾 Kaydet' ?>
+        </button>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php if (!empty($_SESSION['flash_success'])): ?>
+    <div style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;color:#166534;font-size:13px;">
+        ✅ <?= h($_SESSION['flash_success']) ?></div>
+    <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+
+<form id="lazer-main-form" method="post" action="lazer.php?a=<?= $id ? 'edit&id='.(int)$id : 'new' ?>">
+
+    <!-- Temel Bilgiler -->
+    <div class="form-section sec-temel">
+        <div class="form-section-title">📌 Temel Bilgiler</div>
+
+        <!-- 1. satır: Durum | Sipariş Kodu | Proje Adı -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;margin-bottom:16px;">
+            <div class="form-group">
+                <label class="rp-label">Durum</label>
+                <?php if ($order['status'] === 'taslak'): ?>
+                    <div style="padding:8px;border:1px dashed #d97706;background:#fffbeb;border-radius:6px;color:#d97706;font-weight:bold;">🔒 Taslak</div>
+                    <input type="hidden" name="status" value="taslak">
+                <?php else: ?>
+                    <select name="status" class="rp-input">
+                        <?php foreach (['tedarik'=>'Tedarik','kesimde'=>'Kesim','sevkiyat'=>'Sevkiyat','teslim_edildi'=>'Teslim Edildi'] as $k=>$v): ?>
+                            <option value="<?= $k ?>" <?= $order['status']===$k?'selected':'' ?>><?= $v ?></option>
                         <?php endforeach; ?>
                     </select>
-                </div>
-                <div>
-                    <label>Proje Adı</label>
-                    <input type="text" name="project_name" value="<?= htmlspecialchars($order['project_name']) ?>" required style="width:100%">
-                </div>
-                    <div>
-                    <label>Durum</label>
-                    <?php if ($order['status'] === 'taslak'): ?>
-                        <div style="background:#fff; border:1px solid #d1d5db; padding:8px 12px; border-radius:6px; color:#374151; font-weight:bold; display:flex; align-items:center; gap:8px;">
-                            <span>🔒 Taslak (Gizli)</span>
-                        </div>
-                        <input type="hidden" name="status" value="taslak">
-                    <?php else: ?>
-                        <select name="status" style="width:100%">
-                            <?php 
-                            $statuses = ['taslak'=>'🔒Taslak','tedarik'=>'Tedarik','kesimde'=>'Kesim','sevkiyat'=>'Sevkiyat','teslim_edildi'=>'Teslim Edildi'];
-                            foreach($statuses as $k=>$v): 
-                                if ($k === 'taslak' && !$can_see_drafts) continue;
-                            ?>
-                                <option value="<?= $k ?>" <?= $order['status'] === $k ? 'selected' : '' ?>><?= $v ?></option>
+                <?php endif; ?>
+            </div>
+            <div class="form-group">
+                <label class="rp-label">Sipariş Kodu</label>
+                <input class="rp-input" type="text" name="order_code" value="<?= h($order['order_code']??'') ?>" style="font-family:monospace;font-weight:700;">
+            </div>
+            <div class="form-group">
+                <label class="rp-label">Proje Adı</label>
+                <input class="rp-input" type="text" name="project_name" value="<?= h($order['project_name']??'') ?>">
+            </div>
+        </div>
+
+        <!-- 2. satır: Müşteri | Notlar -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;">
+            <div class="form-group">
+                <label class="rp-label">Müşteri <span style="color:#ef4444">*</span></label>
+                <?php if ($id): ?>
+                    <?php $curCust = ''; foreach ($customers as $cc) { if ($cc['id'] == $order['customer_id']) { $curCust = $cc['name']; break; } } ?>
+                    <input type="hidden" name="customer_id" value="<?= (int)$order['customer_id'] ?>">
+                    <div class="musteri-row">
+                        <div class="form-control musteri-display"><?= h($curCust ?: '—') ?></div>
+                        <select name="customer_id_override" class="form-control musteri-override" title="Müşteriyi değiştir"
+                                onchange="if(this.value){this.previousElementSibling.previousElementSibling.value=this.value;}">
+                            <option value="">Değiştir…</option>
+                            <?php foreach ($customers as $cc): ?>
+                                <option value="<?= (int)$cc['id'] ?>"><?= h($cc['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
-                    <?php endif; ?>
-                </div>
+                    </div>
+                <?php else: ?>
+                    <select name="customer_id" class="rp-input">
+                        <option value="">— Seçiniz —</option>
+                        <?php foreach ($customers as $cc): ?>
+                            <option value="<?= (int)$cc['id'] ?>" <?= ($order['customer_id']==$cc['id'])?'selected':'' ?>><?= h($cc['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
             </div>
-
-            <div class="grid g2" style="gap:10px;">
-                <div><label>Sipariş Kodu</label><input type="text" name="order_code" value="<?= htmlspecialchars($order['order_code']) ?>" style="width:100%"></div>
-                <div><label>Sipariş Tarihi</label><input type="date" name="order_date" value="<?= safe_date($order['order_date']) ?>" style="width:100%"></div>
-                <div><label>Termin Tarihi</label><input type="date" name="deadline_date" value="<?= safe_date($order['deadline_date']) ?>" style="width:100%"></div>
-                <div><label>Başlangıç</label><input type="date" name="start_date" value="<?= safe_date($order['start_date']) ?>" style="width:100%"></div>
-                <div><label>Bitiş</label><input type="date" name="end_date" value="<?= safe_date($order['end_date']) ?>" style="width:100%"></div>
-                <div><label>Teslim</label><input type="date" name="delivery_date" value="<?= safe_date($order['delivery_date']) ?>" style="width:100%"></div>
-            </div>
-
-            <div style="grid-column: span 2;">
-                <label>Notlar</label>
-                <textarea name="notes" rows="2" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:10px;"><?= htmlspecialchars($order['notes'] ?? '') ?></textarea>
+            <div class="form-group">
+                <label class="rp-label">Notlar</label>
+                <textarea class="rp-input" name="notes" rows="2"><?= h($order['notes']??'') ?></textarea>
             </div>
         </div>
 
-        <div class="row" style="justify-content:flex-end; gap:10px; margin-top:20px;">
-            <?php if ($order['status'] === 'taslak'): ?>
-                <button type="submit" name="yayinla_butonu" value="1" class="btn" style="background-color:#db2777; color:white;">🚀 SİPARİŞİ YAYINLA</button>
-            <?php endif; ?>
-            <button type="submit" class="btn primary">💾 Ana Bilgileri Kaydet</button>
+        <?php if ($order['status']==='taslak' && $can_see_drafts): ?>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">
+            <button type="submit" name="yayinla_butonu" value="1" class="btn" style="background:#8b5cf6;color:#fff;font-weight:700;">🚀 SİPARİŞİ YAYINLA</button>
         </div>
-    </div> <div style="padding:20px;">
-        <h3 style="border-bottom:2px solid #ff6b00; padding-bottom:10px; margin-bottom:20px; color:#ea580c;">
-            📦 Sipariş Kalemleri
-        </h3>
+        <?php endif; ?>
+    </div>
 
-        <table class="table">
-            <thead style="background:#fff7ed;">
-                <tr>
-                    <th style="width:30px;">#</th>
-                    <th>Görsel</th>
-                    <th>Ürün Adı</th>
-                    <th>Sac / Kalınlık</th>
-                    <th>Ağırlık</th>
-                    <th>Adet</th>
-                    <th>Kesim</th>
-                    <?php if ($can_see_drafts): ?>
-                        <th style="text-align:right;">Maliyet</th>
-                        <th style="width:100px; text-align:right;">İşlem</th>
-                    <?php endif; ?>
-                </tr>
-            </thead>
+    <!-- Tarihler -->
+    <div class="form-section sec-kisiler" style="margin-top:16px;">
+        <div class="form-section-title">📅 Tarihler</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;">
+            <div class="form-group"><label class="rp-label">Sipariş Tarihi</label>
+                <input class="rp-input" type="date" name="order_date" value="<?= safe_date($order['order_date']??'') ?>"></div>
+            <div class="form-group"><label class="rp-label">Termin Tarihi</label>
+                <input class="rp-input" type="date" name="deadline_date" value="<?= safe_date($order['deadline_date']??'') ?>"></div>
+            <div class="form-group"><label class="rp-label">Başlangıç</label>
+                <input class="rp-input" type="date" name="start_date" value="<?= safe_date($order['start_date']??'') ?>"></div>
+            <div class="form-group"><label class="rp-label">Bitiş</label>
+                <input class="rp-input" type="date" name="end_date" value="<?= safe_date($order['end_date']??'') ?>"></div>
+            <div class="form-group"><label class="rp-label">Teslim</label>
+                <input class="rp-input" type="date" name="delivery_date" value="<?= safe_date($order['delivery_date']??'') ?>"></div>
+        </div>
+    </div>
+
+</form>
+
+<!-- Kalemler -->
+<div class="card form-section mt" style="margin-top:20px;">
+    <div class="form-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>🔩 Kesim Kalemleri</span>
+        <?php if ($can_see_drafts): ?>
+        <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('lazer-item-modal').style.display='flex';resetModal()">+ Kalem Ekle</button>
+        <?php endif; ?>
+    </div>
+    <div class="table-responsive">
+        <table class="orders-table" style="width:100%;">
+            <thead><tr>
+                <th>Ürün Adı</th><th>Sac Türü</th><th>Kalınlık</th>
+                <th style="text-align:right">Ağırlık</th><th style="text-align:center">Adet</th>
+                <th>Kesim</th><th style="text-align:center">Süre</th>
+                <th style="text-align:right">Maliyet</th><th style="text-align:center">Görsel</th>
+                <?php if ($can_see_drafts): ?><th class="right">İşlem</th><?php endif; ?>
+            </tr></thead>
             <tbody>
-                <?php $total_cost = 0; $counter = 1; ?>
-                <?php foreach ($order_items as $item): 
-                    $total_cost += $item['calculated_cost'];
-                    $jsData = htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8');
-                ?>
+            <?php $total_c=0; $total_w=0;
+            if ($order_items): foreach ($order_items as $item):
+                $total_c += (float)($item['calculated_cost']??0);
+                $total_w += (float)($item['weight']??0); ?>
                 <tr>
-                    <td style="color:#94a3b8; font-weight:bold;"><?= $counter++ ?></td>
-                    <td>
-                        <?php if($item['image_path']): ?>
-                            <a href="<?= $item['image_path'] ?>" target="_blank"><img src="<?= $item['image_path'] ?>" style="width:40px; height:40px; object-fit:cover; border-radius:4px;"></a>
+                    <td><strong><?= h($item['product_name']??'') ?></strong></td>
+                    <td><?= h($item['mat_name']??'—') ?></td>
+                    <td><?= h($item['thickness']??'') ?> mm</td>
+                    <td style="text-align:right"><?= number_format((float)($item['weight']??0),2,',','.') ?> kg</td>
+                    <td style="text-align:center"><?= h($item['qty']??'1') ?></td>
+                    <td><?= h($item['gas_name']??'—') ?></td>
+                    <td style="text-align:center"><?= h($item['time_hours']??'0') ?>s <?= h($item['time_minutes']??'0') ?>dk</td>
+                    <td style="text-align:right;color:#d32f2f;font-weight:700;"><?= number_format((float)($item['calculated_cost']??0),4,',','.') ?> ₺</td>
+                    <td style="text-align:center;">
+                        <?php if (!empty($item['image_path'])): ?>
+                            <img src="/<?= h(ltrim($item['image_path'],'/')) ?>" style="max-width:40px;max-height:40px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;">
                         <?php else: ?>
-                            <span style="font-size:24px; opacity:0.3;">📷</span>
+                            <span style="color:#cbd5e1;">📦</span>
                         <?php endif; ?>
                     </td>
-                    <td><strong><?= htmlspecialchars($item['product_name']) ?></strong></td>
-                    <td><?= $item['mat_name'] ?> <span style="color:#666; font-size:11px;">(<?= $item['thickness'] ?>mm)</span></td>
-                    <td><?= $item['weight'] ?> kg</td>
-                    <td style="font-weight:bold; color:#1e293b;"><?= $item['qty'] ?> Adet</td>
-                    <td><?= $item['gas_name'] ?> <span style="color:#666; font-size:11px;">(<?= $item['time_hours'] ?>s <?= $item['time_minutes'] ?>dk)</span></td>
                     <?php if ($can_see_drafts): ?>
-                        <td style="text-align:right; font-weight:bold; color:#16a34a;"><?= number_format($item['calculated_cost'], 2) ?> TL</td>
-                        <td style="text-align:right;">
-                            <button type="button" onclick="editItem(<?= $jsData ?>)" style="border:none; background:none; cursor:pointer; font-size:16px;" title="Düzenle">✏️</button>
-                            <button type="button" onclick="toggleDelete(this, <?= $item['id'] ?>)" style="background:none; border:none; cursor:pointer; font-size:16px; margin-left:10px;" title="Sil / Geri Al">🗑️</button>
-                        </td>
+                    <td class="right" style="white-space:nowrap;">
+                        <button type="button" class="btn btn-sm" onclick='openEdit(<?= json_encode($item,JSON_HEX_QUOT) ?>)' style="font-size:12px;">✏️</button>
+                        <form method="post" style="display:inline;" onsubmit="return confirm('Silinsin mi?')">
+                            <input type="hidden" name="delete_item" value="1">
+                            <input type="hidden" name="item_id" value="<?= (int)$item['id'] ?>">
+                            <button type="submit" class="btn btn-sm" style="color:#ef4444;border-color:#fecaca;background:#fef2f2;font-size:12px;">🗑️</button>
+                        </form>
+                    </td>
                     <?php endif; ?>
                 </tr>
-                <?php endforeach; ?>
-                
-                <?php if ($can_see_drafts): ?>
-                <tr style="background:#fff; border-top:2px solid #e2e8f0;">
-                    <td colspan="7" style="text-align:right; font-weight:bold;">TOPLAM TAHMİNİ MALİYET:</td>
-                    <td style="text-align:right; color:#ea580c; font-size:18px; font-weight:bold;"><?= number_format($total_cost, 2) ?> TL</td>
-                    <td></td>
-                </tr>
-                <?php endif; ?>
+            <?php endforeach; else: ?>
+                <tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8;">Henüz kalem eklenmemiş.</td></tr>
+            <?php endif; ?>
             </tbody>
+            <?php if ($order_items): ?>
+            <tfoot><tr style="background:#f8fafc;font-weight:700;">
+                <td colspan="3">Toplam</td>
+                <td style="text-align:right"><?= number_format($total_w,2,',','.') ?> kg</td>
+                <td colspan="3"></td>
+                <td style="text-align:right;color:#d32f2f;"><?= number_format($total_c,4,',','.') ?> ₺</td>
+                <td colspan="<?= $can_see_drafts?2:1 ?>"></td>
+            </tr></tfoot>
+            <?php endif; ?>
         </table>
-    </div> </form> <?php if ($can_see_drafts): ?>
-    <div style="padding:20px;">
-    <div id="itemFormContainer" style="background:#f1f5f9; padding:20px; border-radius:8px; margin-top:25px; border:1px dashed #cbd5e1;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h4 id="formTitle" style="margin:0; color:#334155;">➕ Yeni Kalem Ekle</h4>
-            <button id="btn_cancel" type="button" onclick="resetForm()" style="display:none; font-size:12px; background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">❌ Vazgeç</button>
-        </div>
-        
-        <form method="post" enctype="multipart/form-data" id="itemForm">
-            <input type="hidden" name="add_item" id="action_type" value="1">
-            <input type="hidden" name="item_id" id="edit_item_id" value="">
-            
-            <script>
-                const materials = {<?php foreach($materials_list as $m) echo $m['id'].":{p:".$m['price_per_kg'].", d:".$m['density']."},"; ?>};
-                const gases = {<?php foreach($gases_list as $g) echo $g['id'].":".$g['hourly_rate'].","; ?>};
-            </script>
+    </div>
+</div>
 
-            <div class="grid g2" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap:15px; align-items:end;">
-                
-                <div style="grid-column: span 1;">
-                    <label>Ürün Adı</label>
-                    <input type="text" name="product_name" id="p_name" required style="width:100%" placeholder="Parça adı...">
+<?php if ($can_see_drafts): ?>
+<div id="lazer-item-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:9999;justify-content:center;align-items:center;">
+    <div class="form-section" style="width:600px;max-width:95%;max-height:90vh;overflow-y:auto;position:relative;margin:0;">
+        <button onclick="document.getElementById('lazer-item-modal').style.display='none'" style="position:absolute;right:12px;top:10px;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+        <div class="form-section-title" id="modal-title">🔩 Kalem Ekle</div>
+        <form id="lazer-item-form" method="post" enctype="multipart/form-data"
+      action="<?= $id ? 'lazer.php?a=edit&id='.(int)$id : 'lazer.php?a=new' ?>">
+            <input type="hidden" name="add_item" id="form-action-input" value="1">
+            <input type="hidden" name="item_id" id="f-item-id" value="">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group" style="grid-column:span 2;">
+                    <label class="rp-label">Ürün Adı *</label>
+                    <input class="rp-input" type="text" name="product_name" id="f-name" required>
                 </div>
-                <div>
-                    <label>Sac Türü</label>
-                    <select name="material_id" id="mat_id" onchange="calcCost()" required style="width:100%">
-                        <option value="">Seçiniz</option>
-                        <?php foreach($materials_list as $m): ?>
-                            <option value="<?= $m['id'] ?>"><?= $m['name'] ?></option>
+                <div class="form-group">
+                    <label class="rp-label">Sac Türü</label>
+                    <select name="material_id" id="f-mat" class="rp-input" onchange="calcCost()">
+                        <option value="">— Seçiniz —</option>
+                        <?php foreach ($materials_list as $m): ?>
+                            <option value="<?= $m['id'] ?>" data-price="<?= $m['price_per_kg'] ?>"><?= h($m['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div>
-                    <label>Kalınlık</label>
-                    <select name="thickness" id="thick" onchange="calcCost()" style="width:100%">
-                        <option value="1">1 mm</option>
-                        <option value="1.5">1.5 mm</option>
-                        <option value="2">2 mm</option>
-                        <option value="2.5">2.5 mm</option>
-                        <option value="3">3 mm</option>
-                        <option value="10">10 mm</option>
-                    </select>
+                <div class="form-group">
+                    <label class="rp-label">Kalınlık (mm)</label>
+                    <input class="rp-input" type="number" step="0.1" name="thickness" id="f-thick" value="0">
                 </div>
-                <div>
-                    <label>Ağırlık (kg)</label>
-                    <input type="text" inputmode="decimal" name="weight" id="weight" required style="width:100%" placeholder="0.00">
+                <div class="form-group">
+                    <label class="rp-label">Ağırlık (kg)</label>
+                    <input class="rp-input" type="number" step="0.01" name="weight" id="f-weight" value="0" onchange="calcCost()">
                 </div>
-                <div>
-                    <label>Adet</label>
-                    <input type="number" name="qty" id="qty" value="1" min="1" oninput="calcCost()" required style="width:100%">
+                <div class="form-group">
+                    <label class="rp-label">Adet</label>
+                    <input class="rp-input" type="number" name="qty" id="f-qty" value="1">
                 </div>
-                <div>
-                    <label>Kesim Türü</label>
-                    <select name="gas_id" id="gas_id" onchange="calcCost()" required style="width:100%">
-                        <option value="">Seçiniz</option>
-                        <?php foreach($gases_list as $g): ?>
-                            <option value="<?= $g['id'] ?>"><?= $g['name'] ?></option>
+                <div class="form-group">
+                    <label class="rp-label">Kesim Türü</label>
+                    <select name="gas_id" id="f-gas" class="rp-input" onchange="calcCost()">
+                        <option value="">— Seçiniz —</option>
+                        <?php foreach ($gases_list as $g): ?>
+                            <option value="<?= $g['id'] ?>" data-rate="<?= $g['hourly_rate'] ?>"><?= h($g['name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                
-                <div style="display:flex; gap:5px;">
-                    <div><label>Saat</label><input type="number" name="time_hours" id="th" value="0" min="0" oninput="calcCost()" style="width:100%"></div>
-                    <div><label>Dk</label><input type="number" name="time_minutes" id="tm" value="0" min="0" max="59" oninput="calcCost()" style="width:100%"></div>
+                <div class="form-group">
+                    <label class="rp-label">Süre — Saat</label>
+                    <input class="rp-input" type="number" name="time_hours" id="f-hours" value="0" onchange="calcCost()">
                 </div>
-
-                <div>
-                    <label>Görsel</label>
-                    <input type="file" name="item_image" accept="image/*" style="font-size:11px;">
-                    
-                    <div id="current_img_block" style="display:none; margin-top:5px; background:#fff; border:1px solid #ddd; padding:5px; border-radius:4px; align-items:center; gap:10px;">
-                        <img id="current_img_preview" src="" style="width:40px; height:40px; object-fit:cover; border-radius:4px;">
-                        <label style="font-size:11px; color:#dc2626; cursor:pointer; display:flex; align-items:center;">
-                            <input type="checkbox" name="delete_image" value="1" style="margin-right:4px;"> Resmi Sil
+                <div class="form-group">
+                    <label class="rp-label">Süre — Dakika</label>
+                    <input class="rp-input" type="number" name="time_minutes" id="f-mins" value="0" onchange="calcCost()">
+                </div>
+                <div class="form-group">
+                    <label class="rp-label">Maliyet (₺)</label>
+                    <input class="rp-input" type="number" step="0.01" name="calculated_cost" id="f-cost" value="0" style="font-weight:700;color:#d32f2f;">
+                </div>
+                <div class="form-group">
+                    <label class="rp-label">Görsel</label>
+                    <input type="file" name="item_image" accept="image/*" class="rp-input">
+                    <div id="cur-img-wrap" style="display:none;margin-top:6px;">
+                        <img id="cur-img" src="" style="max-height:60px;border-radius:4px;border:1px solid #e2e8f0;">
+                        <label style="font-size:12px;color:#64748b;margin-left:8px;">
+                            <input type="checkbox" name="delete_image" value="1"> Resmi Sil
                         </label>
                     </div>
                 </div>
-
-                <div style="background:#fff; border:1px solid #16a34a; padding:5px; border-radius:4px; text-align:center;">
-                    <label style="color:#16a34a; font-size:10px;">Tahmini Maliyet</label>
-                    <input type="text" name="calculated_cost" id="total_cost" readonly value="0.00" style="border:none; font-weight:bold; font-size:16px; color:#16a34a; width:100%; text-align:center;">
-                </div>
             </div>
-
-            <div style="margin-top:15px; text-align:right;">
-                <button type="submit" id="btn_submit" class="btn primary">➕ Listeye Ekle</button>
+            <div class="form-actions" style="margin-top:16px;margin-bottom:0;">
+                <button type="button" onclick="document.getElementById('lazer-item-modal').style.display='none'" class="btn btn-ghost">İptal</button>
+                <button type="submit" class="btn btn-guncelle">💾 Kaydet</button>
             </div>
         </form>
     </div>
-    </div>
-    <?php endif; ?>
 </div>
-
 <script>
-// Ağırlık Inputu İçin Otomatik Düzeltici
-document.getElementById('weight').addEventListener('input', function() {
-    this.value = this.value.replace(',', '.');
-    this.value = this.value.replace(/[^0-9.]/g, '');
-    if ((this.value.match(/\./g) || []).length > 1) {
-        this.value = this.value.substring(0, this.value.lastIndexOf('.'));
-    }
-    calcCost();
-});
-
-// Maliyet Hesaplama
-// Maliyet Hesaplama
+function resetModal() {
+    document.getElementById('modal-title').textContent = '🔩 Kalem Ekle';
+    document.getElementById('form-action-input').name = 'add_item';
+    document.getElementById('f-item-id').value = '';
+    document.getElementById('lazer-item-form').reset();
+    document.getElementById('cur-img-wrap').style.display = 'none';
+}
+function openEdit(item) {
+    document.getElementById('modal-title').textContent = '✏️ Kalem Düzenle';
+    document.getElementById('form-action-input').name = 'update_item';
+    document.getElementById('f-item-id').value   = item.id;
+    document.getElementById('f-name').value       = item.product_name || '';
+    document.getElementById('f-mat').value        = item.material_id  || '';
+    document.getElementById('f-thick').value      = item.thickness    || 0;
+    document.getElementById('f-weight').value     = item.weight       || 0;
+    document.getElementById('f-qty').value        = item.qty          || 1;
+    document.getElementById('f-gas').value        = item.gas_id       || '';
+    document.getElementById('f-hours').value      = item.time_hours   || 0;
+    document.getElementById('f-mins').value       = item.time_minutes || 0;
+    document.getElementById('f-cost').value       = item.calculated_cost || 0;
+    var wrap = document.getElementById('cur-img-wrap');
+    if (item.image_path) { document.getElementById('cur-img').src = '/' + item.image_path; wrap.style.display='block'; }
+    else { wrap.style.display='none'; }
+    document.getElementById('lazer-item-modal').style.display = 'flex';
+}
 function calcCost() {
-    let matID = document.getElementById('mat_id').value;
-    let weightVal = document.getElementById('weight').value;
-    let weight = (weightVal === '') ? 0 : parseFloat(weightVal);
-    let gasID = document.getElementById('gas_id').value;
-    let hours = parseInt(document.getElementById('th').value) || 0;
-    let mins = parseInt(document.getElementById('tm').value) || 0;
-    
-    let totalCost = 0;
-    if (matID && materials[matID]) totalCost += (parseFloat(materials[matID].p) * weight);
-    if (gasID && gases[gasID]) totalCost += (parseFloat(gases[gasID]) * (hours + (mins / 60)));
-
-    document.getElementById('total_cost').value = totalCost.toFixed(2);
+    var mat = document.getElementById('f-mat');
+    var gas = document.getElementById('f-gas');
+    var w   = parseFloat(document.getElementById('f-weight').value)||0;
+    var h   = parseFloat(document.getElementById('f-hours').value)||0;
+    var m   = parseFloat(document.getElementById('f-mins').value)||0;
+    var p   = mat.selectedIndex>0 ? parseFloat(mat.options[mat.selectedIndex].dataset.price)||0 : 0;
+    var r   = gas.selectedIndex>0 ? parseFloat(gas.options[gas.selectedIndex].dataset.rate)||0  : 0;
+    document.getElementById('f-cost').value = (w*p + (h+m/60)*r).toFixed(2);
 }
-
-// Düzenleme Modu
-function editItem(data) {
-    document.getElementById('p_name').value = data.product_name;
-    document.getElementById('mat_id').value = data.material_id;
-    document.getElementById('thick').value = data.thickness;
-    document.getElementById('weight').value = data.weight;
-    document.getElementById('qty').value = data.qty;
-    document.getElementById('gas_id').value = data.gas_id;
-    document.getElementById('th').value = data.time_hours;
-    document.getElementById('tm').value = data.time_minutes;
-    
-    document.getElementById('action_type').name = 'update_item';
-    document.getElementById('edit_item_id').value = data.id;
-    
-    document.getElementById('formTitle').innerText = '✏️ Kalemi Düzenle';
-    document.getElementById('btn_submit').innerText = '🔄 Güncelle';
-    document.getElementById('btn_submit').style.background = '#f59e0b';
-    document.getElementById('btn_cancel').style.display = 'block';
-    document.getElementById('itemFormContainer').style.background = '#fffbeb';
-    document.getElementById('itemFormContainer').style.borderColor = '#f59e0b';
-
-    calcCost();
-
-    if (data.image_path) {
-        document.getElementById('current_img_block').style.display = 'flex';
-        document.getElementById('current_img_preview').src = data.image_path;
-    } else {
-        document.getElementById('current_img_block').style.display = 'none';
-    }
-
-    document.getElementById('itemFormContainer').scrollIntoView({behavior: "smooth"});
-}
-
-// Silme / Geri Alma Fonksiyonu (DÜZELTİLDİ: appendChild parent'a yapılıyor)
-function toggleDelete(btn, id) {
-    let row = btn.closest('tr');
-    
-    if (row.classList.contains('marked-for-delete')) {
-        row.classList.remove('marked-for-delete');
-        row.style.background = '';
-        row.style.opacity = '1';
-        row.style.textDecoration = 'none';
-        btn.innerText = '🗑️'; 
-        
-        let input = document.getElementById('del_input_' + id);
-        if (input) input.remove();
-        
-    } else {
-        row.classList.add('marked-for-delete');
-        row.style.background = '#fee2e2'; 
-        row.style.opacity = '0.5';
-        row.style.textDecoration = 'line-through';
-        btn.innerText = '↩️'; 
-        
-        let input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'deleted_items[]';
-        input.value = id;
-        input.id = 'del_input_' + id;
-        
-        // HATA BURADAYDI: Inputu butona değil, butonun hücresine (parent) ekliyoruz
-        btn.parentElement.appendChild(input); 
-    }
-}
-
-// Form Sıfırlama
-function resetForm() {
-    document.getElementById('itemForm').reset();
-    document.getElementById('action_type').name = 'add_item';
-    document.getElementById('edit_item_id').value = '';
-    
-    document.getElementById('formTitle').innerText = '➕ Yeni Kalem Ekle';
-    document.getElementById('btn_submit').innerText = '➕ Listeye Ekle';
-    document.getElementById('btn_submit').style.background = '';
-    document.getElementById('btn_cancel').style.display = 'none';
-    document.getElementById('itemFormContainer').style.background = '#f1f5f9';
-    document.getElementById('itemFormContainer').style.borderColor = '#cbd5e1';
-    document.getElementById('current_img_block').style.display = 'none';
-    document.getElementById('current_img_preview').src = '';
-    
-    calcCost();
-}
+document.getElementById('lazer-item-modal').addEventListener('click', function(e){ if(e.target===this) this.style.display='none'; });
 </script>
+<?php endif; ?>
