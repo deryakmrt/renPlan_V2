@@ -1,156 +1,20 @@
 <?php
-// lazer_kesim_duzenle.php
-require_once __DIR__ . '/includes/helpers.php';
-require_login();
-$db = pdo();
-
-// 1. ID KONTROLÜ
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { header('Location: lazer_kesim.php'); exit; }
-
-// Yetki Kontrolü
-$u = current_user();
-$role = $u['role'] ?? 'user';
-$can_see_drafts = in_array($role, ['admin', 'sistem_yoneticisi'], true);
-
-// ============================================================
-// A) KALEM (ÜRÜN) İŞLEMLERİ (EKLEME & GÜNCELLEME)
-// ============================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['add_item']) || isset($_POST['update_item']))) {
-    
-    // Resim Yükleme İşlemi
-    $img_path = null;
-    
-    if (!empty($_FILES['item_image']['name'])) {
-        $upload_dir = 'uploads/lazer_items/';
-        if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
-        
-        $ext = pathinfo($_FILES['item_image']['name'], PATHINFO_EXTENSION);
-        $filename = uniqid() . '.' . $ext;
-        
-        if(move_uploaded_file($_FILES['item_image']['tmp_name'], $upload_dir . $filename)){
-            $img_path = $upload_dir . $filename;
-        }
-    }
-
-    // --- GÜNCELLEME İŞLEMİ ---
-    if (isset($_POST['update_item'])) {
-        $item_id = $_POST['item_id'];
-        
-        // Mevcut eski resmi bul
-        $old_img = $db->query("SELECT image_path FROM lazer_order_items WHERE id = $item_id")->fetchColumn();
-
-        $img_sql = "";
-        $extra_param = null;
-
-        // Senaryo 1: "Resmi Sil"
-        if (isset($_POST['delete_image']) && $_POST['delete_image'] == '1') {
-            if ($old_img && file_exists($old_img)) unlink($old_img);
-            $img_sql = ", image_path=NULL";
-        }
-        // Senaryo 2: Yeni resim yüklendi
-        elseif ($img_path) {
-            if ($old_img && file_exists($old_img)) unlink($old_img);
-            $img_sql = ", image_path=?";
-            $extra_param = $img_path;
-        }
-
-        $sql = "UPDATE lazer_order_items SET product_name=?, material_id=?, thickness=?, weight=?, qty=?, gas_id=?, time_hours=?, time_minutes=?, calculated_cost=? $img_sql WHERE id=?";
-        
-        $params = [
-            $_POST['product_name'],
-            $_POST['material_id'],
-            $_POST['thickness'],
-            $_POST['weight'],
-            $_POST['qty'],
-            $_POST['gas_id'],
-            $_POST['time_hours'],
-            $_POST['time_minutes'],
-            $_POST['calculated_cost']
-        ];
-        
-        if ($extra_param) $params[] = $extra_param;
-        $params[] = $item_id;
-
-        $db->prepare($sql)->execute($params);
-    } 
-    // --- EKLEME İŞLEMİ ---
-    else {
-        $stmt = $db->prepare("INSERT INTO lazer_order_items (order_id, product_name, material_id, thickness, weight, qty, gas_id, time_hours, time_minutes, calculated_cost, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $id,
-            $_POST['product_name'],
-            $_POST['material_id'],
-            $_POST['thickness'],
-            $_POST['weight'],
-            $_POST['qty'],
-            $_POST['gas_id'],
-            $_POST['time_hours'],
-            $_POST['time_minutes'],
-            $_POST['calculated_cost'],
-            $img_path
-        ]);
-    }
-    
-    header("Location: lazer_kesim_duzenle.php?id=$id");
-    exit;
-}
-
-// Kalem Silme İşlemi (Link ile silme için güvenlik - Opsiyonel)
-if (isset($_GET['del_item'])) {
-    $db->prepare("DELETE FROM lazer_order_items WHERE id=?")->execute([$_GET['del_item']]);
-    header("Location: lazer_kesim_duzenle.php?id=$id");
-    exit;
-}
-
-// ============================================================
-// B) ANA SİPARİŞİ GÜNCELLEME İŞLEMİ
-// ============================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_main_order'])) {
-    $new_status = $_POST['status'] ?? 'taslak'; 
-    if (isset($_POST['yayinla_butonu'])) { $new_status = 'tedarik'; }
-
-    // --- TOPLU SİLME İŞLEMİ ---
-    if (!empty($_POST['deleted_items']) && is_array($_POST['deleted_items'])) {
-        $del_stmt = $db->prepare("DELETE FROM lazer_order_items WHERE id = ?");
-        foreach ($_POST['deleted_items'] as $del_id) {
-            $del_stmt->execute([$del_id]);
-        }
-    }
-
-    // Tarihler
-    $order_date    = !empty($_POST['order_date'])    ? $_POST['order_date']    : null;
-    $deadline_date = !empty($_POST['deadline_date']) ? $_POST['deadline_date'] : null;
-    $start_date    = !empty($_POST['start_date'])    ? $_POST['start_date']    : null;
-    $end_date      = !empty($_POST['end_date'])      ? $_POST['end_date']      : null;
-    $delivery_date = !empty($_POST['delivery_date']) ? $_POST['delivery_date'] : null;
-
-    $sql = "UPDATE lazer_orders SET 
-            customer_id=?, project_name=?, order_code=?, status=?, 
-            order_date=?, deadline_date=?, start_date=?, end_date=?, delivery_date=?, notes=? 
-            WHERE id=?";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([
-        $_POST['customer_id'],
-        $_POST['project_name'],
-        $_POST['order_code'],
-        $new_status,
-        $order_date,
-        $deadline_date,
-        $start_date,
-        $end_date,
-        $delivery_date,
-        $_POST['notes'] ?? null,
-        $id
-    ]);
-    header('Location: lazer_kesim.php');
-    exit;
-}
-
-// ============================================================
-// C) VERİLERİ ÇEKME
-// ============================================================
-require_once __DIR__ . '/includes/header.php';
+/**
+ * @var PDO    $db
+ * @var array  $order
+ * @var array  $items         Sipariş kalemleri ($order_items da aynı)
+ * @var array  $materials     ($materials_list de aynı)
+ * @var array  $gases         ($gases_list de aynı)
+ * @var array  $customers
+ * @var string $role
+ * @var bool   $can_see_drafts
+ * @var int    $id
+ * @var string $can_manage
+ */
+// Değişken uyumluluk aliasları (orijinal dosyadan farklı isim kullanılmışsa)
+$order_items    = $order_items    ?? $items     ?? [];
+$materials_list = $materials_list ?? $materials ?? [];
+$gases_list     = $gases_list     ?? $gases     ?? [];
 
 $stmt = $db->prepare("SELECT * FROM lazer_orders WHERE id = ?");
 $stmt->execute([$id]);
@@ -165,7 +29,7 @@ $items = $db->prepare("SELECT i.*, m.name as mat_name, g.name as gas_name FROM l
 $items->execute([$id]);
 $order_items = $items->fetchAll(PDO::FETCH_ASSOC);
 
-function safe_date($d) { return ($d && $d !== '0000-00-00') ? $d : ''; }
+function safe_date(?string $d): string { return ($d && $d !== '0000-00-00') ? $d : ''; }
 ?>
 
 <div class="card" style="max-width:1100px; margin:20px auto; padding:0; overflow:hidden;">
@@ -176,7 +40,7 @@ function safe_date($d) { return ($d && $d !== '0000-00-00') ? $d : ''; }
     <div style="background:#f8fafc; padding:20px; border-bottom:1px solid #e2e8f0;">
         <h2 style="margin-top:0; color:#334155; display:flex; justify-content:space-between; align-items:center;">
             <span>Sipariş Düzenle (#<?= $id ?>)</span>
-            <a href="lazer_kesim.php" class="btn btn-sm" style="font-weight:normal; font-size:14px;">« Listeye Dön</a>
+            <a href="lazer.php" class="btn btn-sm" style="font-weight:normal; font-size:14px;">« Listeye Dön</a>
         </h2>
         
         <div class="grid g2" style="gap:20px;">
@@ -499,5 +363,3 @@ function resetForm() {
     calcCost();
 }
 </script>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>

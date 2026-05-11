@@ -1,32 +1,9 @@
 <?php
-// lazer_kesim.php
-require_once __DIR__ . '/includes/helpers.php'; // Önce fonksiyonları yükle
-require_login();
-// --- 🔒 YETKİ KALKANI ---
-$__role = current_user()['role'] ?? '';
-if (!in_array($__role, ['admin', 'sistem_yoneticisi', 'uretim'])) {
-    die('<div style="margin:50px auto; max-width:500px; padding:30px; background:#fff1f2; border:2px solid #fda4af; border-radius:12px; color:#e11d48; font-family:sans-serif; text-align:center; box-shadow:0 10px 25px rgba(225,29,72,0.1);">
-          <h2 style="margin-top:0; font-size:24px;">⛔ YETKİSİZ ERİŞİM</h2>
-          <p style="font-size:15px; line-height:1.5;">Bu sayfayı görüntülemek için yeterli yetkiniz bulunmamaktadır.</p>
-          <a href="index.php" style="display:inline-block; margin-top:15px; padding:10px 20px; background:#e11d48; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold;">Panele Dön</a>
-         </div>');
-}
-// ------------------------
-$db = pdo();
-
-// SİLME İŞLEMİ (Header yüklenmeden önce yapılmalı)
-if (isset($_GET['sil_id'])) {
-    $u = current_user();
-    // Sadece Admin ve Sistem Yöneticisi silebilir
-    if (in_array($u['role'] ?? '', ['admin', 'sistem_yoneticisi'])) {
-        $del = $db->prepare("DELETE FROM lazer_orders WHERE id = ?");
-        $del->execute([$_GET['sil_id']]);
-        header('Location: lazer_kesim.php?msg=silindi');
-        exit;
-    }
-}
-
-require_once __DIR__ . '/includes/header.php'; // HTML çıktısı şimdi başlıyor
+/**
+ * @var PDO $db
+ * @var string $role
+ * @var bool $can_see_drafts
+ */
 
 // YETKİ KONTROLÜ
 $u = current_user();
@@ -102,15 +79,15 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $lazer_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-function mk_link($st, $q) {
+function mk_link(string $st, string $q): string {
     $p = [];
     if($st !== '') $p['status'] = $st;
     if($q !== '')  $p['q'] = $q;
-    return 'lazer_kesim.php?' . http_build_query($p);
+    return 'lazer.php?' . http_build_query($p);
 }
 
 // --- HAREKETLİ VE SİMGELİ BADGE FONKSİYONU (Orders.php Tıpatıp) ---
-function render_lazer_status_animated($status){
+function render_lazer_status_animated(string $status): string {
     $map = [
         'tedarik'       => 10,
         'kesimde'       => 50,
@@ -170,9 +147,7 @@ function render_lazer_status_animated($status){
       </div>
       <div class="wpstat-label"><?= htmlspecialchars($label) ?></div>
     </div>
-    <?php return ob_get_clean();
-}
-?>
+    <?php return ob_get_clean(); } ?>
 
 <style>
   /* Dashboard */
@@ -274,7 +249,7 @@ function render_lazer_status_animated($status){
   <div class="dashboard-left">
       
       <?php if ($can_see_drafts): ?>
-          <a class="btn-dashboard-neon" href="lazer_kesim_ekle.php"><span>➕</span> YENİ LAZER KESİM</a>
+          <a class="btn-dashboard-neon" href="lazer.php?a=new"><span>➕</span> YENİ LAZER KESİM</a>
           <button onclick="document.getElementById('settingsModal').style.display='flex'" class="btn-dashboard-neon" style="background: linear-gradient(135deg, #475569 0%, #1e293b 100%); border-color:#334155;">
             ⚙️ Parametreler
           </button>
@@ -285,7 +260,7 @@ function render_lazer_status_animated($status){
           <input name="q" class="input-dashboard" placeholder="🧐 Proje veya Kod Ara..." value="<?= htmlspecialchars($search_query) ?>">
           <button class="btn-dashboard-filter">Ara</button>
           <?php if($search_query): ?>
-              <a href="lazer_kesim.php<?= $filter_status ? '?status='.$filter_status : '' ?>" class="btn-dashboard-filter" style="color:#dc2626; border-color:#fecaca; background:#fef2f2;">Temizle</a>
+              <a href="lazer.php<?= $filter_status ? '?status='.$filter_status : '' ?>" class="btn-dashboard-filter" style="color:#dc2626; border-color:#fecaca; background:#fef2f2;">Temizle</a>
           <?php endif; ?>
       </form>
   </div>
@@ -340,7 +315,7 @@ function render_lazer_status_animated($status){
         <tbody>
             <?php if ($lazer_orders): ?>
                 <?php foreach ($lazer_orders as $lo): ?>
-                <tr class="<?= $lo['status'] === 'taslak' ? 'is-taslak' : '' ?>" onclick="window.location='lazer_kesim_duzenle.php?id=<?= $lo['id'] ?>'">
+                <tr class="<?= $lo['status'] === 'taslak' ? 'is-taslak' : '' ?>" onclick="window.location='lazer.php?a=edit?id=<?= $lo['id'] ?>'">
                     <td><span style="font-family:monospace; color:#64748b;">#<?= $lo['id'] ?></span></td>
                     <td style="font-weight:600; color:#334155;"><?= htmlspecialchars($lo['customer_name'] ?? '-') ?></td>
                     <td><?= htmlspecialchars($lo['project_name']) ?></td>
@@ -358,10 +333,10 @@ function render_lazer_status_animated($status){
                     
                     <td style="padding: 4px;" onclick="event.stopPropagation();">
                         <div class="action-grid">
-                            <a href="lazer_kesim_duzenle.php?id=<?= $lo['id'] ?>" class="act-btn edit" title="Düzenle">✏️</a>
+                            <a href="lazer.php?a=edit?id=<?= $lo['id'] ?>" class="act-btn edit" title="Düzenle">✏️</a>
                             
                             <?php if ($can_see_drafts): ?>
-                                <a href="lazer_kesim.php?sil_id=<?= $lo['id'] ?>" 
+                                <a href="lazer.php?a=delete&id=<?= $lo['id'] ?>" 
                                    onclick="return confirm('Bu siparişi kalıcı olarak silmek istediğinize emin misiniz?');" 
                                    class="act-btn del" title="Sil">🗑️</a>
                             <?php else: ?>
@@ -369,12 +344,12 @@ function render_lazer_status_animated($status){
                             <?php endif; ?>
 
                             <?php if ($can_see_drafts): ?>
-                                <a href="lazer_stf.php?id=<?= $lo['id'] ?>" target="_blank" class="act-btn" style="color:#0ea5e9; border-color:#bae6fd; background:#f0f9ff;" title="Sipariş Takip Formu">STF</a>
+                                <a href="lazer.php?a=pdf&id=<?= $lo['id'] ?>" target="_blank" class="act-btn" style="color:#0ea5e9; border-color:#bae6fd; background:#f0f9ff;" title="Sipariş Takip Formu">STF</a>
                             <?php else: ?>
                                 <span class="act-btn disabled" title="Yetkisiz">🚫</span>
                             <?php endif; ?>
 
-                            <a href="lazer_ustf.php?id=<?= $lo['id'] ?>" target="_blank" class="act-btn" style="color:#ea580c; border-color:#fed7aa; background:#fff7ed;" title="Üretim Sipariş Formu">ÜSTF</a>
+                            <a href="lazer.php?a=pdf_uretim&id=<?= $lo['id'] ?>" target="_blank" class="act-btn" style="color:#ea580c; border-color:#fed7aa; background:#fff7ed;" title="Üretim Sipariş Formu">ÜSTF</a>
                         </div>
                     </td>
                 </tr>
@@ -419,7 +394,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
             $db->prepare("UPDATE lazer_settings_gases SET hourly_rate=? WHERE id=?")->execute([$gdata['h'], $gid]);
         }
     }
-    header("Location: lazer_kesim.php?msg=settings_updated");
+    header("Location: lazer.php?msg=settings_updated");
     exit;
 }
 
@@ -464,5 +439,3 @@ $gases = $db->query("SELECT * FROM lazer_settings_gases")->fetchAll(PDO::FETCH_A
         </form>
     </div>
 </div>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>

@@ -1,69 +1,16 @@
 <?php
-require_once __DIR__ . '/includes/helpers.php';
-require_login();
-
-// Dompdf autoloader (çoklu fallback)
-$__autoload_paths = [
-  __DIR__ . '/vendor/dompdf/dompdf/autoload.inc.php',
-  __DIR__ . '/vendor/autoload.php',
-  __DIR__ . '/dompdf/autoload.inc.php',
-  __DIR__ . '/includes/dompdf/autoload.inc.php',
-  __DIR__ . '/vendor/dompdf/autoload.inc.php',
-  __DIR__ . '/vendor/dompdf/dompdf/vendor/autoload.php'
-];
-$__loaded = false;
-foreach ($__autoload_paths as $__p) { if (file_exists($__p)) { require_once $__p; $__loaded = true; break; } }
-if (!$__loaded) { die('Dompdf autoloader bulunamadı'); }
-
-use Dompdf\Dompdf;
-use Dompdf\Options;
-
-mb_internal_encoding('UTF-8');
-
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) die('Geçersiz ID');
-
-$db = pdo();
-
-// Ana Lazer Siparişini Çek
-$st = $db->prepare("SELECT o.*, c.name AS customer_name, c.billing_address, c.shipping_address, c.email, c.phone 
-                    FROM lazer_orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id=?");
-$st->execute([$id]);
-$o = $st->fetch();
-if (!$o) die('Sipariş bulunamadı');
-
-// Lazer Sipariş Kalemlerini Çek
-$it = $db->prepare("SELECT i.*, m.name as mat_name, g.name as gas_name 
-                    FROM lazer_order_items i 
-                    LEFT JOIN lazer_settings_materials m ON i.material_id = m.id 
-                    LEFT JOIN lazer_settings_gases g ON i.gas_id = g.id 
-                    WHERE i.order_id = ? ORDER BY i.id ASC");
-$it->execute([$id]);
-$items = $it->fetchAll();
-
-// Logo: önce yerel, yoksa uzak
-$CUSTOM_LOGO = file_exists(__DIR__ . '/assets/renled-logo.png') ? (__DIR__ . '/assets/renled-logo.png') : '<?= BASE_URL ?>/assets/renled-logo.png';
-$logo_src = $CUSTOM_LOGO;
-
-$fmt = function($n) { return number_format((float)$n, 4, ',', '.'); };
-$currencySymbol = '₺'; // Lazer tarafı TL bazlı
-
-function fmt_date($val, $with_time=false) {
-  if (!isset($val)) return '-';
-  $val = trim((string)$val);
-  if ($val === '' || $val === '0000-00-00' || $val === '0000-00-00 00:00:00') return '-';
-  $ts = @strtotime($val);
-  if (!$ts || $ts <= 0) return '-';
-  return $with_time ? date('d-m-Y H:i:s', $ts) : date('d-m-Y', $ts);
-}
-
-// Tarihleri Biçimlendir
-$siparis_tarihi_fmt = fmt_date($o['order_date'] ?? '');
-$termin_tarihi_fmt  = fmt_date($o['deadline_date'] ?? '');
-$baslangic_fmt      = fmt_date($o['start_date'] ?? '');
-$teslim_fmt         = fmt_date($o['delivery_date'] ?? '');
-
-ob_start();
+/**
+ * @var array $o
+ * @var array $items
+ * @var string $logo_src
+ * @var string $siparis_tarihi_fmt
+ * @var string $termin_tarihi_fmt
+ * @var callable $fmt
+ * @var int $id
+ * @var string $baslangic_fmt
+ * @var string $teslim_fmt
+ * @var string $currencySymbol
+ */
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -271,21 +218,3 @@ ob_start();
 
 </body>
 </html>
-<?php
-$html = ob_get_clean();
-
-$options = new Options();
-$options->set('defaultFont', 'DejaVu Sans');
-$options->set('isRemoteEnabled', true);
-$options->set('isHtml5ParserEnabled', true);
-$options->setChroot(__DIR__);
-
-$dompdf = new Dompdf($options);
-$dompdf->loadHtml($html, 'UTF-8');
-$dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
-
-// İsimlendirme: STF_Lazer_SiparişKodu.pdf
-$filename = 'STF_Lazer_' . ($o['order_code'] ?? $id) . '.pdf';
-
-$dompdf->stream($filename, ['Attachment' => false]);
