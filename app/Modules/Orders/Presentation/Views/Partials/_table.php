@@ -248,7 +248,7 @@ if (!function_exists('__wpstat_icon_svg')) {
 
         <?php // ── HÜCRE 6: Mail ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi'], true)): ?>
-          <form method="post" action="api/order_send_mail.php?ajax=1" class="inline-mail-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
+          <form method="post" action="api/order_send_mail.php?ajax=1&id=<?= $o->id ?>" class="inline-mail-form" data-order-id="<?= $o->id ?>" style="margin: 0; padding: 0; width: 100%; height: 100%; display: flex;">
             <input type="hidden" name="csrf" value="<?= h($csrf_token) ?>">
             <input type="hidden" name="id" value="<?= $o->id ?>">
             <button type="submit" title="Mail Gönder" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#fff; border:1px solid #e1e5ea; color:#d97706; cursor:pointer;"><span style="font-size:13px;">📧</span></button>
