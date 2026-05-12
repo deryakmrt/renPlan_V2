@@ -80,7 +80,7 @@ $isEdit = $mode === 'edit';
                 </div>
                 <div class="form-group">
                     <label class="rp-label">Fiyat</label>
-                    <input class="rp-input price-input" id="mainPrice" name="price" value="<?= h($row['price'] ?? '0') ?>" placeholder="0,00">
+                    <input class="rp-input price-input" id="mainPrice" name="price" value="<?= rtrim(rtrim(number_format((float)($row['price'] ?? 0), 4, ',', ''), '0'), ',') ?: '0' ?>" placeholder="0,00">
                 </div>
                 <div class="form-group">
                     <label class="rp-label">Kategori</label>
@@ -270,7 +270,7 @@ $isEdit = $mode === 'edit';
                         </td>
                         <td><input type="text" name="v_name[<?= (int)$v['id'] ?>]" value="<?= h($v['name']) ?>" class="rp-input" style="width:100%;"></td>
                         <td><input type="text" name="v_sku[<?= (int)$v['id'] ?>]"  value="<?= h($v['sku'] ?? '') ?>" class="rp-input" placeholder="SKU"></td>
-                        <td><input type="text" name="v_price[<?= (int)$v['id'] ?>]" value="<?= h($v['price'] ?? '') ?>" class="rp-input price-input" placeholder="0,00"></td>
+                        <td><input type="text" name="v_price[<?= (int)$v['id'] ?>]" value="<?= rtrim(rtrim(number_format((float)($v['price'] ?? 0), 4, ',', ''), '0'), ',') ?: '0' ?>" class="rp-input price-input" placeholder="0,00"></td>
                         <td style="padding:6px 8px;">
                             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; width:200px;">
                                 <a href="products.php?a=edit&id=<?= (int)$v['id'] ?>" class="btn btn-secondary btn-sm" style="grid-column:span 2; justify-content:center;">✏️ Düzenle</a>
