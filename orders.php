@@ -215,14 +215,22 @@ if ($action === 'bulk_update' && method('POST')) {
 if (in_array($action, ['new', 'edit']) && method('POST')) {
     csrf_check();
     if ($action === 'edit') {
+        // URL'deki id'yi POST'a zorla — form hidden input eksik olsa bile güvenli
+        $url_id = (int)($_GET['id'] ?? 0);
+        if ($url_id) $_POST['id'] = $url_id;
         $post_id = (int)($_POST['id'] ?? 0);
         if ($post_id && !can_access_order($post_id)) { http_response_code(403); die('Erişim yok.'); }
     }
     if (!empty($_POST['yayinla_butonu'])) $_POST['status'] = 'tedarik';
+    // Edit modunda müşteri override seçildiyse customer_id'yi güncelle
+    if (!empty($_POST['customer_id_override'])) {
+        $_POST['customer_id'] = (int)$_POST['customer_id_override'];
+    }
     try {
         $svc     = new \App\Modules\Orders\Application\OrderService($db);
         $savedId = $svc->saveOrder($_POST);
-        redirect('orders.php?a=edit&id=' . $savedId . '&saved=1');
+        $_SESSION['flash_success'] = '✅ Sipariş kaydedildi.';
+        redirect($_SESSION['last_orders_url'] ?? 'orders.php');
     } catch (\Exception $e) {
         $error = $e->getMessage();
     }
