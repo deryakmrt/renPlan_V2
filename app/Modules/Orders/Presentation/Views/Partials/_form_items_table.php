@@ -51,12 +51,12 @@ if (!empty($items) && isset($db)) {
 ?>
 
 <div class="card form-section mt">
-    <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
-        <span>📦 Ürün Kalemleri</span>
-        <?php if ($__is_admin_like): ?>
+    <div class="form-section-title">📦 Ürün Kalemleri</div>
+    <?php if ($__is_admin_like): ?>
+        <div style="padding: 8px 0 12px 0;">
             <button type="button" class="btn btn-success btn-sm" onclick="addRow()">+ Satır Ekle</button>
-        <?php endif; ?>
-    </div>
+        </div>
+    <?php endif; ?>
 
     <div class="table-responsive" id="items">
         <table id="itemsTable" class="orders-table" style="width: 100%;">
@@ -66,7 +66,6 @@ if (!empty($items) && isset($db)) {
                     <th style="width:12%">Stok Kodu</th>
                     <th style="width:10%; text-align:center;">Görsel</th>
                     <th style="width:22%">Ürün Seçimi (Arama)</th>
-                    <th>Ad</th>
                     <th style="width:8%">Birim</th>
                     <th style="width:8%">Miktar</th>
                     <?php if ($__is_admin_like || $__is_muhasebe): ?><th style="width:120px">Birim Fiyat</th><?php endif; ?>
@@ -138,7 +137,7 @@ if (!empty($items) && isset($db)) {
                         <?php endif; ?>
                     </td>
 
-                    <td><input type="text" name="name[]" class="form-control" value="<?= h($it['name'] ?? '') ?>" <?= $__is_admin_like ? 'required' : 'readonly style="background-color:#f9fafb;cursor:not-allowed;"' ?>></td>
+                    <input type="hidden" name="name[]" class="item-name-hidden" value="<?= h($it['name'] ?? '') ?>">
                     <td><input type="text" name="unit[]" class="form-control" value="<?= h($it['unit'] ?? 'Adet') ?>" <?= $__is_admin_like ? '' : 'readonly style="background-color:#f9fafb;cursor:not-allowed;"' ?>></td>
                     <td><input type="text" name="qty[]" class="form-control formatted-number" value="<?= number_format((float)($it['qty'] ?? 1), 2, ',', '') ?>" <?= $__is_admin_like ? '' : 'readonly title="Yetkisiz Erişim!" style="background-color:#f9fafb;cursor:not-allowed;"' ?>></td>
 
