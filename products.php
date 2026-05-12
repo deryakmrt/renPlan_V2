@@ -309,7 +309,14 @@ if (in_array($action, ['new', 'edit']) && method('POST')) {
     csrf_check();
     try {
         $savedId = $svc->save($_POST, $_FILES);
-        redirect('products.php?a=edit&id=' . $savedId . '&saved=1');
+
+        // Kayıt/güncelleme sonrası son liste sayfasına dön
+        $returnUrl = $_SESSION['last_products_url'] ?? 'products.php';
+        // Eğer URL hâlâ form sayfasıysa listeye düş
+        if (str_contains($returnUrl, 'a=new') || str_contains($returnUrl, 'a=edit')) {
+            $returnUrl = 'products.php';
+        }
+        redirect($returnUrl . (str_contains($returnUrl, '?') ? '&' : '?') . 'saved=1');
     } catch (\InvalidArgumentException $e) {
         $error = $e->getMessage();
     }
