@@ -234,13 +234,13 @@ function addRow() {
             <ul class="product-search-dropdown" style="display:none; position:absolute; z-index:99999; margin:0; padding:4px 0; list-style:none; min-width:320px; max-height:260px; overflow-y:auto;"></ul>
         </div>
     </td>
-    <td><input type="text" name="name[]" class="form-control" required></td>
+    <input type="hidden" name="name[]" class="item-name-hidden" value="">
     <td><input type="text" name="unit[]" class="form-control" value="Adet"></td>
     <td><input type="text" name="qty[]" class="form-control formatted-number" value="1,00"></td>
     <td><input type="text" name="price[]" class="form-control formatted-number" value="0,0000"></td>
     <td><input type="text" name="urun_ozeti[]" class="form-control"></td>
     <td><input type="text" name="kullanim_alani[]" class="form-control"></td>
-    <td class="right"><button type="button" class="btn-delete" onclick="delRow(this)">Sil 🗑️</button></td>
+    <td class="right"><button type="button" class="btn-delete" onclick="delRow(this)">🗑️</button></td>
     `;
     document.querySelector('#itemsTable tbody').appendChild(tr);
     window.bindSearch(tr);
@@ -675,7 +675,16 @@ document.addEventListener('keydown', function(e) {
     var input = e.target;
     if (!input || !input.classList.contains('stok-kodu')) return;
     e.preventDefault();
+    triggerSkuLookup(input);
+});
 
+document.addEventListener('focusout', function(e) {
+    var input = e.target;
+    if (!input || !input.classList.contains('stok-kodu')) return;
+    triggerSkuLookup(input);
+});
+
+function triggerSkuLookup(input) {
     var q = input.value.trim();
     if (!q) return;
 
@@ -692,15 +701,14 @@ document.addEventListener('keydown', function(e) {
         if (!row) return;
 
         var setVal = function(sel, val) { var el = row.querySelector(sel); if (el) el.value = val || ''; };
-        setVal('.product-id-input',      p.id);
-        setVal('.product-search-input',  p.name || p.display_name);
-        setVal('input[name="name[]"]',   p.name || p.display_name);
-        setVal('input[name="unit[]"]',   p.unit);
+        setVal('.product-id-input',             p.id);
+        setVal('.product-search-input',         p.name || p.display_name);
+        setVal('input[name="name[]"]',          p.name || p.display_name);
+        setVal('input[name="unit[]"]',          p.unit);
         setVal('input[name="urun_ozeti[]"]',    p.urun_ozeti);
         setVal('input[name="kullanim_alani[]"]', p.kullanim_alani);
         if (p.price) setVal('input[name="price[]"]', String(p.price).replace('.', ','));
 
-        // Görsel güncelle
         if (p.image) {
             var imgCell = row.querySelector('.urun-gorsel');
             if (imgCell) {
@@ -715,5 +723,5 @@ document.addEventListener('keydown', function(e) {
         if (typeof window.calculateFinancials === 'function') window.calculateFinancials();
     };
     xhr.send();
-});
+}
 </script>
