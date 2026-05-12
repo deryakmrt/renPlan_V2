@@ -80,10 +80,11 @@
                 $__custId = (int)($order['customer_id'] ?? 0);
                 if ($__custId) { foreach ($customers as $c) { if ((int)$c['id'] === $__custId) { $__custName = $c['name']; break; } } }
                 ?>
-                <input type="hidden" name="customer_id" value="<?= $__custId ?>">
+                <input type="hidden" name="customer_id" id="customer_id_hidden" value="<?= $__custId ?>">
                 <div class="musteri-row">
-                    <div class="form-control musteri-display"><?= h($__custName ?: '—') ?></div>
-                    <select name="customer_id_override" class="form-control musteri-override" title="Müşteriyi değiştir">
+                    <div class="form-control musteri-display" id="musteri-display-label"><?= h($__custName ?: '—') ?></div>
+                    <select name="customer_id_override" class="form-control musteri-override" title="Müşteriyi değiştir"
+                            onchange="var v=this.value,t=this.options[this.selectedIndex].text; if(v){document.getElementById('customer_id_hidden').value=v; document.getElementById('musteri-display-label').textContent=t;}">
                         <option value="">Değiştir…</option>
                         <?php foreach ($customers as $c): ?><option value="<?= (int)$c['id'] ?>"><?= h($c['name']) ?></option><?php endforeach; ?>
                     </select>
@@ -132,7 +133,7 @@
             <select name="siparisi_alan" class="form-control" required>
                 <option value="">— Seçiniz —</option>
                 <?php
-                $temsilciler = ['ALİ ALTUNAY', 'FATİH SERHAT ÇAÇIK', 'HASAN BÜYÜKOBA', 'HİKMET ŞAHİN', 'MUHAMMET YAZGAN', 'MURAT SEZER'];
+                $temsilciler = ['ALİ ALTUNAY', 'FATİH SERHAT ÇAÇIK', 'HASAN BÜYÜKOBA', 'HİKMET ŞİMŞEK', 'MUHAMMET YAZGAN', 'MURAT SEZER'];
                 $current_alan = $order['siparisi_alan'] ?? '';
                 foreach ($temsilciler as $t): ?>
                     <option value="<?= h($t) ?>" <?= $current_alan === $t ? 'selected' : '' ?>><?= h($t) ?></option>
