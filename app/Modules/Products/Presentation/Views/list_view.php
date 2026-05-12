@@ -279,9 +279,19 @@ function toggleCat(id) {
 
                         <!-- Görsel -->
                         <td style="text-align:center; padding:6px;">
-                            <?php $img = $p['resolved_image'] ?? $p['image'] ?? ''; ?>
+                            <?php
+                            $img = $p['resolved_image'] ?? $p['image'] ?? '';
+                            if ($img) {
+                                if (strpos($img, 'uploads/') === 0 || strpos($img, '/') === 0) {
+                                    $imgSrc = '/' . ltrim($img, '/');
+                                } else {
+                                    // Sadece dosya adı (prod_xxxx.png formatı)
+                                    $imgSrc = '/uploads/product_images/' . $img;
+                                }
+                            }
+                            ?>
                             <?php if ($img): ?>
-                                <img src="/<?= h(ltrim($img,'/')) ?>" style="width:44px; height:44px; object-fit:contain; border-radius:6px; border:1px solid #e2e8f0; background:#fff;">
+                                <img src="<?= h($imgSrc) ?>" style="width:44px; height:44px; object-fit:contain; border-radius:6px; border:1px solid #e2e8f0; background:#fff;">
                             <?php else: ?>
                                 <div style="width:44px; height:44px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:18px; color:#cbd5e1; margin:0 auto;">📦</div>
                             <?php endif; ?>
