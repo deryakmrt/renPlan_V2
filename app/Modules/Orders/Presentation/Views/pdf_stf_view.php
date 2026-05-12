@@ -9,6 +9,7 @@
  * @var string $termin_tarihi_fmt
  * @var string $itemSymbol
  * @var callable $fmt
+ * @var string $root
  */
 ?>
 <!DOCTYPE html>
@@ -108,8 +109,8 @@ table.totals .value { text-align: right; }
       <table class="kv">
         <tr><td class="label">Proje Adı</td><td><?= h($o['proje_adi'] ?? '') ?></td></tr>
         <tr><td class="label">Revizyon No</td><td><?= h($o['revizyon_no'] ?? '') ?></td></tr>
-        <tr><td class="label">Termin Tarihi</td><td><?= $termin_tarihi_fmt ?></td></tr>
         <tr><td class="label">Nakliye Türü</td><td><?= h($o['nakliye_turu'] ?? '') ?></td></tr>
+        <tr><td class="label">Ödeme Koşulu</td><td><?= h($o['odeme_kosulu'] ?? '') ?></td></tr>
         <tr><td class="label">Ödeme Para Birimi</td><td><?= h($o['odeme_para_birimi'] ?? '') ?></td></tr>
       </table>
     </td>
@@ -202,4 +203,3 @@ $genel = $ara + $kdv;
 
 </body>
 </html>
-<?php
