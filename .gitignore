@@ -11,3 +11,4 @@ delete_file.php
 config.php
 /mailing/config.php
 /includes/config.php
+get_token.php
