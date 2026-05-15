@@ -82,6 +82,8 @@
     // Satırın ID'sini al ve ışınlan!
     const orderId = tr.getAttribute('data-order-id');
     if (orderId) {
+      localStorage.setItem('last_visited_order', orderId);
+      if (typeof highlightLastVisited === 'function') highlightLastVisited();
       window.location.href = 'orders.php?a=edit&id=' + orderId;
     }
   });

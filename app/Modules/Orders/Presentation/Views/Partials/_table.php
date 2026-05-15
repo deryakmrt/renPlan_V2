@@ -225,12 +225,12 @@ if (!function_exists('__wpstat_icon_svg')) {
 
         <?php // ── HÜCRE 3: STF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'muhasebe', 'musteri'], true)): ?>
-          <a href="orders.php?a=pdf&id=<?= $o->id ?>" target="_blank" title="STF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:11px; font-weight:800; text-decoration:none;">STF</a>
+          <a href="orders.php?a=pdf&id=<?= $o->id ?>" target="_blank" title="STF" onclick="localStorage.setItem('last_visited_order','<?= $o->id ?>'); highlightLastVisited();" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#ffedd5; color:#ea580c; border:1px solid #fed7aa; font-size:11px; font-weight:800; text-decoration:none;">STF</a>
         <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
         <?php // ── HÜCRE 4: ÜSTF ?>
         <?php if (in_array($role, ['admin', 'sistem_yoneticisi', 'uretim'], true)): ?>
-          <a href="orders.php?a=pdf_uretim&id=<?= $o->id ?>" target="_blank" title="ÜSTF" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; font-weight:800; text-decoration:none;">ÜSTF</a>
+          <a href="orders.php?a=pdf_uretim&id=<?= $o->id ?>" target="_blank" title="ÜSTF" onclick="localStorage.setItem('last_visited_order','<?= $o->id ?>'); highlightLastVisited();" style="width:100%; height:26px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:13px; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; font-weight:800; text-decoration:none;">ÜSTF</a>
         <?php else: ?><div style="height:26px;"></div><?php endif; ?>
 
         <?php // ── HÜCRE 5: Sil ?>
@@ -393,6 +393,18 @@ if (!function_exists('__wpstat_icon_svg')) {
       }
     });
   });
+
+  // ── Son ziyaret edilen siparişi renklendir ──
+  function highlightLastVisited() {
+    document.querySelectorAll('.order-row').forEach(function(r) {
+      r.style.background = '';
+    });
+    var lastId = localStorage.getItem('last_visited_order');
+    if (!lastId) return;
+    var row = document.querySelector('.order-row[data-order-id="' + lastId + '"]');
+    if (row) row.style.background = '#fff5ec';
+  }
+  highlightLastVisited();
 
   // Mail formu — AJAX ile gönder, sayfa yenilenmesin
   document.querySelectorAll('.inline-mail-form').forEach(function(form) {
