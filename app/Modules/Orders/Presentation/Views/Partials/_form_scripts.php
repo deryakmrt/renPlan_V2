@@ -50,7 +50,9 @@
   /* --- DİĞER STİLLER --- */
   .row-index { display: inline-block; width: 20px; color: #cbd5e1; font-size: 11px; font-weight: bold; text-align: right; margin-right: 6px; user-select: none; }
   tr.active-editing td { background-color: #fff7ed !important; border-top: 1px solid #fdba74 !important; border-bottom: 1px solid #fdba74 !important; }
-  .popover-overlay { position: fixed; inset: 0; background: transparent; z-index: 9990; display: none; }
+  .popover-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.04); backdrop-filter: blur(1px); z-index: 9990; display: none; }
+  tr.popover-active-row { outline: 1.5px solid #ee7422; outline-offset: -1px; }
+  tr.popover-active-row td { background-color: #fff7ed !important; }
   .popover-editor { position: fixed; z-index: 9991; background: #fff; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); display: none; flex-direction: column; width: 400px; height: 250px; resize: both; overflow: hidden; min-width: 320px; min-height: 250px; border: 1px solid #d1d5db; }
   .popover-header { flex: 0 0 auto; background: #f9fafb; padding: 10px 15px; border-bottom: 1px solid #e5e7eb; cursor: grab; display: flex; justify-content: space-between; align-items: center; user-select: none; }
   .popover-header:active { cursor: grabbing; }
@@ -575,6 +577,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (label)    label.textContent = labelText;
         if (textarea) textarea.value    = input.value;
 
+        // Aktif satırı renklendir
+        var activeRow = input.closest('tr');
+        if (activeRow) activeRow.classList.add('popover-active-row');
+
         var pw = 420, ph = 280;
         popover.style.width  = pw + 'px';
         popover.style.height = ph + 'px';
@@ -602,6 +608,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function closePopover(save) {
         if (save && _activeInput && textarea) {
             _activeInput.value = textarea.value;
+        }
+        // Aktif satır rengini kaldır
+        if (_activeInput) {
+            var activeRow = _activeInput.closest('tr');
+            if (activeRow) activeRow.classList.remove('popover-active-row');
         }
         popover.style.display  = 'none';
         overlay.style.display  = 'none';
@@ -694,7 +705,14 @@ function triggerSkuLookup(input) {
         if (xhr.status !== 200) return;
         var data;
         try { data = JSON.parse(xhr.responseText); } catch(e) { return; }
-        var p = Array.isArray(data) ? data[0] : data;
+        // Önce birebir SKU eşleşmesini bul, yoksa ilk sonucu al
+        var p = null;
+        if (Array.isArray(data)) {
+            var qLower = q.toLowerCase();
+            p = data.find(function(r) { return r.sku && r.sku.toLowerCase() === qLower; }) || null;
+        } else {
+            p = data;
+        }
         if (!p || !p.id) { input.style.borderColor = '#ef4444'; setTimeout(function(){ input.style.borderColor = ''; }, 1500); return; }
 
         var row = input.closest('tr');
