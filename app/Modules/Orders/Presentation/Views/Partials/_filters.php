@@ -64,7 +64,7 @@ $total_in_scope = array_sum(array_diff_key($status_counts, ['revize' => 1]));
         <!-- 🟢 2. BÖLÜM: Input ve Temizle (X) Butonu Alanı -->
         <div style="display:flex; align-items:center; flex:1; position:relative; border-right:1px solid #e2e8f0; height:44px;">
           <!-- line-height: 42px ve margin: 0 ile yazıyı dikeyde KUSURSUZ ortaladık -->
-          <input name="q" style="width:100%; height:42px; line-height:42px; border:none; outline:none; background:transparent; font-size:13px; color:#1e293b; padding:0 24px 0 0; margin:0; box-sizing:border-box; -webkit-appearance:none;" placeholder="Sipariş, proje, müşteri ara..." value="<?= h($q) ?>">
+          <input name="q" id="orders-search-input" autocomplete="off" style="width:100%; height:42px; line-height:42px; border:none; outline:none; background:transparent; font-size:13px; color:#1e293b; padding:0 24px 0 0; margin:0; box-sizing:border-box; -webkit-appearance:none;" placeholder="Sipariş, proje, müşteri ara..." value="<?= h($q) ?>">
           
           <?php if ($q !== '' || $status !== ''): ?>
             <!-- 🟢 Şık ve Minimal Temizle Çarpısı -->
@@ -120,3 +120,125 @@ $total_in_scope = array_sum(array_diff_key($status_counts, ['revize' => 1]));
   </div>
 
 </div>
+
+<style>
+#orders-ac-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    z-index: 9999;
+    max-height: 320px;
+    overflow-y: auto;
+    display: none;
+}
+#orders-ac-dropdown li {
+    list-style: none;
+    padding: 9px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+}
+#orders-ac-dropdown li:last-child { border-bottom: none; }
+#orders-ac-dropdown li:hover, #orders-ac-dropdown li.ac-active { background: #fff7f0; }
+#orders-ac-dropdown .ac-code { font-weight: 700; font-size: 12px; color: #ee7422; }
+#orders-ac-dropdown .ac-proje { font-size: 13px; color: #1e293b; font-weight: 600; }
+#orders-ac-dropdown .ac-musteri { font-size: 11px; color: #64748b; margin-top: 1px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('orders-search-input');
+    if (!input) return;
+
+    var ul = document.createElement('ul');
+    ul.id = 'orders-ac-dropdown';
+    ul.style.cssText = 'position:fixed; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:99999; max-height:320px; overflow-y:auto; display:none; padding:0; margin:0; list-style:none; min-width:360px;';
+    document.body.appendChild(ul);
+
+    var timer = null;
+    var activeIdx = -1;
+
+    function positionDropdown() {
+        var rect = input.getBoundingClientRect();
+        ul.style.top  = (rect.bottom + 4) + 'px';
+        ul.style.left = rect.left + 'px';
+        ul.style.width = Math.max(rect.width, 360) + 'px';
+    }
+
+    function closeDropdown() {
+        ul.style.display = 'none';
+        activeIdx = -1;
+    }
+
+    function renderDropdown(data) {
+        ul.innerHTML = '';
+        activeIdx = -1;
+        if (!data.length) { closeDropdown(); return; }
+        data.forEach(function (r) {
+            var li = document.createElement('li');
+            li.style.cssText = 'padding:9px 14px; cursor:pointer; border-bottom:1px solid #f1f5f9;';
+            li.innerHTML =
+                '<div style="font-weight:700; font-size:12px; color:#ee7422;">' + (r.order_code || '') + '</div>' +
+                (r.urun_adi ? '<div style="font-size:13px; color:#1e293b; font-weight:600;">📦 ' + r.urun_adi + '</div>' : '') +
+                '<div style="font-size:11px; color:#64748b; margin-top:1px;">' + (r.proje_adi || '—') + ' • 👤 ' + (r.customer_name || '—') + '</div>';
+            li.addEventListener('mouseover', function() { li.style.background='#fff7f0'; });
+            li.addEventListener('mouseout',  function() { li.style.background=''; });
+            li.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                closeDropdown();
+                window.location.href = 'orders.php?a=edit&id=' + r.id;
+            });
+            ul.appendChild(li);
+        });
+        positionDropdown();
+        ul.style.display = 'block';
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 2) { closeDropdown(); return; }
+        timer = setTimeout(function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/orders_autocomplete.php?q=' + encodeURIComponent(q));
+            xhr.onload = function () {
+                if (xhr.status !== 200) return;
+                try { renderDropdown(JSON.parse(xhr.responseText)); } catch(e) {}
+            };
+            xhr.send();
+        }, 220);
+    });
+
+    input.addEventListener('keydown', function (e) {
+        var items = ul.querySelectorAll('li');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, items.length - 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, -1);
+        } else if (e.key === 'Escape') {
+            closeDropdown(); return;
+        } else if (e.key === 'Enter' && activeIdx >= 0) {
+            e.preventDefault();
+            items[activeIdx].dispatchEvent(new MouseEvent('mousedown'));
+            return;
+        }
+        items.forEach(function (li, i) {
+            li.style.background = i === activeIdx ? '#fff7f0' : '';
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (e.target !== input) closeDropdown();
+    });
+
+    window.addEventListener('scroll', positionDropdown, true);
+    window.addEventListener('resize', positionDropdown);
+});
+</script>
